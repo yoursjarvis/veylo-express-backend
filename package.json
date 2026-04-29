@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tsc && tsc-alias -f -fe .js",
     "format": "prettier . --write",
-    "db:deploy": "pnpm dlx prisma migrate deploy && pnpm dlx prisma generate",
+    "db:deploy": "npx prisma migrate deploy && npx prisma generate",
     "dev": "tsx watch src/index.ts",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -23,7 +23,6 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "packageManager": "pnpm@10.29.1",
   "dependencies": {
     "@better-auth/prisma-adapter": "^1.6.9",
     "@opentelemetry/api": "^1.9.1",
@@ -62,7 +61,7 @@
     "@typescript-eslint/eslint-plugin": "^8.59.1",
     "@typescript-eslint/parser": "^8.59.1",
     "@vitest/coverage-v8": "4.1.5",
-    "eslint": "^10.2.1",
+    "eslint": "^9.39.4",
     "eslint-config-prettier": "^10.1.8",
     "eslint-import-resolver-typescript": "^4.4.4",
     "eslint-plugin-import": "^2.32.0",

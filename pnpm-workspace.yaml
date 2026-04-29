@@ -1,5 +1,0 @@
-onlyBuiltDependencies:
-  - '@prisma/engines'
-  - esbuild
-  - prisma
-  - protobufjs

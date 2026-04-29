@@ -1,20 +1,32 @@
 FROM node:22-alpine AS base
 WORKDIR /app
-RUN corepack enable
 
+# -------------------------
+# Install dependencies
+# -------------------------
 FROM base AS deps
-COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --frozen-lockfile
+COPY package.json package-lock.json ./
+RUN npm ci
 
+# -------------------------
+# Build stage
+# -------------------------
 FROM deps AS build
 COPY . .
-RUN pnpm run build
+RUN DATABASE_URL=postgresql://postgres:postgres@localhost:5432/postgres?schema=public \
+    npx prisma generate && npm run build
 
+# -------------------------
+# Production runtime
+# -------------------------
 FROM base AS runtime
 ENV NODE_ENV=production
-COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --prod --frozen-lockfile
+
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev
+
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/generated ./generated
+
 EXPOSE 3000
 CMD ["node", "dist/index.js"]

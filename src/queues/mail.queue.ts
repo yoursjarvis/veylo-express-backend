@@ -1,7 +1,7 @@
+import type { MailMessage } from "@/app/services/mail/mail.types";
 import { config } from "@/utils/config";
 import { Queue } from "bullmq";
 import Redis from "ioredis";
-import type { MailMessage } from "@/app/services/mail/mail.types";
 
 export type MailQueuePayload = {
   message: MailMessage;
@@ -13,7 +13,6 @@ function createBullConnection() {
     port: config("database.redis.port"),
     username: config("database.redis.username"),
     password: config("database.redis.password") || undefined,
-    keyPrefix: config("database.redis.prefix"),
     // BullMQ uses blocking commands; `null` avoids "max retries per request" issues.
     maxRetriesPerRequest: null,
     enableOfflineQueue: false,
