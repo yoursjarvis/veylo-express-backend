@@ -1,0 +1,26 @@
+server:
+  http_listen_port: 3100
+
+common:
+  path_prefix: /tmp/loki
+  storage:
+    type: filesystem
+    filesystem:
+      directory: /tmp/loki/chunks
+  replication_factor: 1
+
+schema_config:
+  configs:
+    - xrange:
+        series_period: 1h
+        limits:
+          max_chunks_per_query: 1000
+          max_entries_per_chunk: 1000
+          max_chunk_size: 1MB
+          chunk_encode_type: zstd
+          cache_replication_factor: 1
+          cache_entry_time_bucket: 1800s
+          max_cache_freshness: 10m
+
+limits_config:
+  allow_structured_metadata: true

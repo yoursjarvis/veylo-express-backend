@@ -1,0 +1,102 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id                  Int       @id @default(autoincrement())
+  firstName           String    @map("first_name")
+  lastName            String    @map("last_name")
+  name                String    @map("name")
+  email               String    @unique @map("email")
+  emailVerified       Boolean   @default(false) @map("email_verified")
+  image               String?   @map("image")
+  isActive            Boolean   @default(true) @map("is_active")
+  lastLoginAt         DateTime? @map("last_login_at")
+  passwordChangedAt   DateTime? @map("password_changed_at")
+  failedLoginAttempts Int       @default(0) @map("failed_login_attempts")
+  lockedUntil         DateTime? @map("locked_until")
+  deletedAt           DateTime? @map("deleted_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+  createdAt           DateTime  @default(now()) @map("created_at")
+
+  sessions Session[]
+  accounts Account[]
+
+  @@index([email], map: "idx_users_email")
+  @@index([isActive], map: "idx_users_is_active")
+  @@index([deletedAt], map: "idx_users_deleted_at")
+  @@index([lockedUntil], map: "idx_users_locked_until")
+  @@map("users")
+}
+
+model Session {
+  id           Int       @id @default(autoincrement())
+  userId       Int       @map("user_id")
+  token        String    @unique @map("token")
+  expiresAt    DateTime  @map("expires_at")
+  ipAddress    String?   @map("ip_address")
+  userAgent    String?   @map("user_agent")
+  deviceName   String?   @map("device_name")
+  browser      String?   @map("browser")
+  os           String?   @map("os")
+  country      String?   @map("country")
+  location     String?   @map("location")
+  lastActiveAt DateTime? @map("last_active_at")
+  revokedAt    DateTime? @map("revoked_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId], map: "idx_sessions_user_id")
+  @@index([token], map: "idx_sessions_token")
+  @@index([expiresAt], map: "idx_sessions_expires_at")
+  @@index([revokedAt], map: "idx_sessions_revoked_at")
+  @@map("sessions")
+}
+
+model Account {
+  id                    Int       @id @default(autoincrement())
+  userId                Int       @map("user_id")
+  accountId             String    @map("account_id")
+  providerId            String    @map("provider_id")
+  accessToken           String?   @map("access_token")
+  refreshToken          String?   @map("refresh_token")
+  idToken               String?   @map("id_token")
+  accessTokenExpiresAt  DateTime? @map("access_token_expires_at")
+  refreshTokenExpiresAt DateTime? @map("refresh_token_expires_at")
+  scope                 String?   @map("scope")
+  password              String?   @map("password")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+  createdAt             DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, accountId], map: "uq_accounts_provider_account_id")
+  @@index([userId], map: "idx_accounts_user_id")
+  @@index([providerId], map: "idx_accounts_provider_id")
+  @@map("accounts")
+}
+
+model Verification {
+  id         Int       @id @default(autoincrement())
+  identifier String    @map("identifier")
+  value      String    @map("value")
+  expiresAt  DateTime  @map("expires_at")
+  updatedAt  DateTime? @updatedAt @map("updated_at")
+  createdAt  DateTime? @default(now()) @map("created_at")
+
+  @@index([identifier], map: "idx_verifications_identifier")
+  @@index([expiresAt], map: "idx_verifications_expires_at")
+  @@map("verifications")
+}

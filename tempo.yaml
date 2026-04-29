@@ -1,0 +1,26 @@
+server:
+  http_listen_port: 9095
+
+distributor:
+  receiver:
+    otlp:
+      protocols:
+        grpc:
+          endpoint: 0.0.0.0:4317
+        http:
+          endpoint: 0.0.0.0:4318
+
+compactor:
+  compact_period: 24h
+
+storage:
+  trace:
+    backend: local
+    local:
+      active_bucket_folder: /tmp/tempo/active-buckets
+      block_folder: /tmp/tempo/blocks
+      wal_folder: /tmp/tempo/wal
+
+metrics:
+  service_metrics:
+    enabled: true

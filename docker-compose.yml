@@ -1,0 +1,145 @@
+services:
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.139.0
+    volumes:
+      - ./otel-collector.yml:/etc/otelcol-contrib/config.yaml
+    ports:
+      - 1888:1888
+      - 8888:8888
+      - 8889:8889
+      - 13133:13133
+      - 4317:4317
+      - 55679:55679
+    networks:
+      - veylo-network
+
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus_alerts.yml:/etc/prometheus/prometheus_alerts.yml:ro
+    ports:
+      - "9090:9090"
+    depends_on: [otel-collector]
+    networks:
+      - veylo-network
+
+  grafana:
+    image: grafana/grafana:latest
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
+      - GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_UID=veylo-backend-prod
+    ports:
+      - "3002:3000"
+    depends_on: [prometheus]
+    networks:
+      - veylo-network
+
+  postgres:
+    image: postgres:18.3
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: veylo
+    ports:
+      - "5432:5432"
+    networks:
+      - veylo-network
+    volumes:
+      - postgres-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 2s
+      retries: 20
+    command: postgres -c listen_addresses='*'
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  redis:
+    image: redis:8.6
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--requirepass", "${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env}"]
+    ports:
+      - "6379:6379"
+    networks:
+      - veylo-network
+    volumes:
+      - redis-data:/data
+
+  redis-ui:
+    image: redis/redisinsight:latest
+    restart: unless-stopped
+    ports:
+      - "5540:5540"
+    depends_on: [redis]
+    networks:
+      - veylo-network
+    volumes:
+      - redisinsight-data:/data
+
+  backend:
+    build: .
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://postgres:root@postgres:5432/veylo
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_USERNAME=default
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - REDIS_PREFIX=veylo_redis_local
+      - OTEL_COLLECTOR_URL=http://otel-collector:4317
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - veylo-network
+
+  loki:
+    image: grafana/loki:latest
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - veylo-network
+
+  promtail:
+    image: grafana/promtail:latest
+    volumes:
+      - /var/log:/var/log
+      - ./promtail-config.yml:/etc/promtail/config.yml
+    command: -config.file=/etc/promtail/config.yml
+    networks:
+      - veylo-network
+
+  tempo:
+    image: grafana/tempo:latest
+    command: [ "-config.file=/etc/tempo.yaml" ]
+    volumes:
+      - ./tempo.yaml:/etc/tempo.yaml
+    ports:
+      - "3200:3200"   # Tempo HTTP
+      - "4317:4317"   # OTLP gRPC (Collector will forward here)
+    networks:
+      - veylo-network
+
+networks:
+  veylo-network:
+    driver: bridge
+
+volumes:
+  postgres-data:
+  redis-data:
+  redisinsight-data:

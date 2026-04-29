@@ -1,0 +1,14 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  - service_name: backend
+    job_name: backend-logs
+    path: /var/log/*.log
+    labels:
+      job: backend-logs
+      host: localhost
+
+clients:
+  - url: http://loki:3100/loki/api/push

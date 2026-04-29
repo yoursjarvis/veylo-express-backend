@@ -1,0 +1,25 @@
+# SLO Configuration for Veylo Backend
+# These rules define a a target of 99% success rate and P95 <<  500ms
+
+groups:
+  - name: slo_alerts
+    rules:
+      # SLO: 99% of requests should be successful (non-5xx)
+      - alert: LowSuccessRateSLO
+        expr: sum(rate(http_requests_total{status_code!~"5.."}[5m])) / sum(rate(http_requests_total[5m])) <<  0.99
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "SLO Violation: Low Success Rate"
+          description: "The success rate has dropped below 99% for the last 5 minutes."
+
+      # SLO: P95 latency should be under 500ms
+      - alert: HighLatencySLO
+        expr: histogram_quantile(0.95, sum by (le) (rate(http_request_duration_ms_bucket[5m]))) > 500
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "SLO Violation: High P95 Latency"
+          description: "P95 latency has exceeded 500ms for the last 5 minutes."
