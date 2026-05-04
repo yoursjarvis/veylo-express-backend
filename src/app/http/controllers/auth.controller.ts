@@ -1,5 +1,4 @@
 import { asyncHandler } from "@/app/http/middlewares/async-handler.middleware";
-import { authService } from "@/app/services/auth.service";
 import {
   changePasswordSchema,
   forgotPasswordSchema,
@@ -8,6 +7,7 @@ import {
   signUpSchema,
   verifyEmailQuerySchema,
 } from "@/app/http/validators/auth.validation";
+import { authService } from "@/app/services/auth.service";
 import { config } from "@/utils/config";
 import { ok } from "@/utils/http-response";
 import type { Request, Response } from "express";
@@ -123,7 +123,7 @@ export const authController = {
   }),
 
   revokeSession: asyncHandler(async (req: Request, res: Response) => {
-    const sessionId = Number(req.params.id);
+    const sessionId = req.params.id as string;
     await authService.revokeSession(req, sessionId);
     return ok(res, "Session revoked");
   }),

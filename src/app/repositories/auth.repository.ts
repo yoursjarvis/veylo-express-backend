@@ -7,7 +7,7 @@ export const authRepository = {
     });
   },
 
-  markLoginSuccess(userId: number, now = new Date()) {
+  markLoginSuccess(userId: string, now = new Date()) {
     return prisma.user.update({
       where: { id: userId },
       data: {
@@ -55,7 +55,7 @@ export const authRepository = {
     });
   },
 
-  revokeSessionByIdForUser(sessionId: number, userId: number, now = new Date()) {
+  revokeSessionByIdForUser(sessionId: string, userId: string, now = new Date()) {
     return prisma.session.updateMany({
       where: { id: sessionId, userId },
       data: { revokedAt: now },

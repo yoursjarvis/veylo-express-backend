@@ -1,14 +1,15 @@
-import { UnauthorizedException } from "@/utils/app-error";
+import { authRepository } from "@/app/repositories/auth.repository";
+import { mailService } from "@/app/services/mail";
 import { auth } from "@/lib/auth/auth";
 import { betterAuthHeaders } from "@/lib/auth/node-headers";
 import { forwardSetCookie } from "@/lib/auth/set-cookie";
-import { authRepository } from "@/app/repositories/auth.repository";
-import { parseUserAgent } from "@/utils/user-agent";
-import type { Request, Response } from "express";
-import prisma from "@/lib/prisma";
-import { config } from "@/utils/config";
-import { mailService } from "@/app/services/mail";
 import { logger } from "@/lib/logger";
+import prisma from "@/lib/prisma";
+import { ForbiddenException, UnauthorizedException } from "@/utils/app-error";
+import { config } from "@/utils/config";
+import { parseUserAgent } from "@/utils/user-agent";
+import { isAPIError } from "@better-auth/core/utils/is-api-error";
+import type { Request, Response } from "express";
 
 function getIpAddress(req: Request): string | undefined {
   // `trust proxy` is enabled in `src/app.ts` so `req.ip` respects X-Forwarded-For.
@@ -54,8 +55,9 @@ export const authService = {
   async login(req: Request, res: Response, input: { email: string; password: string }) {
     const headers = betterAuthHeaders(req);
     const now = new Date();
+    const email = input.email.trim().toLowerCase();
 
-    const user = await authRepository.findUserByEmail(input.email);
+    const user = await authRepository.findUserByEmail(email);
     if (user) {
       if (!user.isActive || user.deletedAt)
         throw new UnauthorizedException("Invalid credentials");
@@ -64,21 +66,45 @@ export const authService = {
       }
     }
 
+    let result: any;
     try {
-      const result = await auth.api.signInEmail({
+      result = await auth.api.signInEmail({
         headers,
         returnHeaders: true,
         body: {
-          email: input.email,
+          email,
           password: input.password,
         },
       });
+    } catch (error) {
+      if (isAPIError(error)) {
+        if (error.message === "Email not verified") {
+          logger.warn({ error, email }, "[AUTH][login] email not verified");
+          throw new ForbiddenException("Email not verified");
+        }
 
-      forwardSetCookie(res, result.headers);
+        if (
+          error.message === "Invalid email or password" ||
+          error.message === "Invalid email" ||
+          error.message === "Invalid password" ||
+          error.message === "Credential account not found"
+        ) {
+          await authRepository.markLoginFailure(email, now);
+          logger.warn({ error, email }, "[AUTH][login] sign-in failed");
+          throw new UnauthorizedException("Invalid credentials");
+        }
+      }
 
-      const sessionToken = result.response?.token ?? undefined;
-      if (sessionToken) {
-        const { browser, os } = parseUserAgent(req.headers["user-agent"]);
+      logger.error({ error, email }, "[AUTH][login] unexpected sign-in failure");
+      throw new UnauthorizedException("Invalid credentials");
+    }
+
+    forwardSetCookie(res, result.headers);
+
+    const sessionToken = result.response?.token ?? undefined;
+    if (sessionToken) {
+      const { browser, os } = parseUserAgent(req.headers["user-agent"]);
+      try {
         await authRepository.updateSessionMetadataByToken(sessionToken, {
           browser,
           os,
@@ -86,15 +112,20 @@ export const authService = {
           userAgent: req.headers["user-agent"],
           lastActiveAt: now,
         });
+      } catch (error) {
+        logger.error({ error, email }, "[AUTH][login] session metadata update failed");
       }
-
-      if (user) await authRepository.markLoginSuccess(user.id, now);
-
-      return result.response;
-    } catch (error) {
-      await authRepository.markLoginFailure(input.email, now);
-      throw new UnauthorizedException("Invalid credentials");
     }
+
+    if (user) {
+      try {
+        await authRepository.markLoginSuccess(user.id, now);
+      } catch (error) {
+        logger.error({ error, userId: user.id, email }, "[AUTH][login] login success bookkeeping failed");
+      }
+    }
+
+    return result.response;
   },
 
   async logout(req: Request, res: Response) {
@@ -173,7 +204,7 @@ export const authService = {
   ) {
     const headers = betterAuthHeaders(req);
     const sessionResult = await auth.api.getSession({ headers });
-    const userId = Number(sessionResult?.user?.id);
+    const userId = sessionResult?.user?.id;
 
     const result = await auth.api.changePassword({
       headers,
@@ -185,7 +216,7 @@ export const authService = {
       },
     });
     forwardSetCookie(res, result.headers);
-    if (Number.isFinite(userId)) {
+    if (userId) {
       await prisma.user.update({
         where: { id: userId },
         data: { passwordChangedAt: new Date() },
@@ -200,13 +231,13 @@ export const authService = {
     return result;
   },
 
-  async revokeSession(req: Request, sessionId: number) {
+  async revokeSession(req: Request, sessionId: string) {
     const headers = betterAuthHeaders(req);
 
     // Authorization is enforced by matching against the authenticated user.
     const sessionResult = await auth.api.getSession({ headers, returnHeaders: true });
-    const userId = Number(sessionResult.response?.user?.id);
-    if (!Number.isFinite(userId)) throw new UnauthorizedException();
+    const userId = sessionResult.response?.user?.id;
+    if (!userId) throw new UnauthorizedException();
 
     await authRepository.revokeSessionByIdForUser(sessionId, userId);
     // Also revoke by token (if present) to ensure Better Auth considers it invalid.

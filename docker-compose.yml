@@ -8,7 +8,7 @@ services:
       - 8888:8888
       - 8889:8889
       - 13133:13133
-      - 4317:4317
+      - 4318:4317
       - 55679:55679
     networks:
       - veylo-network
@@ -89,9 +89,10 @@ services:
     build: .
     restart: always
     ports:
-      - "3000:3000"
+      - "4000:4000"
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=local
+      - PORT=4000
       - DATABASE_URL=postgresql://postgres:root@postgres:5432/veylo
       - REDIS_HOST=redis
       - REDIS_PORT=6379

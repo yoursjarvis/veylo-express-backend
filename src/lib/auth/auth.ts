@@ -46,8 +46,8 @@ export const auth = betterAuth({
   advanced: {
     useSecureCookies: config("app.env") === "production",
     database: {
-      // Use integer `SERIAL` ids in PostgreSQL (our schema uses autoincrement()).
-      generateId: "serial",
+      // Keep auth-generated ids aligned with the Prisma schema's UUID primary keys.
+      generateId: "uuid",
     },
   },
   user: {

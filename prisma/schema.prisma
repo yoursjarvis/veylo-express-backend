@@ -13,7 +13,7 @@ datasource db {
 }
 
 model User {
-  id                  Int       @id @default(autoincrement())
+  id                  String    @id @default(uuid(7)) @db.Uuid
   firstName           String    @map("first_name")
   lastName            String    @map("last_name")
   name                String    @map("name")
@@ -26,8 +26,8 @@ model User {
   failedLoginAttempts Int       @default(0) @map("failed_login_attempts")
   lockedUntil         DateTime? @map("locked_until")
   deletedAt           DateTime? @map("deleted_at")
-  updatedAt           DateTime  @updatedAt @map("updated_at")
-  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
 
   sessions Session[]
   accounts Account[]
@@ -40,8 +40,8 @@ model User {
 }
 
 model Session {
-  id           Int       @id @default(autoincrement())
-  userId       Int       @map("user_id")
+  id           String    @id @default(uuid(7)) @db.Uuid
+  userId       String    @map("user_id") @db.Uuid
   token        String    @unique @map("token")
   expiresAt    DateTime  @map("expires_at")
   ipAddress    String?   @map("ip_address")
@@ -53,8 +53,8 @@ model Session {
   location     String?   @map("location")
   lastActiveAt DateTime? @map("last_active_at")
   revokedAt    DateTime? @map("revoked_at")
-  updatedAt    DateTime  @updatedAt @map("updated_at")
-  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -66,19 +66,19 @@ model Session {
 }
 
 model Account {
-  id                    Int       @id @default(autoincrement())
-  userId                Int       @map("user_id")
+  id                    String    @id @default(uuid(7)) @db.Uuid
+  userId                String    @map("user_id") @db.Uuid
   accountId             String    @map("account_id")
   providerId            String    @map("provider_id")
   accessToken           String?   @map("access_token")
   refreshToken          String?   @map("refresh_token")
   idToken               String?   @map("id_token")
-  accessTokenExpiresAt  DateTime? @map("access_token_expires_at")
-  refreshTokenExpiresAt DateTime? @map("refresh_token_expires_at")
+  accessTokenExpiresAt  DateTime? @map("access_token_expires_at") @db.Timestamptz(6)
+  refreshTokenExpiresAt DateTime? @map("refresh_token_expires_at") @db.Timestamptz(6)
   scope                 String?   @map("scope")
   password              String?   @map("password")
-  updatedAt             DateTime  @updatedAt @map("updated_at")
-  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  createdAt             DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -89,12 +89,12 @@ model Account {
 }
 
 model Verification {
-  id         Int       @id @default(autoincrement())
-  identifier String    @map("identifier")
-  value      String    @map("value")
-  expiresAt  DateTime  @map("expires_at")
-  updatedAt  DateTime? @updatedAt @map("updated_at")
-  createdAt  DateTime? @default(now()) @map("created_at")
+  id         String   @id @default(uuid(7)) @db.Uuid
+  identifier String   @map("identifier")
+  value      String   @map("value")
+  expiresAt  DateTime @map("expires_at") @db.Timestamptz(6)
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
   @@index([identifier], map: "idx_verifications_identifier")
   @@index([expiresAt], map: "idx_verifications_expires_at")

@@ -1,9 +1,6 @@
--- CreateSchema
-CREATE SCHEMA IF NOT EXISTS "public";
-
 -- CreateTable
 CREATE TABLE "users" (
-    "id" SERIAL NOT NULL,
+    "id" UUID NOT NULL,
     "first_name" TEXT NOT NULL,
     "last_name" TEXT NOT NULL,
     "name" TEXT NOT NULL,
@@ -16,16 +13,16 @@ CREATE TABLE "users" (
     "failed_login_attempts" INTEGER NOT NULL DEFAULT 0,
     "locked_until" TIMESTAMP(3),
     "deleted_at" TIMESTAMP(3),
-    "updated_at" TIMESTAMP(3) NOT NULL,
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMPTZ(6) NOT NULL,
+    "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "users_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "sessions" (
-    "id" SERIAL NOT NULL,
-    "user_id" INTEGER NOT NULL,
+    "id" UUID NOT NULL,
+    "user_id" UUID NOT NULL,
     "token" TEXT NOT NULL,
     "expires_at" TIMESTAMP(3) NOT NULL,
     "ip_address" TEXT,
@@ -37,39 +34,39 @@ CREATE TABLE "sessions" (
     "location" TEXT,
     "last_active_at" TIMESTAMP(3),
     "revoked_at" TIMESTAMP(3),
-    "updated_at" TIMESTAMP(3) NOT NULL,
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMPTZ(6) NOT NULL,
+    "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "sessions_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "accounts" (
-    "id" SERIAL NOT NULL,
-    "user_id" INTEGER NOT NULL,
+    "id" UUID NOT NULL,
+    "user_id" UUID NOT NULL,
     "account_id" TEXT NOT NULL,
     "provider_id" TEXT NOT NULL,
     "access_token" TEXT,
     "refresh_token" TEXT,
     "id_token" TEXT,
-    "access_token_expires_at" TIMESTAMP(3),
-    "refresh_token_expires_at" TIMESTAMP(3),
+    "access_token_expires_at" TIMESTAMPTZ(6),
+    "refresh_token_expires_at" TIMESTAMPTZ(6),
     "scope" TEXT,
     "password" TEXT,
-    "updated_at" TIMESTAMP(3) NOT NULL,
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMPTZ(6) NOT NULL,
+    "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "accounts_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "verifications" (
-    "id" SERIAL NOT NULL,
+    "id" UUID NOT NULL,
     "identifier" TEXT NOT NULL,
     "value" TEXT NOT NULL,
-    "expires_at" TIMESTAMP(3) NOT NULL,
-    "updated_at" TIMESTAMP(3),
-    "created_at" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
+    "expires_at" TIMESTAMPTZ(6) NOT NULL,
+    "updated_at" TIMESTAMPTZ(6) NOT NULL,
+    "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "verifications_pkey" PRIMARY KEY ("id")
 );
@@ -124,4 +121,3 @@ ALTER TABLE "sessions" ADD CONSTRAINT "sessions_user_id_fkey" FOREIGN KEY ("user
 
 -- AddForeignKey
 ALTER TABLE "accounts" ADD CONSTRAINT "accounts_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
