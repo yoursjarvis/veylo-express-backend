@@ -1,4 +1,4 @@
-import type { MailMessage } from "@/app/services/mail/mail.types";
+import type { MailMessage } from "@/core/mail/mail.types";
 import { config } from "@/utils/config";
 import { Queue } from "bullmq";
 import Redis from "ioredis";

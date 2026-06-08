@@ -1,16 +1,20 @@
-import type { MailDriver } from "@/app/services/mail/contracts/mail-driver";
+import { mailQueue } from "@/app/queues/mail.queue";
+import type { MailDriver } from "@/core/mail/contracts/mail-driver";
 import type {
   MailAddress,
   MailAttachment,
   MailMessage,
   MailSendResult,
-} from "@/app/services/mail/mail.types";
+} from "@/core/mail/mail.types";
 import { logger } from "@/lib/logger";
+import {
+  renderEmail,
+  type EmailTemplateData,
+  type EmailTemplateName,
+} from "@/templates/emails";
 import { config } from "@/utils/config";
-import { mailQueue } from "@/queues/mail.queue";
 import { ResendDriver } from "./drivers/resend.driver";
 import { SmtpDriver } from "./drivers/smtp.driver";
-import { renderEmail, type EmailTemplateName, type EmailTemplateData } from "@/templates/emails";
 
 type MailerName = "smtp" | "resend";
 
@@ -37,7 +41,9 @@ function resolveDriver(): { name: MailerName; driver: MailDriver } {
   return { name, driver: drivers[name] ?? drivers.smtp };
 }
 
-export async function sendMailMessage(message: MailMessage): Promise<MailSendResult> {
+export async function sendMailMessage(
+  message: MailMessage,
+): Promise<MailSendResult> {
   const { name, driver } = resolveDriver();
   const result = await driver.send(message);
   if (!result.ok) {
@@ -73,7 +79,7 @@ class MailBuilder<N extends EmailTemplateName | undefined = undefined> {
 
   view<TName extends EmailTemplateName>(
     name: TName,
-    data: EmailTemplateData<TName>
+    data: EmailTemplateData<TName>,
   ): MailBuilder<TName> {
     (this as unknown as MailBuilder<TName>).templateName = name;
     (this as unknown as MailBuilder<TName>).templateData = data;
@@ -101,7 +107,8 @@ class MailBuilder<N extends EmailTemplateName | undefined = undefined> {
       subject: this.subjectLine ?? rendered.subject,
       html: rendered.html,
       text: rendered.text,
-      attachments: this.attachmentsList.length > 0 ? this.attachmentsList : undefined,
+      attachments:
+        this.attachmentsList.length > 0 ? this.attachmentsList : undefined,
       metadata: rendered.headers,
     };
   }
@@ -118,7 +125,9 @@ class MailBuilder<N extends EmailTemplateName | undefined = undefined> {
     return await sendMailMessage(message);
   }
 
-  async queue(): Promise<{ ok: true; jobId: string } | { ok: false; error: unknown }> {
+  async queue(): Promise<
+    { ok: true; jobId: string } | { ok: false; error: unknown }
+  > {
     let message: MailMessage;
     try {
       message = this.buildMessage();
@@ -129,7 +138,7 @@ class MailBuilder<N extends EmailTemplateName | undefined = undefined> {
 
     try {
       const job = await mailQueue.add(
-        "send",
+        "send" as any,
         { message },
         {
           attempts: config("mail.queue.attempts"),
@@ -139,7 +148,7 @@ class MailBuilder<N extends EmailTemplateName | undefined = undefined> {
           },
           removeOnComplete: true,
           removeOnFail: false,
-        }
+        },
       );
 
       return { ok: true, jobId: String(job.id) };

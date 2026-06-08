@@ -1,12 +1,12 @@
 import "dotenv/config";
 
-import "@/monitoring/tracing";
+import type { MailQueuePayload } from "@/app/queues/mail.queue";
+import { sendMailMessage } from "@/core/mail";
 import { logger } from "@/lib/logger";
+import "@/monitoring/tracing";
 import { config } from "@/utils/config";
-import { sendMailMessage } from "@/app/services/mail";
 import { Worker } from "bullmq";
 import Redis from "ioredis";
-import type { MailQueuePayload } from "@/queues/mail.queue";
 
 function createBullConnection() {
   return new Redis({
@@ -14,7 +14,6 @@ function createBullConnection() {
     port: config("database.redis.port"),
     username: config("database.redis.username"),
     password: config("database.redis.password") || undefined,
-    keyPrefix: config("database.redis.prefix"),
     maxRetriesPerRequest: null,
     enableOfflineQueue: false,
     lazyConnect: false,

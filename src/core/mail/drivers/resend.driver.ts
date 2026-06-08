@@ -1,5 +1,5 @@
-import type { MailDriver } from "@/app/services/mail/contracts/mail-driver";
-import type { MailMessage, MailSendResult } from "@/app/services/mail/mail.types";
+import type { MailDriver } from "@/core/mail/contracts/mail-driver";
+import type { MailMessage, MailSendResult } from "@/core/mail/mail.types";
 import { logger } from "@/lib/logger";
 import { config } from "@/utils/config";
 import { Resend } from "resend";
@@ -20,7 +20,7 @@ export class ResendDriver implements MailDriver {
   async send(message: MailMessage): Promise<MailSendResult> {
     if (!this.client) {
       const error = new Error(
-        "[MAIL][resend] RESEND_API_KEY is missing; cannot send with resend driver"
+        "[MAIL][resend] RESEND_API_KEY is missing; cannot send with resend driver",
       );
       logger.error({ error }, "[MAIL][resend] send failed");
       return { ok: false, error };
@@ -31,7 +31,9 @@ export class ResendDriver implements MailDriver {
         from: message.from.name
           ? `"${message.from.name}" <${message.from.address}>`
           : message.from.address,
-        to: message.to.map((t) => (t.name ? `"${t.name}" <${t.address}>` : t.address)),
+        to: message.to.map((t) =>
+          t.name ? `"${t.name}" <${t.address}>` : t.address,
+        ),
         subject: message.subject,
         html: message.html,
         text: message.text,
@@ -65,4 +67,3 @@ export class ResendDriver implements MailDriver {
     }
   }
 }
-

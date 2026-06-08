@@ -25,4 +25,13 @@ export default {
       `${defaultRedirectOrigin}/reset-password`
     ),
   },
+  social: {
+    google: {
+      clientId: env("GOOGLE_CLIENT_ID").required(),
+      clientSecret: env("GOOGLE_CLIENT_SECRET").required(),
+      callbackUrl: env("GOOGLE_CALLBACK_URL").required(),
+      frontendCallbackUrl: env("FRONTEND_GOOGLE_CALLBACK_URL").required(),
+      frontendOrigin: env("FRONTEND_ORIGIN").string("http://localhost:5173"),
+    },
+  },
 };

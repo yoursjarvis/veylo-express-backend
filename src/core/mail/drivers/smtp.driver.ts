@@ -1,5 +1,5 @@
-import type { MailDriver } from "@/app/services/mail/contracts/mail-driver";
-import type { MailMessage, MailSendResult } from "@/app/services/mail/mail.types";
+import type { MailDriver } from "@/core/mail/contracts/mail-driver";
+import type { MailMessage, MailSendResult } from "@/core/mail/mail.types";
 import { logger } from "@/lib/logger";
 import { config } from "@/utils/config";
 import nodemailer from "nodemailer";
@@ -37,11 +37,20 @@ export class SmtpDriver implements MailDriver {
 
   async send(message: MailMessage): Promise<MailSendResult> {
     try {
+      logger.info(
+        {
+          to: message.to.map((t: any) => t.address),
+          subject: message.subject,
+        },
+        "[MAIL][smtp] sending email",
+      );
       const info = await this.transporter.sendMail({
         from: message.from.name
           ? `"${message.from.name}" <${message.from.address}>`
           : message.from.address,
-        to: message.to.map((t) => (t.name ? `"${t.name}" <${t.address}>` : t.address)),
+        to: message.to.map((t) =>
+          t.name ? `"${t.name}" <${t.address}>` : t.address,
+        ),
         replyTo: message.replyTo
           ? message.replyTo.name
             ? `"${message.replyTo.name}" <${message.replyTo.address}>`
@@ -64,4 +73,3 @@ export class SmtpDriver implements MailDriver {
     }
   }
 }
-

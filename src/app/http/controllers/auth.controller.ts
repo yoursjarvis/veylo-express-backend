@@ -6,7 +6,7 @@ import {
   resetPasswordSchema,
   signUpSchema,
   verifyEmailQuerySchema,
-} from "@/app/http/validators/auth.validation";
+} from "@/app/http/validators/auth.validator";
 import { authService } from "@/app/services/auth.service";
 import { config } from "@/utils/config";
 import { ok } from "@/utils/http-response";

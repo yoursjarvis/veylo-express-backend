@@ -1,7 +1,8 @@
 import "dotenv/config";
 
-import "@/monitoring/tracing";
 import app from "@/app";
+import "@/app/workers/index";
+import "@/monitoring/tracing";
 import { config } from "@/utils/config";
 
 const PORT = config("app.port");
