@@ -1,6 +1,7 @@
 
 import { config } from "@/utils/config";
 import { Queue } from "bullmq";
+import { BullMQOtel } from "bullmq-otel";
 
 export type MediaQueuePayload = {
   mediaId: string;
@@ -14,4 +15,6 @@ export const mediaQueue = new Queue<MediaQueuePayload>("media", {
     password: config("database.redis.password") || undefined,
     maxRetriesPerRequest: null,
   },
+  telemetry: new BullMQOtel(),
 });
+

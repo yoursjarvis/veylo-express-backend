@@ -29,9 +29,12 @@ export default {
     google: {
       clientId: env("GOOGLE_CLIENT_ID").required(),
       clientSecret: env("GOOGLE_CLIENT_SECRET").required(),
-      callbackUrl: env("GOOGLE_CALLBACK_URL").required(),
-      frontendCallbackUrl: env("FRONTEND_GOOGLE_CALLBACK_URL").required(),
-      frontendOrigin: env("FRONTEND_ORIGIN").string("http://localhost:5173"),
+      redirectURL: env("GOOGLE_REDIRECT_URL").url(env("APP_URL").string("http://localhost:4000")),
+    },
+    github: {
+      clientId: env("GITHUB_CLIENT_ID").required(),
+      clientSecret: env("GITHUB_CLIENT_SECRET").required(),
     },
   },
 };
+

@@ -1,10 +1,12 @@
 import { healthController } from "@/app/http/controllers/health.controller";
 import { metricsMiddleware } from "@/app/http/middlewares/metrics.middleware";
 import { requestIdMiddleware } from "@/app/http/middlewares/request-id.middleware";
+import { auth } from "@/lib/auth/auth";
 import { logger } from "@/lib/logger";
 import { register } from "@/monitoring/metrics";
 import { routes } from "@/routes";
 import { config } from "@/utils/config";
+import { toNodeHandler } from "better-auth/node";
 import cors from "cors";
 import express, { type Request, type Response } from "express";
 import helmet from "helmet";
@@ -46,7 +48,12 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(metricsMiddleware);
 
+// Main API Routes
 app.use(routes);
+
+// Better Auth handler (catches what routes doesn't, like social callbacks)
+app.use("/api/v1/auth", toNodeHandler(auth));
+
 
 app.get("/healthz", healthController.healthz);
 app.get("/readyz", healthController.readyz);

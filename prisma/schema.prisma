@@ -29,8 +29,13 @@ model User {
   updatedAt           DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
   createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
 
-  sessions Session[]
-  accounts Account[]
+  twoFactorEnabled    Boolean?  @map("two_factor_enabled")
+
+  sessions            Session[]
+  accounts            Account[]
+  members             Member[]
+  invitations         Invitation[]
+  twoFactors          TwoFactor[]
 
   @@index([email], map: "idx_users_email")
   @@index([isActive], map: "idx_users_is_active")
@@ -40,21 +45,22 @@ model User {
 }
 
 model Session {
-  id           String    @id @default(uuid(7)) @db.Uuid
-  userId       String    @map("user_id") @db.Uuid
-  token        String    @unique @map("token")
-  expiresAt    DateTime  @map("expires_at")
-  ipAddress    String?   @map("ip_address")
-  userAgent    String?   @map("user_agent")
-  deviceName   String?   @map("device_name")
-  browser      String?   @map("browser")
-  os           String?   @map("os")
-  country      String?   @map("country")
-  location     String?   @map("location")
-  lastActiveAt DateTime? @map("last_active_at")
-  revokedAt    DateTime? @map("revoked_at")
-  updatedAt    DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
-  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  id             String    @id @default(uuid(7)) @db.Uuid
+  userId         String    @map("user_id") @db.Uuid
+  token          String    @unique @map("token")
+  expiresAt      DateTime  @map("expires_at")
+  ipAddress      String?   @map("ip_address")
+  userAgent      String?   @map("user_agent")
+  deviceName     String?   @map("device_name")
+  browser        String?   @map("browser")
+  os             String?   @map("os")
+  country        String?   @map("country")
+  location       String?   @map("location")
+  lastActiveAt   DateTime? @map("last_active_at")
+  revokedAt      DateTime? @map("revoked_at")
+  activeOrganizationId String? @map("active_organization_id")
+  updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -100,3 +106,79 @@ model Verification {
   @@index([expiresAt], map: "idx_verifications_expires_at")
   @@map("verifications")
 }
+
+model Organization {
+  id          String       @id @default(uuid(7)) @db.Uuid
+  name        String
+  slug        String?      @unique
+  logo        String?
+  createdAt   DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  metadata    Json?
+  members     Member[]
+  invitations Invitation[]
+
+  @@map("organizations")
+}
+
+model Member {
+  id             String   @id @default(uuid(7)) @db.Uuid
+  organizationId String   @map("organization_id") @db.Uuid
+  userId         String   @map("user_id") @db.Uuid
+  role           String
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("members")
+}
+
+model Invitation {
+  id             String   @id @default(uuid(7)) @db.Uuid
+  organizationId String   @map("organization_id") @db.Uuid
+  email          String
+  role           String?
+  status         String
+  expiresAt      DateTime @map("expires_at") @db.Timestamptz(6)
+  inviterId      String   @map("inviter_id") @db.Uuid
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [inviterId], references: [id], onDelete: Cascade)
+
+  @@map("invitations")
+}
+
+model Media {
+  id                   String   @id @default(uuid(7)) @db.Uuid
+  modelType            String   @map("model_type")
+  modelId              String   @map("model_id") @db.Uuid
+  collectionName       String   @map("collection_name")
+  name                 String
+  fileName             String   @map("file_name")
+  mimeType             String?  @map("mime_type")
+  disk                 String
+  conversionsDisk      String?  @map("conversions_disk")
+  size                 Int
+  manipulations        Json?
+  customProperties     Json?    @map("custom_properties")
+  generatedConversions Json?    @map("generated_conversions")
+  responsiveImages     Json?    @map("responsive_images")
+  orderColumn          Int?     @map("order_column")
+  createdAt            DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt            DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([modelType, modelId])
+  @@map("media")
+}
+
+model TwoFactor {
+  id          String @id @default(uuid(7)) @db.Uuid
+  secret      String
+  backupCodes String @map("backup_codes")
+  userId      String @map("user_id") @db.Uuid
+  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  verified    Boolean
+
+  @@map("two_factors")
+}
+

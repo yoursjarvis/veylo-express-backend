@@ -1,10 +1,12 @@
+import { mailService } from "@/core/mail";
 import prisma from "@/lib/prisma";
 import { redis } from "@/lib/redis";
 import { config } from "@/utils/config";
-import { mailService } from "@/app/services/mail";
+
 import { logger } from "@/lib/logger";
 import { betterAuth, type SecondaryStorage } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
+import { lastLoginMethod, organization, twoFactor } from "better-auth/plugins";
 
 function resolveTrustedOrigins(): string[] {
   const origins = config("app.origins");
@@ -12,8 +14,6 @@ function resolveTrustedOrigins(): string[] {
 }
 
 function buildSecondaryStorage(): SecondaryStorage | undefined {
-  // When Redis isn't reachable (local dev without Redis), Better Auth still works
-  // using DB-backed sessions. Secondary storage is an optional scalability layer.
   if (!config("auth.betterAuth.secondaryStorageEnabled")) return undefined;
 
   return {
@@ -35,9 +35,10 @@ function buildSecondaryStorage(): SecondaryStorage | undefined {
 
 export const auth = betterAuth({
   appName: config("app.name"),
-  // Security best practice: do not rely on request-inferred origins.
   baseURL: config("auth.betterAuth.url"),
+  basePath: "/api/v1/auth",
   secret: config("auth.betterAuth.secret"),
+
   trustedOrigins: resolveTrustedOrigins(),
   database: prismaAdapter(prisma, {
     provider: "postgresql",
@@ -46,7 +47,6 @@ export const auth = betterAuth({
   advanced: {
     useSecureCookies: config("app.env") === "production",
     database: {
-      // Keep auth-generated ids aligned with the Prisma schema's UUID primary keys.
       generateId: "uuid",
     },
   },
@@ -54,7 +54,6 @@ export const auth = betterAuth({
     additionalFields: {
       firstName: { type: "string", required: true },
       lastName: { type: "string", required: true },
-      // Enterprise fields (server-controlled)
       isActive: { type: "boolean", required: false, defaultValue: true, input: false },
       lastLoginAt: { type: "date", required: false, input: false },
       passwordChangedAt: { type: "date", required: false, input: false },
@@ -63,13 +62,35 @@ export const auth = betterAuth({
       deletedAt: { type: "date", required: false, input: false },
     },
   },
+  databaseHooks: {
+    user: {
+      create: {
+        after: async (user) => {
+          if (user.emailVerified) {
+            try {
+              const firstName =
+                typeof (user as { firstName?: unknown }).firstName === "string"
+                  ? (user as { firstName?: string }).firstName
+                  : undefined;
+
+              void mailService
+                .to(user.email, user.name ?? undefined)
+                .view("welcome", { firstName })
+                .queue();
+            } catch (error) {
+              logger.error({ error, userId: user.id }, "[AUTH][welcome] enqueue failed for verified signup");
+            }
+          }
+        },
+      },
+    },
+  },
   session: {
-    // 7 days; refreshed at most once per day by default behavior
     expiresIn: 60 * 60 * 24 * 7,
     updateAge: 60 * 60 * 24,
     cookieCache: {
       enabled: true,
-      maxAge: 60 * 5, // 5 minutes
+      maxAge: 60 * 5,
     },
     additionalFields: {
       deviceName: { type: "string", required: false, input: false },
@@ -81,12 +102,39 @@ export const auth = betterAuth({
       revokedAt: { type: "date", required: false, input: false },
     },
   },
+  socialProviders: {
+    google: {
+      clientId: config("auth.social.google.clientId"),
+      clientSecret: config("auth.social.google.clientSecret"),
+      mapProfileToUser: (profile: any) => {
+        return {
+          name: profile.name,
+          email: profile.email,
+          image: profile.picture,
+          firstName: profile.given_name || profile.name?.split(" ")[0] || "User",
+          lastName: profile.family_name || profile.name?.split(" ").slice(1).join(" ") || "Name",
+        };
+      },
+    },
+    github: {
+      clientId: config("auth.social.github.clientId"),
+      clientSecret: config("auth.social.github.clientSecret"),
+      mapProfileToUser: (profile: any) => {
+        const parts = (profile.name || profile.login || "").split(" ");
+        return {
+          name: profile.name || profile.login,
+          email: profile.email,
+          image: profile.avatar_url,
+          firstName: parts[0] || "User",
+          lastName: parts.slice(1).join(" ") || "Name",
+        };
+      },
+    },
+  },
+
   emailVerification: {
-    // Stub: integrate with your mail/queue provider later.
     sendOnSignUp: true,
     sendVerificationEmail: async ({ user, token }, _request) => {
-      // Avoid awaiting any email operation here to prevent timing attacks.
-
       const verifyUrl = `${config(
         "auth.betterAuth.emailVerificationRedirectURL"
       )}?token=${encodeURIComponent(token)}`;
@@ -108,13 +156,12 @@ export const auth = betterAuth({
   },
   emailAndPassword: {
     enabled: true,
-    // Enforces enumeration-safe signup and blocks session creation until verified.
     requireEmailVerification: true,
     autoSignIn: false,
     minPasswordLength: 12,
     maxPasswordLength: 128,
     revokeSessionsOnPasswordReset: true,
-    resetPasswordTokenExpiresIn: 60 * 30, // 30 minutes
+    resetPasswordTokenExpiresIn: 60 * 30,
     sendResetPassword: async ({ user, url }, _request) => {
       const token = (() => {
         try {
@@ -159,4 +206,17 @@ export const auth = betterAuth({
       }
     },
   },
+  plugins: [
+    lastLoginMethod(),
+    organization({
+      creatorRole: "owner",
+    }),
+    twoFactor({
+      issuer: config("app.name"),
+      allowPasswordless: true,
+    }),
+  ],
 });
+
+
+

@@ -6,21 +6,7 @@ import { logger } from "@/lib/logger";
 import "@/monitoring/tracing";
 import { config } from "@/utils/config";
 import { Worker } from "bullmq";
-import Redis from "ioredis";
-
-function createBullConnection() {
-  return new Redis({
-    host: config("database.redis.host"),
-    port: config("database.redis.port"),
-    username: config("database.redis.username"),
-    password: config("database.redis.password") || undefined,
-    maxRetriesPerRequest: null,
-    enableOfflineQueue: false,
-    lazyConnect: false,
-  });
-}
-
-const connection = createBullConnection();
+import { BullMQOtel } from "bullmq-otel";
 
 const worker = new Worker<MailQueuePayload>(
   config("mail.queue.name"),
@@ -30,11 +16,19 @@ const worker = new Worker<MailQueuePayload>(
     return result;
   },
   {
-    connection,
+    connection: {
+      host: config("database.redis.host"),
+      port: config("database.redis.port"),
+      username: config("database.redis.username"),
+      password: config("database.redis.password") || undefined,
+      maxRetriesPerRequest: null,
+    },
     prefix: config("mail.queue.prefix"),
     concurrency: 5,
+    telemetry: new BullMQOtel(),
   }
 );
+
 
 worker.on("completed", (job) => {
   logger.info({ jobId: job.id }, "[MAIL][worker] job completed");
@@ -54,13 +48,9 @@ async function shutdown(signal: string) {
   } catch (error) {
     logger.error({ error }, "[MAIL][worker] close failed");
   }
-  try {
-    await connection.quit();
-  } catch (error) {
-    logger.error({ error }, "[MAIL][worker] redis quit failed");
-  }
   process.exit(0);
 }
+
 
 process.on("SIGINT", () => void shutdown("SIGINT"));
 process.on("SIGTERM", () => void shutdown("SIGTERM"));

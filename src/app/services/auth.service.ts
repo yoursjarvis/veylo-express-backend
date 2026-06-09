@@ -1,5 +1,6 @@
 import { authRepository } from "@/app/repositories/auth.repository";
-import { mailService } from "@/app/services/mail";
+import { mailService } from "@/core/mail";
+
 import { auth } from "@/lib/auth/auth";
 import { betterAuthHeaders } from "@/lib/auth/node-headers";
 import { forwardSetCookie } from "@/lib/auth/set-cookie";
@@ -25,7 +26,7 @@ export const authService = {
     const headers = betterAuthHeaders(req);
     const callbackURL = config("auth.betterAuth.emailVerificationRedirectURL");
 
-    const result = await auth.api.signUpEmail({
+    const result = await (auth.api.signUpEmail as any)({
       headers,
       returnHeaders: true,
       body: {
@@ -38,16 +39,8 @@ export const authService = {
       },
     });
 
-    forwardSetCookie(res, result.headers);
 
-    try {
-      void mailService
-        .to(input.email, `${input.firstName} ${input.lastName}`.trim() || undefined)
-        .view("welcome", { firstName: input.firstName })
-        .queue();
-    } catch (error) {
-      logger.error({ error }, "[AUTH][welcome] enqueue failed");
-    }
+    forwardSetCookie(res, result.headers);
 
     return result.response;
   },
@@ -156,6 +149,17 @@ export const authService = {
       returnHeaders: true,
     });
     forwardSetCookie(res, result.headers);
+
+    if (result.response?.user) {
+      const account = await prisma.account.findFirst({
+        where: {
+          userId: result.response.user.id,
+          providerId: "credential",
+        },
+      });
+      (result.response.user as any).hasPassword = !!account;
+    }
+
     return result.response;
   },
 
@@ -189,11 +193,32 @@ export const authService = {
   },
 
   async verifyEmail(req: Request, res: Response, token: string) {
+    const verification = await prisma.verification.findFirst({
+      where: { value: token },
+    });
+
     const result = await auth.api.verifyEmail({
       query: { token },
       returnHeaders: true,
     });
     forwardSetCookie(res, result.headers);
+
+    if (verification && (result.response as any)?.status !== false) {
+      const user = await prisma.user.findUnique({
+        where: { email: verification.identifier },
+      });
+      if (user) {
+        try {
+          void mailService
+            .to(user.email, user.name || undefined)
+            .view("welcome", { firstName: (user as any).firstName })
+            .queue();
+        } catch (error) {
+          logger.error({ error, userId: user.id }, "[AUTH][welcome] enqueue failed after verification");
+        }
+      }
+    }
+
     return result.response;
   },
 
@@ -251,5 +276,89 @@ export const authService = {
         body: { token: dbSession.token },
       });
     }
+  },
+
+  async updateUser(
+    req: Request,
+    res: Response,
+    input: { firstName?: string; lastName?: string; name?: string; image?: string }
+  ) {
+    const headers = betterAuthHeaders(req);
+    const result = await auth.api.updateUser({
+      headers,
+      returnHeaders: true,
+      body: input,
+    });
+    forwardSetCookie(res, result.headers);
+    return result.response;
+  },
+
+  async sendTwoFactorOtp(req: Request) {
+    const headers = betterAuthHeaders(req);
+    const session = await auth.api.getSession({ headers });
+    if (!session?.user) throw new UnauthorizedException();
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const identifier = `2fa-enable:${session.user.id}`;
+
+    // Cleanup any existing OTPs for this user
+    await prisma.verification.deleteMany({
+      where: { identifier },
+    });
+
+    await prisma.verification.create({
+      data: {
+        identifier,
+        value: otp,
+        expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
+      },
+    });
+
+    try {
+      void mailService
+        .to(session.user.email, session.user.name ?? undefined)
+        .view("two-factor-otp", { otp, firstName: (session.user as any).firstName })
+        .queue();
+    } catch (error) {
+      logger.error({ error }, "[AUTH][two-factor-otp] enqueue failed");
+    }
+  },
+
+  async enableTwoFactorSocial(req: Request, res: Response, input: { otp: string }) {
+    const headers = betterAuthHeaders(req);
+    const session = await auth.api.getSession({ headers });
+    if (!session?.user) throw new UnauthorizedException();
+
+    const identifier = `2fa-enable:${session.user.id}`;
+    const otp = input.otp.trim();
+
+    const verification = await prisma.verification.findFirst({
+      where: {
+        identifier,
+        value: otp,
+        expiresAt: { gt: new Date() },
+      },
+    });
+
+    if (!verification) {
+      throw new UnauthorizedException("Invalid or expired OTP");
+    }
+
+    await prisma.verification.delete({ where: { id: verification.id } });
+
+    // Enable 2FA.
+    const result = await (auth.api.enableTwoFactor as any)({
+      headers,
+      body: {
+        password: "", // Passing empty string as allowPasswordless expects it if body is validated
+      },
+    });
+
+    if (result.data) {
+      return result;
+    }
+
+    // Fallback if Better Auth didn't return data directly in result.data (unlikely but safe)
+    return result;
   },
 };

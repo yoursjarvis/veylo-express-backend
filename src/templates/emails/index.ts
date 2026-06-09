@@ -4,11 +4,14 @@ import { resetPasswordSuccessEmail, type ResetPasswordSuccessEmailData } from ".
 import { verifyEmailEmail, type VerifyEmailData } from "./verify-email";
 import { welcomeEmail, type WelcomeEmailData } from "./welcome";
 
+import { twoFactorOtpEmail, type TwoFactorOtpData } from "./two-factor-otp";
+
 export type EmailTemplateMap = {
   welcome: WelcomeEmailData;
   "forgot-password": ForgotPasswordEmailData;
   "reset-password-success": ResetPasswordSuccessEmailData;
   "verify-email": VerifyEmailData;
+  "two-factor-otp": TwoFactorOtpData;
 };
 
 export type EmailTemplateName = keyof EmailTemplateMap;
@@ -39,6 +42,8 @@ export function renderEmail<N extends EmailTemplateName>(
       });
     case "verify-email":
       return verifyEmailEmail({ ...(data as VerifyEmailData), appName });
+    case "two-factor-otp":
+      return twoFactorOtpEmail({ ...(data as TwoFactorOtpData), appName });
     default: {
       const exhaustive: never = name;
       throw new Error(`[MAIL] Unknown template: ${String(exhaustive)}`);

@@ -127,5 +127,23 @@ export const authController = {
     await authService.revokeSession(req, sessionId);
     return ok(res, "Session revoked");
   }),
+
+  updateUser: asyncHandler(async (req: Request, res: Response) => {
+    // Basic validation could be added here or in a validator
+    const data = await authService.updateUser(req, res, req.body);
+    return ok(res, "User updated successfully", data);
+  }),
+
+  sendTwoFactorOtp: asyncHandler(async (req: Request, res: Response) => {
+    await authService.sendTwoFactorOtp(req);
+    return ok(res, "OTP sent successfully");
+  }),
+
+  enableTwoFactorSocial: asyncHandler(async (req: Request, res: Response) => {
+    const otp = req.body.otp as string;
+    if (!otp) throw new Error("OTP is required");
+    const data = await authService.enableTwoFactorSocial(req, res, { otp });
+    return ok(res, "2FA initiated successfully", data);
+  }),
 };
 

@@ -62,5 +62,10 @@ authRoutes.post("/change-password", requireAuth, authController.changePassword);
 authRoutes.get("/sessions", requireAuth, authController.sessions);
 authRoutes.delete("/sessions/:id", requireAuth, authController.revokeSession);
 
+authRoutes.post("/update-user", requireAuth, authController.updateUser);
+
 authRoutes.get("/verify-email", authController.verifyEmail);
+
+authRoutes.post("/two-factor/send-otp", requireAuth, authController.sendTwoFactorOtp);
+authRoutes.post("/two-factor/enable-social", requireAuth, authController.enableTwoFactorSocial);
 
