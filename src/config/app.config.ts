@@ -10,5 +10,6 @@ export default {
   port: env("PORT").int(4000),
   url: env("APP_URL").url("http://localhost:4000"),
   rateLimit: env("RATE_LIMIT").float(1.5),
-  origins: env("ALLOWED_ORIGINS").array(",")
+  origins: env("ALLOWED_ORIGINS").array(","),
+  domain: env("APP_DOMAIN").required(),
 };

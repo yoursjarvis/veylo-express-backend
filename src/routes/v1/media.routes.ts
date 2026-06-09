@@ -11,3 +11,11 @@ mediaRoutes.post(
   upload.single("avatar"),
   mediaController.uploadAvatar
 );
+
+mediaRoutes.post(
+  "/org/logo",
+  requireAuth,
+  upload.single("logo"),
+  mediaController.uploadOrgLogo
+);
+

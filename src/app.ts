@@ -9,6 +9,7 @@ import { config } from "@/utils/config";
 import { toNodeHandler } from "better-auth/node";
 import cors from "cors";
 import express, { type Request, type Response } from "express";
+import path from "path";
 import helmet from "helmet";
 import pinoHttp from "pino-http";
 import { errorMiddleware } from "./app/http/middlewares/error-handler.middlware";
@@ -18,7 +19,9 @@ const app = express();
 app.set("trust proxy", 1);
 app.disable("x-powered-by");
 
-app.use(helmet());
+app.use(helmet({
+  crossOriginResourcePolicy: false, // Allow loading images from different origins if needed
+}));
 
 app.use(requestIdMiddleware);
 
@@ -35,7 +38,27 @@ app.use(
       const allowed = config("app.origins");
       if (allowed.includes("*")) return callback(null, true);
       if (!origin) return callback(null, true); // non-browser clients
-      return callback(null, allowed.includes(origin));
+      
+      if (allowed.includes(origin)) return callback(null, true);
+
+      try {
+        const originUrl = new URL(origin);
+        for (const allowedStr of allowed) {
+          if (allowedStr === "*") continue;
+          const allowedUrl = new URL(allowedStr);
+          if (
+            originUrl.protocol === allowedUrl.protocol &&
+            originUrl.port === allowedUrl.port &&
+            (originUrl.hostname === allowedUrl.hostname || originUrl.hostname.endsWith(`.${allowedUrl.hostname}`))
+          ) {
+            return callback(null, true);
+          }
+        }
+      } catch (e) {
+        // Ignore invalid URLs
+      }
+
+      return callback(null, false);
     },
     credentials: config("cors.credentials"),
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
@@ -45,6 +68,10 @@ app.use(
 
 app.use(express.json({ limit: "32kb" }));
 app.use(express.urlencoded({ extended: true }));
+
+// Serve static files from storage directory
+const storageRoot = config("storage.disks.local.root") || "storage/app";
+app.use("/storage", express.static(path.join(process.cwd(), storageRoot)));
 
 app.use(metricsMiddleware);
 

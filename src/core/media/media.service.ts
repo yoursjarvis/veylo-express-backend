@@ -12,8 +12,18 @@ export class MediaService {
     modelType: string,
     modelId: string,
     file: UploadedFile,
-    collectionName: MediaCollection = "default"
+    collectionName: MediaCollection = "default",
+    replace: boolean = false
   ) {
+    if (replace) {
+      const existingMedia = await prisma.media.findMany({
+        where: { modelType, modelId, collectionName },
+      });
+      for (const media of existingMedia) {
+        await this.deleteMedia(media.id);
+      }
+    }
+
     const disk = config("storage.default");
     const id = crypto.randomUUID();
     const fileName = `${id}-${file.originalname}`;
@@ -80,6 +90,19 @@ export class MediaService {
         await fs.unlink(fullPath);
       } catch (error) {
         logger.error({ error, fullPath }, "[MEDIA] Failed to delete file");
+      }
+
+      // Delete conversions
+      const conversions = (media.generatedConversions as Record<string, any>) || {};
+      for (const conversion of Object.values(conversions)) {
+        if (conversion.fileName) {
+          const conversionPath = path.join(process.cwd(), root, media.modelType, media.collectionName, "conversions", conversion.fileName);
+          try {
+            await fs.unlink(conversionPath);
+          } catch (error) {
+            // Ignore if conversion doesn't exist
+          }
+        }
       }
     }
 

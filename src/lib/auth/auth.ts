@@ -10,7 +10,23 @@ import { lastLoginMethod, organization, twoFactor } from "better-auth/plugins";
 
 function resolveTrustedOrigins(): string[] {
   const origins = config("app.origins");
-  return origins.length > 0 ? origins : [new URL(config("app.url")).origin];
+  const trusted = [...origins];
+
+  for (const origin of origins) {
+    try {
+      const url = new URL(origin);
+      // Add wildcard for subdomains (e.g., http://*.veylo.local:3000)
+      trusted.push(`${url.protocol}//*.${url.hostname}${url.port ? `:${url.port}` : ""}`);
+    } catch {
+      // ignore invalid origins
+    }
+  }
+
+  if (trusted.length === 0) {
+    trusted.push(new URL(config("app.url")).origin);
+  }
+
+  return trusted;
 }
 
 function buildSecondaryStorage(): SecondaryStorage | undefined {
@@ -46,6 +62,10 @@ export const auth = betterAuth({
   secondaryStorage: buildSecondaryStorage(),
   advanced: {
     useSecureCookies: config("app.env") === "production",
+    crossSubDomainCookies: {
+      enabled: true,
+      domain: config("app.domain"),
+    },
     database: {
       generateId: "uuid",
     },
@@ -65,6 +85,26 @@ export const auth = betterAuth({
   databaseHooks: {
     user: {
       create: {
+        before: async (user) => {
+          // Check if the user is being invited
+          const invitation = await prisma.invitation.findFirst({
+            where: {
+              email: user.email,
+              status: "pending",
+            },
+          });
+
+          if (invitation) {
+            return {
+              data: {
+                ...user,
+                emailVerified: true,
+              },
+            };
+          }
+
+          return { data: user };
+        },
         after: async (user) => {
           if (user.emailVerified) {
             try {
@@ -135,9 +175,11 @@ export const auth = betterAuth({
   emailVerification: {
     sendOnSignUp: true,
     sendVerificationEmail: async ({ user, token }, _request) => {
-      const verifyUrl = `${config(
-        "auth.betterAuth.emailVerificationRedirectURL"
-      )}?token=${encodeURIComponent(token)}`;
+      const origin = _request?.headers.get("origin") || 
+                    (_request?.headers.get("referer") ? new URL(_request.headers.get("referer")!).origin : null) || 
+                    config("auth.betterAuth.emailVerificationRedirectURL").replace(/\/verify-email$/, "");
+
+      const verifyUrl = `${origin}/verify-email?token=${encodeURIComponent(token)}`;
 
       try {
         const firstName =
@@ -158,7 +200,7 @@ export const auth = betterAuth({
     enabled: true,
     requireEmailVerification: true,
     autoSignIn: false,
-    minPasswordLength: 12,
+    minPasswordLength: 6,
     maxPasswordLength: 128,
     revokeSessionsOnPasswordReset: true,
     resetPasswordTokenExpiresIn: 60 * 30,
@@ -171,10 +213,13 @@ export const auth = betterAuth({
         }
       })();
 
-      const redirectBase = config("auth.betterAuth.resetPasswordRedirectURL");
+      const origin = _request?.headers.get("origin") || 
+                    (_request?.headers.get("referer") ? new URL(_request.headers.get("referer")!).origin : null) || 
+                    config("auth.betterAuth.resetPasswordRedirectURL").replace(/\/reset-password$/, "");
+
       const resetUrl = token
-        ? `${redirectBase}?token=${encodeURIComponent(token)}`
-        : redirectBase;
+        ? `${origin}/reset-password?token=${encodeURIComponent(token)}`
+        : `${origin}/reset-password`;
 
       try {
         const firstName =
@@ -210,6 +255,26 @@ export const auth = betterAuth({
     lastLoginMethod(),
     organization({
       creatorRole: "owner",
+      sendInvitationEmail: async (data, request) => {
+        const origin = request?.headers.get("origin") || 
+                      (request?.headers.get("referer") ? new URL(request.headers.get("referer")!).origin : null) || 
+                      config("app.origins")[0];
+        
+        const inviteUrl = `${origin}/accept-invite?id=${data.id}`;
+        try {
+          // You might want to create a specific email template for this later
+          void mailService
+            .to(data.email)
+            .view("invite", { 
+              inviteUrl, 
+              organizationName: data.organization.name,
+              role: data.role
+            })
+            .queue();
+        } catch (error) {
+          logger.error({ error, email: data.email }, "[AUTH][invite] enqueue failed");
+        }
+      }
     }),
     twoFactor({
       issuer: config("app.name"),
