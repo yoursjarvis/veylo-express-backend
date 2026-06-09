@@ -26,6 +26,13 @@ model User {
   failedLoginAttempts Int       @default(0) @map("failed_login_attempts")
   lockedUntil         DateTime? @map("locked_until")
   deletedAt           DateTime? @map("deleted_at")
+  
+  // Admin Plugin Fields
+  role                String?   @default("user") @map("role")
+  banned              Boolean?  @default(false) @map("banned")
+  banReason           String?   @map("ban_reason")
+  banExpires          DateTime? @map("ban_expires")
+  
   updatedAt           DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
   createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
 
@@ -59,6 +66,7 @@ model Session {
   lastActiveAt         DateTime? @map("last_active_at")
   revokedAt            DateTime? @map("revoked_at")
   activeOrganizationId String?   @map("active_organization_id")
+  impersonatedBy       String?   @map("impersonated_by")
   updatedAt            DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
   createdAt            DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
 
@@ -140,7 +148,7 @@ model Workspace {
   slug           String   @unique
   organizationId String   @map("organization_id") @db.Uuid
   createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  updatedAt      DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
@@ -155,6 +163,8 @@ model Invitation {
   status         String
   expiresAt      DateTime @map("expires_at") @db.Timestamptz(6)
   inviterId      String   @map("inviter_id") @db.Uuid
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   user         User         @relation(fields: [inviterId], references: [id], onDelete: Cascade)

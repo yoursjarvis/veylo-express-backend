@@ -6,7 +6,8 @@ import { config } from "@/utils/config";
 import { logger } from "@/lib/logger";
 import { betterAuth, type SecondaryStorage } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
-import { lastLoginMethod, organization, twoFactor } from "better-auth/plugins";
+import { lastLoginMethod, organization, twoFactor, admin } from "better-auth/plugins";
+import { ac, roles } from "./permissions";
 
 function resolveTrustedOrigins(): string[] {
   const origins = config("app.origins");
@@ -120,6 +121,32 @@ export const auth = betterAuth({
             } catch (error) {
               logger.error({ error, userId: user.id }, "[AUTH][welcome] enqueue failed for verified signup");
             }
+          }
+
+          // Auto-accept pending invitations
+          try {
+            const invitations = await prisma.invitation.findMany({
+              where: { email: user.email, status: "pending" },
+            });
+
+            for (const inv of invitations) {
+              // Create the member record
+              await prisma.member.create({
+                data: {
+                  organizationId: inv.organizationId,
+                  userId: user.id,
+                  role: inv.role || "member",
+                },
+              });
+
+              // Mark invitation as accepted
+              await prisma.invitation.update({
+                where: { id: inv.id },
+                data: { status: "accepted" },
+              });
+            }
+          } catch (error) {
+            logger.error({ error, userId: user.id }, "[AUTH][invite] auto-accept failed");
           }
         },
       },
@@ -253,21 +280,29 @@ export const auth = betterAuth({
   },
   plugins: [
     lastLoginMethod(),
+    admin(),
     organization({
+      ac: ac,
+      roles: roles,
       creatorRole: "owner",
-      sendInvitationEmail: async (data, request) => {
-        const origin = request?.headers.get("origin") || 
-                      (request?.headers.get("referer") ? new URL(request.headers.get("referer")!).origin : null) || 
-                      config("app.origins")[0];
+      sendInvitationEmail: async (data) => {
+        const organization = await prisma.organization.findUnique({
+          where: { id: data.organization.id },
+          select: { slug: true, name: true },
+        });
+
+        const frontendUrl = new URL(config("app.frontendUrl"));
+        if (organization?.slug) {
+          frontendUrl.hostname = `${organization.slug}.${frontendUrl.hostname}`;
+        }
         
-        const inviteUrl = `${origin}/accept-invite?id=${data.id}`;
+        const inviteUrl = `${frontendUrl.origin}/accept-invite?id=${data.id}`;
         try {
-          // You might want to create a specific email template for this later
           void mailService
             .to(data.email)
             .view("invite", { 
               inviteUrl, 
-              organizationName: data.organization.name,
+              organizationName: organization?.name || data.organization.name,
               role: data.role
             })
             .queue();

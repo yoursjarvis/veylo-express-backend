@@ -39,8 +39,25 @@ export const authService = {
       },
     });
 
-
     forwardSetCookie(res, result.headers);
+
+    // Auto-login if the user was invited (email verified via hook)
+    if (result.response?.user?.emailVerified) {
+       try {
+         const loginResult = await auth.api.signInEmail({
+            headers,
+            returnHeaders: true,
+            body: {
+               email: input.email,
+               password: input.password,
+            }
+         });
+         forwardSetCookie(res, loginResult.headers);
+         return loginResult.response;
+       } catch (error) {
+          logger.error({ error, email: input.email }, "[AUTH][signup] auto-login failed");
+       }
+    }
 
     return result.response;
   },

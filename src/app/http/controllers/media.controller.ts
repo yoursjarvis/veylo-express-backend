@@ -35,7 +35,7 @@ export const mediaController = {
 
     // Update user image in database
     await prisma.user.update({
-      where: { id: user.id },
+      where: { id: user.id as string },
       data: { image: url },
     });
 
@@ -70,7 +70,7 @@ export const mediaController = {
     const member = await prisma.member.findFirst({
       where: {
         organizationId: activeOrgId,
-        userId: user.id,
+        userId: user.id as string,
         role: { in: ["owner", "admin"] }
       }
     });

@@ -3,6 +3,7 @@ import { forgotPasswordEmail, type ForgotPasswordEmailData } from "./forgot-pass
 import { resetPasswordSuccessEmail, type ResetPasswordSuccessEmailData } from "./reset-password-success";
 import { verifyEmailEmail, type VerifyEmailData } from "./verify-email";
 import { welcomeEmail, type WelcomeEmailData } from "./welcome";
+import { inviteEmail, type InviteEmailData } from "./invite";
 
 import { twoFactorOtpEmail, type TwoFactorOtpData } from "./two-factor-otp";
 
@@ -12,6 +13,7 @@ export type EmailTemplateMap = {
   "reset-password-success": ResetPasswordSuccessEmailData;
   "verify-email": VerifyEmailData;
   "two-factor-otp": TwoFactorOtpData;
+  "invite": InviteEmailData;
 };
 
 export type EmailTemplateName = keyof EmailTemplateMap;
@@ -36,17 +38,14 @@ export function renderEmail<N extends EmailTemplateName>(
     case "forgot-password":
       return forgotPasswordEmail({ ...(data as ForgotPasswordEmailData), appName });
     case "reset-password-success":
-      return resetPasswordSuccessEmail({
-        ...(data as ResetPasswordSuccessEmailData),
-        appName,
-      });
+      return resetPasswordSuccessEmail({ ...(data as ResetPasswordSuccessEmailData), appName });
     case "verify-email":
       return verifyEmailEmail({ ...(data as VerifyEmailData), appName });
     case "two-factor-otp":
       return twoFactorOtpEmail({ ...(data as TwoFactorOtpData), appName });
-    default: {
-      const exhaustive: never = name;
-      throw new Error(`[MAIL] Unknown template: ${String(exhaustive)}`);
-    }
+    case "invite":
+      return inviteEmail(data as InviteEmailData);
+    default:
+      throw new Error(`Template ${name} not found`);
   }
 }
