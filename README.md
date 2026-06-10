@@ -90,6 +90,29 @@ To enable Google and GitHub login, you'll need to create applications in their r
    ```
    The API will be available at `http://veylo.local:4000`.
 
+## Monitoring & Dashboards
+
+The project includes a full observability stack. Use the following links to access the management and visualization tools:
+
+### Web Dashboards
+| Dashboard | URL | Description |
+|-----------|-----|-------------|
+| **Grafana** | [http://localhost:3002](http://localhost:3002) | **Primary UI** for Logs (Loki), Traces (Tempo), and Metrics |
+| **BullMQ Admin** | [http://api.veylo.local:4000/admin/queues](http://api.veylo.local:4000/admin/queues) | Queue management (Jobs, Workers, Retries) |
+| **Prometheus** | [http://localhost:9090](http://localhost:9090) | Direct metrics query and alerting rules |
+| **Redis Insight** | [http://localhost:5540](http://localhost:5540) | GUI for inspecting Redis data and keys |
+
+### Internal Service Endpoints (No Web UI)
+These services do not have a standalone dashboard and are accessed via Grafana:
+- **Tempo (Tracing):** Port `3200` (Internal OTLP/HTTP)
+- **Loki (Logs):** Port `3100` (Internal Log ingestion/query)
+- **OTEL Collector:** Port `8888` (Internal health/metrics)
+
+### Metrics & Tracing Endpoints
+- **API Metrics:** `GET /metrics` (Prometheus format)
+- **OTEL Collector (gRPC):** `localhost:4317`
+- **OTEL Collector (HTTP):** `localhost:4318`
+
 ## REST API
 
 All endpoints respond with:

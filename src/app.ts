@@ -13,6 +13,7 @@ import path from "path";
 import helmet from "helmet";
 import pinoHttp from "pino-http";
 import { errorMiddleware } from "./app/http/middlewares/error-handler.middlware";
+import { bullBoardAdapter } from "./lib/bull-board";
 
 const app = express();
 
@@ -74,6 +75,9 @@ const storageRoot = config("storage.disks.local.root") || "storage/app";
 app.use("/storage", express.static(path.join(process.cwd(), storageRoot)));
 
 app.use(metricsMiddleware);
+
+// BullMQ Admin Dashboard
+app.use("/admin/queues", bullBoardAdapter.getRouter());
 
 // Main API Routes
 app.use(routes);
