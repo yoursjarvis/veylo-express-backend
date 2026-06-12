@@ -19,3 +19,10 @@ mediaRoutes.post(
   mediaController.uploadOrgLogo
 );
 
+mediaRoutes.post(
+  "/workspace/:id/icon",
+  requireAuth,
+  upload.single("icon"),
+  mediaController.uploadWorkspaceIcon
+);
+

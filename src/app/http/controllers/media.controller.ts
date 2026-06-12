@@ -99,5 +99,72 @@ export const mediaController = {
       url,
     });
   }),
+
+  uploadWorkspaceIcon: asyncHandler(async (req: Request, res: Response) => {
+    const workspaceId = req.params.id as string;
+    if (!req.file) {
+      throw new Error("No file uploaded");
+    }
+
+    const user = req.auth?.user;
+    if (!user) {
+      throw new Error("Unauthorized");
+    }
+
+    const session = await auth.api.getSession({
+      headers: betterAuthHeaders(req),
+    });
+    const activeOrgId = session?.session?.activeOrganizationId;
+
+    if (!activeOrgId) {
+       return res.status(400).json({ message: "No active organization found" });
+    }
+
+    const workspaceMember = await prisma.workspaceMember.findFirst({
+      where: {
+        workspaceId,
+        userId: user.id as string,
+        role: "admin",
+        workspace: { organizationId: activeOrgId },
+      },
+    });
+
+    const orgAdmin = await prisma.member.findFirst({
+      where: {
+        organizationId: activeOrgId,
+        userId: user.id as string,
+        role: { in: ["owner", "admin"] }
+      }
+    });
+
+    if (!workspaceMember && !orgAdmin) {
+       return res.status(403).json({ message: "You do not have permission to upload icons for this workspace" });
+    }
+
+    const media = await mediaService.addMedia(
+      "Workspace",
+      workspaceId,
+      {
+        buffer: req.file.buffer,
+        originalname: req.file.originalname,
+        mimetype: req.file.mimetype,
+        size: req.file.size,
+      },
+      "icons",
+      true // Replace existing icon
+    );
+
+    const url = await mediaService.getUrl(media.id);
+
+    await prisma.workspace.update({
+      where: { id: workspaceId },
+      data: { icon: url },
+    });
+
+    return ok(res, "Workspace icon uploaded successfully", {
+      media_id: media.id,
+      url,
+    });
+  }),
 };
 

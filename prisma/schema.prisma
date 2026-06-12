@@ -26,15 +26,15 @@ model User {
   failedLoginAttempts Int       @default(0) @map("failed_login_attempts")
   lockedUntil         DateTime? @map("locked_until")
   deletedAt           DateTime? @map("deleted_at")
-  
+
   // Admin Plugin Fields
-  role                String?   @default("user") @map("role")
-  banned              Boolean?  @default(false) @map("banned")
-  banReason           String?   @map("ban_reason")
-  banExpires          DateTime? @map("ban_expires")
-  
-  updatedAt           DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
-  createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  role       String?   @default("user") @map("role")
+  banned     Boolean?  @default(false) @map("banned")
+  banReason  String?   @map("ban_reason")
+  banExpires DateTime? @map("ban_expires")
+
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
   twoFactorEnabled Boolean? @map("two_factor_enabled")
 
@@ -144,15 +144,17 @@ model Member {
 }
 
 model Workspace {
-  id             String   @id @default(uuid(7)) @db.Uuid
+  id             String    @id @default(uuid(7)) @db.Uuid
   name           String
-  slug           String   @unique
-  organizationId String   @map("organization_id") @db.Uuid
-  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt      DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  slug           String    @unique
+  icon           String?
+  organizationId String    @map("organization_id") @db.Uuid
+  deletedAt      DateTime? @map("deleted_at") @db.Timestamptz(6)
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  organization   Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  members        WorkspaceMember[]
+  organization Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  members      WorkspaceMember[]
 
   @@map("workspaces")
 }
