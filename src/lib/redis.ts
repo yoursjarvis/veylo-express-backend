@@ -11,7 +11,7 @@ const redis =
     keyPrefix: config("database.redis.prefix"),
     lazyConnect: true,
     maxRetriesPerRequest: 2,
-    enableOfflineQueue: false,
+    enableOfflineQueue: true,
   });
 
 redis.on("error", (error) => {

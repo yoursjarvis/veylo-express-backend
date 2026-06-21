@@ -86,12 +86,16 @@ services:
       - redisinsight-data:/data
 
   backend:
+    profiles:
+      - backend
     build: .
     restart: always
     ports:
       - "4000:4000"
+    env_file:
+      - .env
     environment:
-      - NODE_ENV=local
+      - NODE_ENV=development
       - PORT=4000
       - DATABASE_URL=postgresql://postgres:root@postgres:5432/veylo
       - REDIS_HOST=redis

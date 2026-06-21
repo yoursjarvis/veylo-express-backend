@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth/auth";
 import { betterAuthHeaders } from "@/lib/auth/node-headers";
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
+import { redis } from "@/lib/redis";
 import type { Request, Response } from "express";
 import { z } from "zod";
 
@@ -24,6 +25,19 @@ export const orgController = {
     }
 
     const userId = session.user.id;
+
+    // Check if the user and session exist in the primary database (prevents errors from stale cached Redis sessions)
+    const [dbUser, dbSession] = await Promise.all([
+      prisma.user.findUnique({ where: { id: userId } }),
+      prisma.session.findUnique({ where: { id: session.session.id } }),
+    ]);
+
+    if (!dbUser || !dbSession) {
+      return res.status(401).json({ 
+        message: "Unauthorized: Session is stale or invalid in the database. Please log out and log in again." 
+      });
+    }
+
     const validatedData = setupOrgSchema.parse(req.body);
 
     // 1. Check if user already owns an organization
@@ -86,7 +100,7 @@ export const orgController = {
 
         // D. Update Active Organization for Session
         await tx.session.update({
-          where: { token: session.session.token },
+          where: { id: session.session.id },
           data: { activeOrganizationId: org.id }
         });
 
@@ -121,13 +135,28 @@ export const orgController = {
         }
       }
 
+      // Invalidate Redis session cache to force reload from PostgreSQL on the next request
+      try {
+        const token = session.session.token;
+        const userId = session.user.id;
+        await Promise.all([
+          redis.del(token),
+          redis.del(`active-sessions-${userId}`),
+        ]);
+      } catch (redisError) {
+        logger.error({ redisError }, "Failed to invalidate Redis session cache during org setup");
+      }
+
       return res.status(201).json({
         message: "Organization created successfully",
         data: result,
       });
-    } catch (error) {
-      logger.error({ error, userId }, "Failed to setup organization");
-      return res.status(500).json({ message: "Failed to create organization" });
+    } catch (error: any) {
+      logger.error(error, "Failed to setup organization", { userId });
+      return res.status(500).json({ 
+        message: "Failed to create organization",
+        error: error instanceof Error ? error.message : String(error)
+      });
     }
   }),
 };

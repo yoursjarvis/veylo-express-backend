@@ -13,27 +13,40 @@ Production-ready email/password and social (Google, GitHub) authentication using
 ## Prerequisites
 
 - Node.js >= 20
-- pnpm >= 9
-- PostgreSQL
-- Redis (Optional, for secondary storage/rate limiting)
+- npm >= 10 (or pnpm >= 9)
+- Docker + Docker Compose
 
-## Local Host Configuration
+## Local Host Configuration (HTTPS & Multi-tenancy)
 
-To support multi-tenancy and subdomains (e.g., `org1.veylo.local`), you need to update your hosts file.
+To support multi-tenancy, subdomains (e.g., `tenant1.veylo.com`), and Google OAuth, you **must** use local HTTPS with a public TLD like `.com`.
 
-### Linux / macOS
-Add the following to `/etc/hosts`:
+### 1. Install mkcert
+Follow instructions for your OS: [mkcert repository](https://github.com/FiloSottile/mkcert).
+
 ```bash
-127.0.0.1 veylo.local
-127.0.0.1 api.veylo.local
+mkcert -install
+mkdir certs
+mkcert -key-file certs/key.pem -cert-file certs/cert.pem "veylo.com" "*.veylo.com" "localhost"
 ```
 
-### Windows
-Add the following to `C:\Windows\System32\drivers\etc\hosts` (Run Notepad as Administrator):
+### 2. Update Hosts File
+Add the following to `/etc/hosts` (Linux/macOS) or `C:\Windows\System32\drivers\etc\hosts` (Windows):
+
 ```text
-127.0.0.1 veylo.local
-127.0.0.1 api.veylo.local
+127.0.0.1 veylo.com
+127.0.0.1 api.veylo.com
+127.0.0.1 tenant1.veylo.com
 ```
+
+### 3. Environment Variables
+Ensure your `.env` has:
+- `PORT=443`
+- `APP_URL="https://api.veylo.com"`
+- `APP_DOMAIN="veylo.com"`
+- `SSL_KEY_PATH="./certs/key.pem"`
+- `SSL_CRT_PATH="./certs/cert.pem"`
+
+> **Note:** On Linux/macOS, running on port 443 requires `sudo`.
 
 ## Database
 
@@ -49,8 +62,8 @@ Copy `.env.example` to `.env` and fill in the values.
 ### Required Core Variables
 - `DATABASE_URL`: `"postgresql://user:pass@localhost:5432/veylo"`
 - `BETTER_AUTH_SECRET`: Generate using `openssl rand -hex 32`
-- `BETTER_AUTH_URL`: `"http://veylo.local:4000"` (The base URL of your API)
-- `ALLOWED_ORIGINS`: `"http://veylo.local:3000,http://localhost:3000"`
+- `BETTER_AUTH_URL`: `"https://api.veylo.com"` (The base URL of your API)
+- `ALLOWED_ORIGINS`: `"https://veylo.com:3000,http://localhost:3000"`
 
 ### Social Auth (OAuth)
 To enable Google and GitHub login, you'll need to create applications in their respective developer consoles.
@@ -58,37 +71,44 @@ To enable Google and GitHub login, you'll need to create applications in their r
 **Google:**
 - `GOOGLE_CLIENT_ID`: `"your-google-client-id.apps.googleusercontent.com"`
 - `GOOGLE_CLIENT_SECRET`: `"your-google-client-secret"`
-- Callback URL: `http://veylo.local:4000/api/v1/auth/callback/google`
+- Callback URL: `https://api.veylo.com:4000/api/v1/auth/callback/google`
 
 **GitHub:**
 - `GITHUB_CLIENT_ID`: `"your-github-client-id"`
 - `GITHUB_CLIENT_SECRET`: `"your-github-client-secret"`
-- Callback URL: `http://veylo.local:4000/api/v1/auth/callback/github`
+- Callback URL: `https://api.veylo.com:4000/api/v1/auth/callback/github`
 
 ### Optional Variables
 - `AUTH_SECONDARY_STORAGE_ENABLED=true` to enable Redis-backed secondary storage (caching/rate limit hooks)
-- `AUTH_EMAIL_VERIFICATION_REDIRECT`: `"http://veylo.local:3000/verify-email"`
-- `AUTH_RESET_PASSWORD_REDIRECT`: `"http://veylo.local:3000/reset-password"`
+- `AUTH_EMAIL_VERIFICATION_REDIRECT`: `"https://veylo.com:3000/verify-email"`
+- `AUTH_RESET_PASSWORD_REDIRECT`: `"https://veylo.com:3000/reset-password"`
 
 ## Setup & run
 
 1. **Install dependencies:**
    ```bash
-   pnpm i
+   npm install
    ```
 
-2. **Database Setup:**
-   Ensure PostgreSQL is running, then:
+2. **Create local environment file (first time only):**
    ```bash
-   pnpm prisma generate
-   pnpm prisma migrate dev
+   cp .env.example .env
    ```
 
-3. **Start the server:**
+3. **Bootstrap local services + Prisma (recommended):**
    ```bash
-   pnpm dev
+   npm run setup:local
    ```
-   The API will be available at `http://veylo.local:4000`.
+
+   This command:
+   - starts `postgres` and `redis` containers (`docker compose up -d postgres redis`)
+   - runs Prisma generate + migrations
+
+4. **Start the server:**
+   ```bash
+   npm run dev
+   ```
+   The API will be available at `https://api.veylo.com:4000`.
 
 ## Monitoring & Dashboards
 
@@ -98,7 +118,7 @@ The project includes a full observability stack. Use the following links to acce
 | Dashboard | URL | Description |
 |-----------|-----|-------------|
 | **Grafana** | [http://localhost:3002](http://localhost:3002) | **Primary UI** for Logs (Loki), Traces (Tempo), and Metrics |
-| **BullMQ Admin** | [http://api.veylo.local:4000/admin/queues](http://api.veylo.local:4000/admin/queues) | Queue management (Jobs, Workers, Retries) |
+| **BullMQ Admin** | [https://api.veylo.com/admin/queues](https://api.veylo.com/admin/queues) | Queue management (Jobs, Workers, Retries) |
 | **Prometheus** | [http://localhost:9090](http://localhost:9090) | Direct metrics query and alerting rules |
 | **Redis Insight** | [http://localhost:5540](http://localhost:5540) | GUI for inspecting Redis data and keys |
 
@@ -142,4 +162,26 @@ Collection: `docs/postman/veylo-auth.postman_collection.json`
 * Clean architecture
 * Production-ready code only
 * Use best practices (snake_case in DB, camelCase in App)
+
+`GET /api/v1/auth/verify-email?token=...`
+- `POST /api/v1/auth/forgot-password` - `{ "email": "..." }`
+- `POST /api/v1/auth/reset-password` - `{ "token": "...", "new_password": "..." }`
+
+## Postman
+
+Collection: `docs/postman/veylo-auth.postman_collection.json`
+
+## Code Quality Rules
+
+* Use strict TypeScript
+* No `any` types
+* Clean architecture
+* Production-ready code only
+* Use best practices (snake_case in DB, camelCase in App)
+
+Clean architecture
+* Production-ready code only
+* Use best practices (snake_case in DB, camelCase in App)
+
+pp)
 

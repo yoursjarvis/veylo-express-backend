@@ -9,6 +9,12 @@ import * as xlsx from "xlsx";
 import { logger } from "@/lib/logger";
 import { mailService } from "@/core/mail";
 import { config } from "@/utils/config";
+import {
+  UnauthorizedException,
+  ForbiddenException,
+  BadRequestException,
+  NotFoundException,
+} from "@/utils/app-error";
 
 async function verifyOrgAdmin(req: Request, targetUserId?: string) {
   const session = await auth.api.getSession({
@@ -16,12 +22,12 @@ async function verifyOrgAdmin(req: Request, targetUserId?: string) {
   });
 
   if (!session?.user) {
-    throw new Error("Unauthorized");
+    throw new UnauthorizedException();
   }
 
   const activeOrgId = session.session.activeOrganizationId;
   if (!activeOrgId) {
-    throw new Error("No active organization found");
+    throw new BadRequestException("No active organization found");
   }
 
   const callerMember = await prisma.member.findFirst({
@@ -33,7 +39,7 @@ async function verifyOrgAdmin(req: Request, targetUserId?: string) {
   });
 
   if (!callerMember) {
-    throw new Error("Forbidden: You must be an organization admin");
+    throw new ForbiddenException("Forbidden: You must be an organization admin");
   }
 
   if (targetUserId) {
@@ -45,12 +51,12 @@ async function verifyOrgAdmin(req: Request, targetUserId?: string) {
     });
 
     if (!targetMember) {
-      throw new Error("Not Found: User is not a member of this organization");
+      throw new NotFoundException("Not Found: User is not a member of this organization");
     }
     
     // Prevent modifying other admins if caller is not owner
     if (callerMember.role === "admin" && (targetMember.role === "admin" || targetMember.role === "owner")) {
-       throw new Error("Forbidden: Admins cannot modify other admins or owners");
+       throw new ForbiddenException("Forbidden: Admins cannot modify other admins or owners");
     }
   }
 

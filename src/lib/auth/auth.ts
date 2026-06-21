@@ -1,5 +1,5 @@
 import { mailService } from "@/core/mail";
-import prisma from "@/lib/prisma";
+import prisma, { basePrisma } from "@/lib/prisma";
 import { redis } from "@/lib/redis";
 import { config } from "@/utils/config";
 
@@ -51,13 +51,14 @@ function buildSecondaryStorage(): SecondaryStorage | undefined {
 }
 
 export const auth = betterAuth({
+  debug: true,
   appName: config("app.name"),
   baseURL: config("auth.betterAuth.url"),
   basePath: "/api/v1/auth",
   secret: config("auth.betterAuth.secret"),
 
   trustedOrigins: resolveTrustedOrigins(),
-  database: prismaAdapter(prisma, {
+  database: prismaAdapter(basePrisma, {
     provider: "postgresql",
   }),
   secondaryStorage: buildSecondaryStorage(),
@@ -153,6 +154,7 @@ export const auth = betterAuth({
     },
   },
   session: {
+    storeSessionInDatabase: true,
     expiresIn: 60 * 60 * 24 * 7,
     updateAge: 60 * 60 * 24,
     cookieCache: {
@@ -160,6 +162,7 @@ export const auth = betterAuth({
       maxAge: 60 * 5,
     },
     additionalFields: {
+      activeOrganizationId: { type: "string", required: false },
       deviceName: { type: "string", required: false, input: false },
       browser: { type: "string", required: false, input: false },
       os: { type: "string", required: false, input: false },

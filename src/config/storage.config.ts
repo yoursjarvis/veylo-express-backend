@@ -10,14 +10,14 @@ export default {
     local: {
       root: env("STORAGE_LOCAL_ROOT").string("storage/app"),
       publicUrl: env("STORAGE_LOCAL_PUBLIC_URL").string(
-        "http://localhost:4000/storage",
+        `${env("APP_URL").string("http://localhost:4000")}/storage`,
       ),
     },
 
     public: {
       root: env("STORAGE_PUBLIC_ROOT").string("storage/app/public"),
       publicUrl: env("STORAGE_PUBLIC_URL").string(
-        "http://localhost:4000/storage",
+        `${env("APP_URL").string("http://localhost:4000")}/storage`,
       ),
     },
 

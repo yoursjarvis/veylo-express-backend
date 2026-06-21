@@ -32,7 +32,7 @@ export const mediaWorker = new Worker<MediaQueuePayload>(
       await fs.mkdir(path.dirname(thumbFullPath), { recursive: true });
 
       await sharp(buffer)
-        .resize(200, 200, { fit: "cover" })
+        .resize(200, 200, { fit: "inside", withoutEnlargement: true })
         .toFile(thumbFullPath);
 
       const generatedConversions = (media.generatedConversions as Record<string, any>) || {};

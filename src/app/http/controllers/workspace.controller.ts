@@ -5,6 +5,11 @@ import type { Request, Response } from "express";
 import { auth } from "@/lib/auth/auth";
 import { betterAuthHeaders } from "@/lib/auth/node-headers";
 import { z } from "zod";
+import {
+  UnauthorizedException,
+  ForbiddenException,
+  BadRequestException,
+} from "@/utils/app-error";
 
 async function verifyOrgAdmin(req: Request) {
   const session = await auth.api.getSession({
@@ -12,12 +17,12 @@ async function verifyOrgAdmin(req: Request) {
   });
 
   if (!session?.user) {
-    throw new Error("Unauthorized");
+    throw new UnauthorizedException();
   }
 
   const activeOrgId = session.session.activeOrganizationId;
   if (!activeOrgId) {
-    throw new Error("No active organization found");
+    throw new BadRequestException("No active organization found");
   }
 
   const callerMember = await prisma.member.findFirst({
@@ -29,7 +34,7 @@ async function verifyOrgAdmin(req: Request) {
   });
 
   if (!callerMember) {
-    throw new Error("Forbidden: You must be an organization admin");
+    throw new ForbiddenException("Forbidden: You must be an organization admin");
   }
 
   return { activeOrgId, userId: session.user.id };
@@ -41,12 +46,12 @@ async function verifyWorkspaceAdmin(req: Request, workspaceId: string) {
   });
 
   if (!session?.user) {
-    throw new Error("Unauthorized");
+    throw new UnauthorizedException();
   }
 
   const activeOrgId = session.session.activeOrganizationId;
   if (!activeOrgId) {
-    throw new Error("No active organization found");
+    throw new BadRequestException("No active organization found");
   }
 
   // Check Org Admin
@@ -73,7 +78,7 @@ async function verifyWorkspaceAdmin(req: Request, workspaceId: string) {
   });
 
   if (!callerWorkspaceMember) {
-    throw new Error("Forbidden: You must be an organization or workspace admin");
+    throw new ForbiddenException("Forbidden: You must be an organization or workspace admin");
   }
 
   return { activeOrgId, userId: session.user.id };

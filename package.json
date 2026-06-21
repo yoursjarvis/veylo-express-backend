@@ -6,6 +6,9 @@
   "type": "module",
   "scripts": {
     "build": "tsc && tsc-alias -f -fe .js",
+    "infra:up": "docker compose up -d postgres redis",
+    "infra:down": "docker compose down",
+    "setup:local": "npm run infra:up && npx prisma generate && npx prisma migrate dev",
     "format": "prettier . --write",
     "db:deploy": "npx prisma migrate deploy && npx prisma generate",
     "dev": "tsx watch src/index.ts",
