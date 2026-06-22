@@ -1,4 +1,4 @@
-import "dotenv/config";
+import "dotenv/config"; // Reload watch with new prisma client
 import fs from "fs";
 import https from "https";
 import http from "http";
@@ -39,3 +39,5 @@ if (SSL_KEY && SSL_CRT && fs.existsSync(SSL_KEY) && fs.existsSync(SSL_CRT)) {
     }
   });
 }
+// Trigger tsx watch reload
+

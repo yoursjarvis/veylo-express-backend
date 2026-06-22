@@ -26,3 +26,10 @@ mediaRoutes.post(
   mediaController.uploadWorkspaceIcon
 );
 
+mediaRoutes.post(
+  "/project/:id/icon",
+  requireAuth,
+  upload.single("icon"),
+  mediaController.uploadProjectIcon
+);
+

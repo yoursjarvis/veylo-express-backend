@@ -42,8 +42,16 @@ model User {
   accounts         Account[]
   members          Member[]
   workspaceMembers WorkspaceMember[]
+  projectMembers   ProjectMember[]
   invitations      Invitation[]
   twoFactors       TwoFactor[]
+  createdTasks     Task[]            @relation("TaskCreator")
+  assignedTasks    Task[]            @relation("TaskAssignee")
+  assignedSubtasks Subtask[]
+  comments         Comment[]
+  taskActivities   TaskActivity[]
+  notificationsReceived Notification[] @relation("NotificationRecipient")
+  notificationsSent     Notification[] @relation("NotificationSender")
 
   @@index([email], map: "idx_users_email")
   @@index([isActive], map: "idx_users_is_active")
@@ -155,6 +163,7 @@ model Workspace {
 
   organization Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   members      WorkspaceMember[]
+  projects     Project[]
 
   @@map("workspaces")
 }
@@ -223,3 +232,258 @@ model TwoFactor {
 
   @@map("two_factors")
 }
+
+model Project {
+  id          String          @id @default(uuid(7)) @db.Uuid
+  title       String
+  description String?
+  icon        String?
+  template    String          @default("simple") // simple, kanban, scrum
+  workspaceId String          @map("workspace_id") @db.Uuid
+  deletedAt   DateTime?       @map("deleted_at") @db.Timestamptz(6)
+  createdAt   DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime        @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  workspace   Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  members     ProjectMember[]
+  vault       Vault?
+  tasks        Task[]
+  taskStatuses TaskStatus[]
+  sprints      Sprint[]
+  customFields CustomFieldDefinition[]
+  slackWebhooks SlackWebhook[]
+
+  @@map("projects")
+}
+
+model ProjectMember {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  projectId String   @map("project_id") @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  role      String   @default("member")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+  @@map("project_members")
+}
+
+model Vault {
+  id        String         @id @default(uuid(7)) @db.Uuid
+  projectId String         @unique @map("project_id") @db.Uuid
+  createdAt DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime       @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  project   Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  services  VaultService[]
+
+  @@map("vaults")
+}
+
+model VaultService {
+  id        String      @id @default(uuid(7)) @db.Uuid
+  vaultId   String      @map("vault_id") @db.Uuid
+  name      String
+  createdAt DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  vault     Vault       @relation(fields: [vaultId], references: [id], onDelete: Cascade)
+  items     VaultItem[]
+
+  @@unique([vaultId, name])
+  @@map("vault_services")
+}
+
+model VaultItem {
+  id          String       @id @default(uuid(7)) @db.Uuid
+  serviceId   String       @map("service_id") @db.Uuid
+  key         String
+  value       String       @db.Text
+  note        String?      @db.Text
+  createdAt   DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime     @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  service     VaultService @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@unique([serviceId, key])
+  @@map("vault_items")
+}
+
+model Task {
+  id              String           @id @default(uuid(7)) @db.Uuid
+  title           String
+  description     String?          @db.Text
+  projectId       String           @map("project_id") @db.Uuid
+  sprintId        String?          @map("sprint_id") @db.Uuid
+  statusId        String           @map("status_id") @db.Uuid
+  type            String           @default("task") // task, bug, feature
+  priority        String           @default("medium") // low, medium, high, urgent
+  estimate        Float?           // Story points or hours
+  dueDate         DateTime?        @map("due_date") @db.Timestamptz(6)
+  creatorId       String           @map("creator_id") @db.Uuid
+  assigneeId      String?          @map("assignee_id") @db.Uuid
+  customFields    Json?            @default("{}") @map("custom_fields") // JSONB storage
+  deletedAt       DateTime?        @map("deleted_at") @db.Timestamptz(6)
+  createdAt       DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime         @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  project         Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  sprint          Sprint?          @relation(fields: [sprintId], references: [id], onDelete: SetNull)
+  status          TaskStatus       @relation(fields: [statusId], references: [id])
+  creator         User             @relation("TaskCreator", fields: [creatorId], references: [id])
+  assignee        User?            @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  subtasks        Subtask[]
+  comments        Comment[]
+  activityLogs    TaskActivity[]
+  blockedByDependencies TaskDependency[] @relation("BlockedTasks")
+  blockingDependencies  TaskDependency[] @relation("BlockingTasks")
+  notifications        Notification[]
+
+  @@index([projectId], map: "idx_tasks_project_id")
+  @@index([sprintId], map: "idx_tasks_sprint_id")
+  @@index([statusId], map: "idx_tasks_status_id")
+  @@index([assigneeId], map: "idx_tasks_assignee_id")
+  @@index([deletedAt], map: "idx_tasks_deleted_at")
+  @@map("tasks")
+}
+
+model TaskStatus {
+  id              String           @id @default(uuid(7)) @db.Uuid
+  projectId       String           @map("project_id") @db.Uuid
+  name            String           // e.g. "To Do", "In Progress", "Code Review"
+  category        String           // backlog, todo, in_progress, done
+  order           Int              @default(0) // Order of columns on Kanban boards
+  createdAt       DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  project         Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tasks           Task[]
+
+  @@unique([projectId, name])
+  @@map("task_statuses")
+}
+
+model Sprint {
+  id              String           @id @default(uuid(7)) @db.Uuid
+  projectId       String           @map("project_id") @db.Uuid
+  name            String           // e.g., "Sprint 1"
+  goal            String?          @db.Text
+  status          String           @default("planned") // planned, active, completed
+  startDate       DateTime?        @map("start_date") @db.Timestamptz(6)
+  endDate         DateTime?        @map("end_date") @db.Timestamptz(6)
+  completedAt     DateTime?        @map("completed_at") @db.Timestamptz(6)
+  createdAt       DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  project         Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tasks           Task[]
+
+  @@index([projectId], map: "idx_sprints_project_id")
+  @@map("sprints")
+}
+
+model Subtask {
+  id              String           @id @default(uuid(7)) @db.Uuid
+  taskId          String           @map("task_id") @db.Uuid
+  title           String
+  isCompleted     Boolean          @default(false) @map("is_completed")
+  assigneeId      String?          @map("assignee_id") @db.Uuid
+  createdAt       DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  task            Task             @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  assignee        User?            @relation(fields: [assigneeId], references: [id])
+
+  @@map("subtasks")
+}
+
+model CustomFieldDefinition {
+  id              String           @id @default(uuid(7)) @db.Uuid
+  projectId       String           @map("project_id") @db.Uuid
+  name            String           // e.g. "Client Approval"
+  type            String           // text, number, date, select, checkbox
+  options         Json?            // Array of options if type is select
+  createdAt       DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  project         Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, name])
+  @@map("custom_field_definitions")
+}
+
+model Comment {
+  id              String           @id @default(uuid(7)) @db.Uuid
+  taskId          String           @map("task_id") @db.Uuid
+  userId          String           @map("user_id") @db.Uuid
+  content         String           @db.Text
+  createdAt       DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime         @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  task            Task             @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("comments")
+}
+
+model TaskActivity {
+  id              String           @id @default(uuid(7)) @db.Uuid
+  taskId          String           @map("task_id") @db.Uuid
+  userId          String           @map("user_id") @db.Uuid
+  action          String           // created, status_changed, assignee_changed, comment_added, description_changed, title_changed, etc.
+  oldValue        String?          @db.Text
+  newValue        String?          @db.Text
+  createdAt       DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  task            Task             @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("task_activities")
+}
+
+model SlackWebhook {
+  id          String   @id @default(uuid(7)) @db.Uuid
+  projectId   String   @map("project_id") @db.Uuid
+  url         String
+  channel     String?
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("slack_webhooks")
+}
+
+model Notification {
+  id          String   @id @default(uuid(7)) @db.Uuid
+  recipientId String   @map("recipient_id") @db.Uuid
+  senderId    String?  @map("sender_id") @db.Uuid
+  taskId      String?  @map("task_id") @db.Uuid
+  type        String   // mention, assignment, status_change, comment, dependency
+  title       String
+  message     String
+  isRead      Boolean  @default(false) @map("is_read")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  recipient   User     @relation("NotificationRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  sender      User?    @relation("NotificationSender", fields: [senderId], references: [id], onDelete: SetNull)
+  task        Task?    @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([recipientId])
+  @@map("notifications")
+}
+
+model TaskDependency {
+  id              String   @id @default(uuid(7)) @db.Uuid
+  blockingTaskId  String   @map("blocking_task_id") @db.Uuid
+  blockedTaskId   String   @map("blocked_task_id") @db.Uuid
+  dependencyType  String   @default("blocks") // blocks
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  blockingTask    Task     @relation("BlockingTasks", fields: [blockingTaskId], references: [id], onDelete: Cascade)
+  blockedTask     Task     @relation("BlockedTasks", fields: [blockedTaskId], references: [id], onDelete: Cascade)
+
+  @@unique([blockingTaskId, blockedTaskId, dependencyType])
+  @@map("task_dependencies")
+}
+
+
+

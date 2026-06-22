@@ -84,6 +84,48 @@ async function verifyWorkspaceAdmin(req: Request, workspaceId: string) {
   return { activeOrgId, userId: session.user.id };
 }
 
+async function syncOrgAdminsToWorkspaces(organizationId: string) {
+  try {
+    const orgAdmins = await prisma.member.findMany({
+      where: {
+        organizationId,
+        role: { in: ["owner", "admin"] },
+      },
+      select: { userId: true },
+    });
+
+    if (orgAdmins.length === 0) return;
+
+    const workspaces = await prisma.workspace.findMany({
+      where: { organizationId },
+      select: { id: true },
+    });
+
+    if (workspaces.length === 0) return;
+
+    const createData: { workspaceId: string; userId: string; role: string }[] = [];
+
+    for (const admin of orgAdmins) {
+      for (const workspace of workspaces) {
+        createData.push({
+          workspaceId: workspace.id,
+          userId: admin.userId,
+          role: "admin",
+        });
+      }
+    }
+
+    if (createData.length > 0) {
+      await prisma.workspaceMember.createMany({
+        data: createData,
+        skipDuplicates: true,
+      });
+    }
+  } catch (error) {
+    console.error("Failed to sync organization admins to workspaces:", error);
+  }
+}
+
 const workspaceSchema = z.object({
   name: z.string().min(2, "Workspace name must be at least 2 characters long"),
   slug: z.string().min(2, "Slug must be at least 2 characters long").regex(/^[a-z0-9-]+$/, "Slug can only contain lowercase letters, numbers, and hyphens"),
@@ -104,6 +146,8 @@ export const workspaceController = {
     if (!activeOrgId) {
       return res.status(400).json({ message: "No active organization found" });
     }
+
+    await syncOrgAdminsToWorkspaces(activeOrgId);
 
     const workspaces = await prisma.workspace.findMany({
       where: {
@@ -166,6 +210,8 @@ export const workspaceController = {
       },
     });
 
+    await syncOrgAdminsToWorkspaces(activeOrgId);
+
     return ok(res, "Workspace created successfully", workspace);
   }),
 
@@ -221,6 +267,8 @@ export const workspaceController = {
   getWorkspaceMembers: asyncHandler(async (req: Request, res: Response) => {
     const workspaceId = req.params.id as string;
     const { activeOrgId } = await verifyWorkspaceAdmin(req, workspaceId);
+
+    await syncOrgAdminsToWorkspaces(activeOrgId);
 
     const members = await prisma.workspaceMember.findMany({
       where: {

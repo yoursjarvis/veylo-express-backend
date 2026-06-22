@@ -13,4 +13,5 @@ export default {
   rateLimit: env("RATE_LIMIT").float(1.5),
   origins: env("ALLOWED_ORIGINS").array(","),
   domain: env("APP_DOMAIN").required(),
+  vaultEncryptionKey: env("VAULT_ENCRYPTION_KEY").required(),
 };
