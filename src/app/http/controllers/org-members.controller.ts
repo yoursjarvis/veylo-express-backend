@@ -280,7 +280,31 @@ export const orgMembersController = {
       return ok(res, "Invitation sent successfully", result);
     } catch (error: any) {
       logger.error({ error, email }, "[ORG_MEMBERS] inviteMember failed");
-      return res.status(error.status || 500).json({
+      let statusCode = 500;
+      if (error.status) {
+        if (typeof error.status === "number") {
+          statusCode = error.status;
+        } else if (typeof error.status === "string") {
+          const parsed = parseInt(error.status, 10);
+          if (!isNaN(parsed)) {
+            statusCode = parsed;
+          } else {
+            const statusMap: Record<string, number> = {
+              BAD_REQUEST: 400,
+              UNAUTHORIZED: 401,
+              FORBIDDEN: 403,
+              NOT_FOUND: 404,
+              CONFLICT: 409,
+              UNPROCESSABLE_ENTITY: 422,
+              INTERNAL_SERVER_ERROR: 500,
+            };
+            if (error.status in statusMap) {
+              statusCode = statusMap[error.status];
+            }
+          }
+        }
+      }
+      return res.status(statusCode).json({
         message: error.message || "Failed to send invitation",
         code: error.code,
       });
@@ -384,5 +408,76 @@ export const orgMembersController = {
       status: invitation.status,
       expiresAt: invitation.expiresAt,
     });
+  }),
+  
+  getPendingInvitations: asyncHandler(async (req: Request, res: Response) => {
+    const { activeOrgId } = await verifyOrgAdmin(req);
+
+    const invitations = await prisma.invitation.findMany({
+      where: {
+        organizationId: activeOrgId,
+        status: "pending",
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    return ok(res, "Pending invitations fetched", invitations);
+  }),
+
+  revokeInvitation: asyncHandler(async (req: Request, res: Response) => {
+    const { activeOrgId } = await verifyOrgAdmin(req);
+    const id = req.params.id as string;
+
+    const invitation = await prisma.invitation.findFirst({
+      where: {
+        id,
+        organizationId: activeOrgId,
+      },
+    });
+
+    if (!invitation) {
+      return res.status(404).json({ message: "Invitation not found in this organization" });
+    }
+
+    try {
+      const result = await auth.api.cancelInvitation({
+        body: {
+          invitationId: id,
+        },
+        headers: betterAuthHeaders(req),
+      });
+
+      return ok(res, "Invitation revoked successfully", result);
+    } catch (error: any) {
+      logger.error({ error, id }, "[ORG_MEMBERS] revokeInvitation failed");
+      let statusCode = 500;
+      if (error.status) {
+        if (typeof error.status === "number") {
+          statusCode = error.status;
+        } else if (typeof error.status === "string") {
+          const parsed = parseInt(error.status, 10);
+          if (!isNaN(parsed)) {
+            statusCode = parsed;
+          } else {
+            const statusMap: Record<string, number> = {
+              BAD_REQUEST: 400,
+              UNAUTHORIZED: 401,
+              FORBIDDEN: 403,
+              NOT_FOUND: 404,
+              CONFLICT: 409,
+              UNPROCESSABLE_ENTITY: 422,
+              INTERNAL_SERVER_ERROR: 500,
+            };
+            if (error.status in statusMap) {
+              statusCode = statusMap[error.status];
+            }
+          }
+        }
+      }
+      return res.status(statusCode).json({
+        message: error.message || "Failed to revoke invitation",
+        code: error.code,
+      });
+    }
   }),
 };

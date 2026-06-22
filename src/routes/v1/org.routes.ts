@@ -57,6 +57,18 @@ orgRoutes.get(
 );
 
 orgRoutes.get(
+  "/invitations",
+  requireAuth,
+  orgMembersController.getPendingInvitations
+);
+
+orgRoutes.post(
+  "/invitations/:id/revoke",
+  requireAuth,
+  orgMembersController.revokeInvitation
+);
+
+orgRoutes.get(
   "/invitations/:id/public",
   orgMembersController.getInvitationPublic
 );
