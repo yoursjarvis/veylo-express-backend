@@ -39,6 +39,7 @@ taskRoutes.delete("/subtasks/:id", taskExtrasController.deleteSubtask);
 
 // --- COMMENTS CRUD ---
 taskRoutes.post("/tasks/:taskId/comments", taskExtrasController.createComment);
+taskRoutes.patch("/comments/:id", taskExtrasController.updateComment);
 taskRoutes.delete("/comments/:id", taskExtrasController.deleteComment);
 
 // --- CUSTOM FIELDS CRUD ---

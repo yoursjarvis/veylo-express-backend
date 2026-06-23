@@ -94,6 +94,7 @@ const subtaskSchema = z.object({
 
 const commentSchema = z.object({
   content: z.string().min(1, "Comment content cannot be empty"),
+  parentId: z.string().uuid().optional().nullable(),
 });
 
 const customFieldSchema = z.object({
@@ -309,6 +310,7 @@ export const taskExtrasController = {
         content: validatedData.content,
         taskId,
         userId,
+        parentId: validatedData.parentId || null,
       },
       include: {
         user: { select: { id: true, name: true, image: true } },
@@ -386,6 +388,41 @@ export const taskExtrasController = {
     return ok(res, "Comment deleted successfully");
   }),
 
+  updateComment: asyncHandler(async (req: Request, res: Response) => {
+    const commentId = req.params.id as string;
+
+    const comment = await prisma.comment.findUnique({
+      where: { id: commentId },
+      include: { task: true },
+    });
+    if (!comment) {
+      throw new NotFoundException("Comment not found");
+    }
+
+    const { userId } = await verifyProjectAccess(req, comment.task.projectId);
+
+    // Verify if caller is the comment author
+    const isAuthor = comment.userId === userId;
+    if (!isAuthor) {
+      throw new ForbiddenException("Forbidden: You can only edit your own comments");
+    }
+
+    const validatedData = commentSchema.parse(req.body);
+
+    const updatedComment = await prisma.comment.update({
+      where: { id: commentId },
+      data: {
+        content: validatedData.content,
+        isEdited: true,
+      },
+      include: {
+        user: { select: { id: true, name: true, image: true, email: true } },
+      },
+    });
+
+    return ok(res, "Comment updated successfully", updatedComment);
+  }),
+
   // --- CUSTOM FIELDS ---
   createCustomField: asyncHandler(async (req: Request, res: Response) => {
     const projectId = req.params.projectId as string;
@@ -441,5 +478,53 @@ export const taskExtrasController = {
     });
 
     return ok(res, "Custom field deleted successfully");
+  }),
+
+  toggleCommentReaction: asyncHandler(async (req: Request, res: Response) => {
+    const commentId = req.params.id as string;
+    const emojiSchema = z.object({
+      emoji: z.string().min(1, "Emoji is required"),
+    });
+    const validatedData = emojiSchema.parse(req.body);
+    const emoji = validatedData.emoji.trim();
+
+    const comment = await prisma.comment.findUnique({
+      where: { id: commentId },
+      include: { task: true },
+    });
+    if (!comment) {
+      throw new NotFoundException("Comment not found");
+    }
+
+    const { userId } = await verifyProjectAccess(req, comment.task.projectId);
+
+    // Check if reaction already exists
+    const existing = await prisma.commentReaction.findUnique({
+      where: {
+        commentId_userId_emoji: {
+          commentId,
+          userId,
+          emoji,
+        },
+      },
+    });
+
+    if (existing) {
+      // Toggle off: remove reaction
+      await prisma.commentReaction.delete({
+        where: { id: existing.id },
+      });
+      return ok(res, "Reaction removed successfully", { toggledOn: false });
+    } else {
+      // Toggle on: add reaction
+      const reaction = await prisma.commentReaction.create({
+        data: {
+          commentId,
+          userId,
+          emoji,
+        },
+      });
+      return ok(res, "Reaction added successfully", { toggledOn: true, reaction });
+    }
   }),
 };

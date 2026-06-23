@@ -242,5 +242,36 @@ export const mediaController = {
       url,
     });
   }),
+
+  uploadFile: asyncHandler(async (req: Request, res: Response) => {
+    if (!req.file) {
+      throw new Error("No file uploaded");
+    }
+
+    const user = req.auth?.user;
+    if (!user) {
+      throw new Error("Unauthorized");
+    }
+
+    const media = await mediaService.addMedia(
+      "User",
+      user.id as string,
+      {
+        buffer: req.file.buffer,
+        originalname: req.file.originalname,
+        mimetype: req.file.mimetype,
+        size: req.file.size,
+      },
+      "attachments",
+      false
+    );
+
+    const url = await mediaService.getUrl(media.id);
+
+    return ok(res, "File uploaded successfully", {
+      media_id: media.id,
+      url,
+    });
+  }),
 };
 

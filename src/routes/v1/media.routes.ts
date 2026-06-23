@@ -33,3 +33,10 @@ mediaRoutes.post(
   mediaController.uploadProjectIcon
 );
 
+mediaRoutes.post(
+  "/upload",
+  requireAuth,
+  upload.single("file"),
+  mediaController.uploadFile
+);
+
