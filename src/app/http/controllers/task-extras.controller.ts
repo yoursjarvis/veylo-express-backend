@@ -480,8 +480,34 @@ export const taskExtrasController = {
     return ok(res, "Custom field deleted successfully");
   }),
 
+  getReactionUsers: asyncHandler(async (req: Request, res: Response) => {
+    const commentId = req.params.commentId as string;
+    const emoji = decodeURIComponent(req.params.emoji as string);
+
+    const comment = await prisma.comment.findUnique({
+      where: { id: commentId },
+      include: { task: true },
+    });
+    if (!comment) {
+      throw new NotFoundException("Comment not found");
+    }
+
+    await verifyProjectAccess(req, comment.task.projectId);
+
+    const reactions = await prisma.commentReaction.findMany({
+      where: { commentId, emoji },
+      include: {
+        user: { select: { id: true, name: true, image: true } },
+      },
+      orderBy: { createdAt: "asc" },
+    });
+
+    const users = reactions.map((r) => r.user);
+    return ok(res, "Users fetched successfully", users);
+  }),
+
   toggleCommentReaction: asyncHandler(async (req: Request, res: Response) => {
-    const commentId = req.params.id as string;
+    const commentId = req.params.commentId as string;
     const emojiSchema = z.object({
       emoji: z.string().min(1, "Emoji is required"),
     });

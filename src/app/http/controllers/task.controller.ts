@@ -247,6 +247,13 @@ export const taskController = {
         comments: {
           include: {
             user: { select: { id: true, name: true, image: true, email: true } },
+            reactions: {
+              select: {
+                id: true,
+                emoji: true,
+                userId: true,
+              },
+            },
           },
           orderBy: { createdAt: "desc" },
         },

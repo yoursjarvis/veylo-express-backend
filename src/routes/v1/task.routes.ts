@@ -41,6 +41,8 @@ taskRoutes.delete("/subtasks/:id", taskExtrasController.deleteSubtask);
 taskRoutes.post("/tasks/:taskId/comments", taskExtrasController.createComment);
 taskRoutes.patch("/comments/:id", taskExtrasController.updateComment);
 taskRoutes.delete("/comments/:id", taskExtrasController.deleteComment);
+taskRoutes.get("/comments/:commentId/reactions/:emoji/users", taskExtrasController.getReactionUsers);
+taskRoutes.post("/comments/:commentId/reactions", taskExtrasController.toggleCommentReaction);
 
 // --- CUSTOM FIELDS CRUD ---
 taskRoutes.post("/projects/:projectId/custom-fields", taskExtrasController.createCustomField);

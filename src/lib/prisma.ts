@@ -87,3 +87,4 @@ if (config("app.env") !== "production") globalForPrisma.prisma = basePrisma;
 
 export { basePrisma };
 export default prisma;
+// Trigger restart
