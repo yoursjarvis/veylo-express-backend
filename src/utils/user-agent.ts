@@ -11,9 +11,9 @@ export function parseUserAgent(userAgent?: string): ParsedUserAgent {
 
   const os =
     ua.includes("windows") ? "Windows" :
+    ua.includes("iphone") || ua.includes("ipad") ? "iOS" :
     ua.includes("mac os x") ? "macOS" :
     ua.includes("android") ? "Android" :
-    ua.includes("iphone") || ua.includes("ipad") ? "iOS" :
     ua.includes("linux") ? "Linux" :
     undefined;
 

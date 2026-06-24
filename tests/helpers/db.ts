@@ -1,0 +1,56 @@
+import { vi } from "vitest";
+
+const standardMock = () => ({
+  findUnique: vi.fn(),
+  findFirst: vi.fn(),
+  findMany: vi.fn(),
+  create: vi.fn(),
+  update: vi.fn(),
+  delete: vi.fn(),
+  createMany: vi.fn(),
+  updateMany: vi.fn(),
+  deleteMany: vi.fn(),
+  count: vi.fn(),
+  upsert: vi.fn(),
+});
+
+export const prismaMock = {
+  // Mock transaction interface to execute callbacks using the same mock layer
+  $transaction: vi.fn().mockImplementation((cb) => cb(prismaMock)),
+  
+  member: standardMock(),
+  workspaceMember: standardMock(),
+  workspace: standardMock(),
+  session: {
+    ...standardMock(),
+    updateMany: vi.fn().mockResolvedValue({ count: 1 }),
+  },
+  project: standardMock(),
+  projectMember: standardMock(),
+  projectTemplate: standardMock(),
+  user: standardMock(),
+  organization: standardMock(),
+  invitation: standardMock(),
+  task: standardMock(),
+  taskStatus: standardMock(),
+  taskDependency: standardMock(),
+  taskActivity: standardMock(),
+  subtask: standardMock(),
+  comment: standardMock(),
+  commentReaction: standardMock(),
+  customFieldDefinition: standardMock(),
+  epic: standardMock(),
+  milestone: standardMock(),
+  label: standardMock(),
+  sprint: standardMock(),
+  media: standardMock(),
+  verification: standardMock(),
+  account: standardMock(),
+  twoFactor: standardMock(),
+  vault: standardMock(),
+  vaultService: standardMock(),
+  vaultItem: standardMock(),
+  slackWebhook: standardMock(),
+  notification: standardMock(),
+  taskLabel: standardMock(),
+};
