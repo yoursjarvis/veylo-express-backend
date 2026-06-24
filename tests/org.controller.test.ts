@@ -90,12 +90,9 @@ describe("orgController", () => {
       const req: any = { body: { name: "Org Name", slug: "slug1", workspaceName: "ws1" } };
       const res = createRes();
 
-      await (orgController.setupOrganization as any)(req, res);
-
-      expect(res.status).toHaveBeenCalledWith(401);
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-        message: expect.stringContaining("stale or invalid"),
-      }));
+      await expect((orgController.setupOrganization as any)(req, res)).rejects.toThrow(
+        "Unauthorized: Session is stale or invalid in the database. Please log out and log in again."
+      );
     });
 
     it("returns 400 Bad Request if user already owns an org", async () => {
@@ -107,10 +104,9 @@ describe("orgController", () => {
       const req: any = { body: { name: "Org Name", slug: "slug1", workspaceName: "ws1" } };
       const res = createRes();
 
-      await (orgController.setupOrganization as any)(req, res);
-
-      expect(res.status).toHaveBeenCalledWith(400);
-      expect(res.json).toHaveBeenCalledWith({ message: "You have already created an organization." });
+      await expect((orgController.setupOrganization as any)(req, res)).rejects.toThrow(
+        "You have already created an organization."
+      );
     });
 
     it("returns 400 Bad Request if slug is already taken", async () => {
@@ -125,10 +121,9 @@ describe("orgController", () => {
       };
       const res = createRes();
 
-      await (orgController.setupOrganization as any)(req, res);
-
-      expect(res.status).toHaveBeenCalledWith(400);
-      expect(res.json).toHaveBeenCalledWith({ message: "This URL slug is already taken." });
+      await expect((orgController.setupOrganization as any)(req, res)).rejects.toThrow(
+        "This URL slug is already taken."
+      );
     });
 
     it("successfully creates organization, workspace, and owner member", async () => {

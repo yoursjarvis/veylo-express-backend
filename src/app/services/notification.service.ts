@@ -1,12 +1,28 @@
-import prisma from "@/lib/prisma";
+import { notificationRepository } from "@/app/repositories/notification.repository";
+import { NotFoundException } from "@/utils/app-error";
 
 export const notificationService = {
+  // Controller service methods
+  async getUserNotifications(recipientId: string) {
+    return notificationRepository.getNotifications(recipientId);
+  },
+
+  async markNotificationAsRead(recipientId: string, notificationId: string) {
+    const notification = await notificationRepository.findById(notificationId);
+    if (!notification || notification.recipientId !== recipientId) {
+      throw new NotFoundException("Notification not found");
+    }
+    return notificationRepository.markAsRead(notificationId);
+  },
+
+  async markAllUserNotificationsAsRead(recipientId: string) {
+    return notificationRepository.markAllAsRead(recipientId);
+  },
+
   // Dispatch a Slack webhook payload
   async dispatchSlackWebhook(projectId: string, text: string) {
     try {
-      const webhooks = await prisma.slackWebhook.findMany({
-        where: { projectId, isActive: true },
-      });
+      const webhooks = await notificationRepository.findActiveSlackWebhooks(projectId);
 
       for (const webhook of webhooks) {
         // Native fetch call to post to Slack
@@ -17,7 +33,7 @@ export const notificationService = {
             text,
             channel: webhook.channel || undefined,
           }),
-        }).catch(err => {
+        }).catch((err) => {
           console.error(`Failed to send slack webhook to ${webhook.url}:`, err);
         });
       }
@@ -41,17 +57,7 @@ export const notificationService = {
       if (data.recipientId === data.senderId) {
         return;
       }
-      await prisma.notification.create({
-        data: {
-          recipientId: data.recipientId,
-          senderId: data.senderId ?? null,
-          taskId: data.taskId ?? null,
-          organizationId: data.organizationId,
-          type: data.type,
-          title: data.title,
-          message: data.message,
-        },
-      });
+      await notificationRepository.createNotification(data);
     } catch (error) {
       console.error("Error creating in-app notification:", error);
     }
@@ -60,15 +66,7 @@ export const notificationService = {
   // Handle task created notifications
   async handleTaskCreated(taskId: string, creatorId: string) {
     try {
-      const task = await prisma.task.findUnique({
-        where: { id: taskId },
-        include: {
-          project: true,
-          creator: { select: { name: true } },
-          assignee: { select: { id: true, name: true } },
-          status: true,
-        },
-      });
+      const task = await notificationRepository.findTaskForNotification(taskId);
 
       if (!task) return;
 
@@ -88,7 +86,8 @@ export const notificationService = {
       }
 
       // 2. Slack Notification
-      const slackMessage = `*New Task Created* in project *${task.project.title}*\n` +
+      const slackMessage =
+        `*New Task Created* in project *${task.project.title}*\n` +
         `• *Title*: ${task.title}\n` +
         `• *Priority*: ${task.priority.toUpperCase()}\n` +
         `• *Status*: ${task.status.name}\n` +
@@ -103,21 +102,11 @@ export const notificationService = {
   // Handle task updated notifications
   async handleTaskUpdated(taskId: string, updaterId: string, oldTask: Record<string, unknown>) {
     try {
-      const task = await prisma.task.findUnique({
-        where: { id: taskId },
-        include: {
-          project: true,
-          assignee: { select: { id: true, name: true } },
-          status: true,
-        },
-      });
+      const task = await notificationRepository.findTaskForNotification(taskId);
 
       if (!task) return;
 
-      const updater = await prisma.user.findUnique({
-        where: { id: updaterId },
-        select: { name: true },
-      });
+      const updater = await notificationRepository.findUserName(updaterId);
       const updaterName = updater?.name || "Someone";
 
       const changes: string[] = [];
@@ -162,9 +151,10 @@ export const notificationService = {
       }
 
       if (changes.length > 0) {
-        const slackMessage = `*Task Updated*: *${task.title}* (Project: *${task.project.title}*)\n` +
+        const slackMessage =
+          `*Task Updated*: *${task.title}* (Project: *${task.project.title}*)\n` +
           `• *Updated By*: ${updaterName}\n` +
-          changes.map(c => `• ${c}`).join("\n");
+          changes.map((c) => `• ${c}`).join("\n");
         await this.dispatchSlackWebhook(task.projectId, slackMessage);
       }
     } catch (error) {
@@ -175,18 +165,7 @@ export const notificationService = {
   // Handle comment notifications and parse mentions
   async handleCommentAdded(commentId: string, authorId: string) {
     try {
-      const comment = await prisma.comment.findUnique({
-        where: { id: commentId },
-        include: {
-          task: {
-            include: {
-              project: true,
-              assignee: { select: { id: true } },
-            },
-          },
-          user: { select: { name: true } },
-        },
-      });
+      const comment = await notificationRepository.findCommentForNotification(commentId);
 
       if (!comment) return;
 
@@ -204,15 +183,12 @@ export const notificationService = {
       const notifiedUserIds = new Set<string>();
 
       if (mentionedNames.size > 0) {
-        const projectMembers = await prisma.projectMember.findMany({
-          where: { projectId: task.projectId },
-          include: { user: { select: { id: true, name: true } } },
-        });
+        const projectMembers = await notificationRepository.findProjectMembers(task.projectId);
 
         for (const member of projectMembers) {
           const u = member.user;
           const isMentioned = Array.from(mentionedNames).some(
-            name => name.toLowerCase() === u.name.toLowerCase()
+            (name) => name.toLowerCase() === u.name.toLowerCase()
           );
 
           if (isMentioned && u.id !== authorId) {
@@ -244,7 +220,8 @@ export const notificationService = {
       }
 
       // 3. Slack Webhook Notification
-      const slackMessage = `*New Comment* by *${authorName}* on task *${task.title}*\n` +
+      const slackMessage =
+        `*New Comment* by *${authorName}* on task *${task.title}*\n` +
         `> ${comment.content}`;
       await this.dispatchSlackWebhook(task.projectId, slackMessage);
     } catch (error) {

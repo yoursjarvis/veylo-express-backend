@@ -143,7 +143,7 @@ describe("taskController", () => {
         status: { name: "To Do" },
         assigneeId: null,
       };
-      prismaMock.task.findUnique.mockResolvedValueOnce(existing);
+      prismaMock.task.findUnique.mockResolvedValue(existing);
       prismaMock.taskStatus.findFirst.mockResolvedValueOnce({ id: "status-done", category: "done" });
       prismaMock.subtask.count.mockResolvedValueOnce(0); // no incomplete subtasks
       prismaMock.task.update.mockResolvedValueOnce({ id: "task-1" });
@@ -167,7 +167,7 @@ describe("taskController", () => {
         statusId: "status-1",
         status: { name: "To Do" },
       };
-      prismaMock.task.findUnique.mockResolvedValueOnce(existing);
+      prismaMock.task.findUnique.mockResolvedValue(existing);
       prismaMock.taskStatus.findFirst.mockResolvedValueOnce({ id: "status-done", category: "done" });
       prismaMock.subtask.count.mockResolvedValueOnce(5); // 5 incomplete subtasks
 
@@ -185,7 +185,7 @@ describe("taskController", () => {
 
   describe("deleteTask", () => {
     it("deletes task successfully", async () => {
-      prismaMock.task.findUnique.mockResolvedValueOnce({ id: "task-1", projectId: "p1", title: "Task 1" });
+      prismaMock.task.findUnique.mockResolvedValue({ id: "task-1", projectId: "p1", title: "Task 1" });
 
       const req: any = { params: { id: "task-1" } };
       const res = createRes();

@@ -1,10 +1,10 @@
 import { asyncHandler } from "@/app/http/middlewares/async-handler.middleware";
-import prisma from "@/lib/prisma";
+import { notificationService } from "@/app/services/notification.service";
 import { ok } from "@/utils/http-response";
 import type { Request, Response } from "express";
 import { auth } from "@/lib/auth/auth";
 import { betterAuthHeaders } from "@/lib/auth/node-headers";
-import { UnauthorizedException, NotFoundException } from "@/utils/app-error";
+import { UnauthorizedException } from "@/utils/app-error";
 
 export const notificationController = {
   // Get notifications for logged-in user
@@ -17,14 +17,7 @@ export const notificationController = {
       throw new UnauthorizedException();
     }
 
-    const notifications = await prisma.notification.findMany({
-      where: { recipientId: session.user.id },
-      include: {
-        sender: { select: { id: true, name: true, image: true } },
-        task: { select: { id: true, title: true, projectId: true } },
-      },
-      orderBy: { createdAt: "desc" },
-    });
+    const notifications = await notificationService.getUserNotifications(session.user.id);
 
     return ok(res, "Notifications fetched successfully", notifications);
   }),
@@ -40,18 +33,7 @@ export const notificationController = {
       throw new UnauthorizedException();
     }
 
-    const notification = await prisma.notification.findUnique({
-      where: { id: notificationId },
-    });
-
-    if (!notification || notification.recipientId !== session.user.id) {
-      throw new NotFoundException("Notification not found");
-    }
-
-    const updated = await prisma.notification.update({
-      where: { id: notificationId },
-      data: { isRead: true },
-    });
+    const updated = await notificationService.markNotificationAsRead(session.user.id, notificationId);
 
     return ok(res, "Notification marked as read", updated);
   }),
@@ -66,10 +48,7 @@ export const notificationController = {
       throw new UnauthorizedException();
     }
 
-    await prisma.notification.updateMany({
-      where: { recipientId: session.user.id, isRead: false },
-      data: { isRead: true },
-    });
+    await notificationService.markAllUserNotificationsAsRead(session.user.id);
 
     return ok(res, "All notifications marked as read");
   }),

@@ -1,0 +1,180 @@
+import prisma from "@/lib/prisma";
+
+export const taskRepository = {
+  async findTaskById(taskId: string) {
+    return prisma.task.findUnique({
+      where: { id: taskId },
+    });
+  },
+
+  async findTaskDetails(taskId: string) {
+    return prisma.task.findUnique({
+      where: { id: taskId },
+      include: {
+        status: true,
+        assignee: {
+          select: { id: true, name: true, image: true, email: true },
+        },
+        creator: {
+          select: { id: true, name: true, image: true, email: true },
+        },
+        epic: true,
+        milestone: true,
+        labels: {
+          include: {
+            label: true,
+          },
+        },
+        subtasks: {
+          include: {
+            assignee: { select: { id: true, name: true, image: true } },
+          },
+          orderBy: { createdAt: "asc" },
+        },
+        comments: {
+          include: {
+            user: { select: { id: true, name: true, image: true, email: true } },
+            reactions: {
+              select: {
+                id: true,
+                emoji: true,
+                userId: true,
+              },
+            },
+          },
+          orderBy: { createdAt: "desc" },
+        },
+        activityLogs: {
+          include: {
+            user: { select: { id: true, name: true } },
+          },
+          orderBy: { createdAt: "desc" },
+        },
+      },
+    });
+  },
+
+  async findTaskWithRelations(taskId: string) {
+    return prisma.task.findUnique({
+      where: { id: taskId },
+      include: { status: true, assignee: true, sprint: true, epic: true, milestone: true },
+    });
+  },
+
+  findTaskStatusById(statusId: string, projectId: string) {
+    return prisma.taskStatus.findFirst({
+      where: { id: statusId, projectId },
+    });
+  },
+
+  findSprintById(sprintId: string, projectId: string) {
+    return prisma.sprint.findFirst({
+      where: { id: sprintId, projectId },
+    });
+  },
+
+  findEpicById(epicId: string, projectId: string) {
+    return prisma.epic.findFirst({
+      where: { id: epicId, projectId },
+    });
+  },
+
+  findMilestoneById(milestoneId: string, projectId: string) {
+    return prisma.milestone.findFirst({
+      where: { id: milestoneId, projectId },
+    });
+  },
+
+  createTask(data: any) {
+    return prisma.task.create({
+      data,
+      include: {
+        status: true,
+        assignee: {
+          select: { id: true, name: true, image: true, email: true },
+        },
+        epic: true,
+        milestone: true,
+        labels: {
+          include: {
+            label: true,
+          },
+        },
+      },
+    });
+  },
+
+  getTasks(whereClause: any) {
+    return prisma.task.findMany({
+      where: whereClause,
+      include: {
+        status: true,
+        assignee: {
+          select: { id: true, name: true, image: true, email: true },
+        },
+        epic: true,
+        milestone: true,
+        labels: {
+          include: {
+            label: true,
+          },
+        },
+        _count: {
+          select: { subtasks: true, comments: true },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+  },
+
+  countIncompleteSubtasks(taskId: string) {
+    return prisma.subtask.count({
+      where: { taskId, isCompleted: false },
+    });
+  },
+
+  findUserById(userId: string) {
+    return prisma.user.findUnique({
+      where: { id: userId },
+    });
+  },
+
+  updateTask(taskId: string, updateData: any) {
+    return prisma.task.update({
+      where: { id: taskId },
+      data: updateData,
+      include: {
+        status: true,
+        assignee: {
+          select: { id: true, name: true, image: true, email: true },
+        },
+        epic: true,
+        milestone: true,
+        labels: {
+          include: {
+            label: true,
+          },
+        },
+      },
+    });
+  },
+
+  deleteTask(taskId: string) {
+    return prisma.task.delete({
+      where: { id: taskId },
+    });
+  },
+
+  createTaskActivity(data: {
+    taskId: string;
+    userId: string;
+    organizationId: string;
+    action: string;
+    oldValue: string | null;
+    newValue: string | null;
+  }) {
+    return prisma.taskActivity.create({
+      data,
+    });
+  },
+};

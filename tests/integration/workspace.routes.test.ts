@@ -132,8 +132,6 @@ describe("Workspace API Endpoint Integration Tests (/api/v1/workspaces)", () => 
     });
 
     it("INT-WS-POST-02: returns 422 validation failure if required body fields are missing", async () => {
-      prismaMock.member.findFirst.mockResolvedValueOnce({ id: "mem-123", role: "admin" });
-
       const res = await request(app)
         .post("/api/v1/workspaces")
         .send({ name: "Only Name" }); // Missing slug
@@ -147,8 +145,6 @@ describe("Workspace API Endpoint Integration Tests (/api/v1/workspaces)", () => 
     });
 
     it("INT-WS-POST-03: returns 422 validation failure if slug format is invalid", async () => {
-      prismaMock.member.findFirst.mockResolvedValueOnce({ id: "mem-123", role: "admin" });
-
       const res = await request(app)
         .post("/api/v1/workspaces")
         .send({ name: "Acme Web", slug: "Acme_Web!Spaces" }); // Capitals and special symbols not allowed in schema regex
