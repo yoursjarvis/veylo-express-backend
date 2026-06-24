@@ -6,6 +6,9 @@ import { taskExtrasController } from "@/app/http/controllers/task-extras.control
 import { notificationController } from "@/app/http/controllers/notification.controller";
 import { slackWebhookController } from "@/app/http/controllers/slack-webhook.controller";
 import { dependencyController } from "@/app/http/controllers/dependency.controller";
+import { epicController } from "@/app/http/controllers/epic.controller";
+import { labelController } from "@/app/http/controllers/label.controller";
+import { milestoneController } from "@/app/http/controllers/milestone.controller";
 
 export const taskRoutes = Router();
 
@@ -63,4 +66,24 @@ taskRoutes.delete("/slack-webhooks/:id", slackWebhookController.deleteWebhook);
 taskRoutes.get("/tasks/:taskId/dependencies", dependencyController.getDependencies);
 taskRoutes.post("/tasks/:taskId/dependencies", dependencyController.createDependency);
 taskRoutes.delete("/dependencies/:id", dependencyController.deleteDependency);
+
+// --- EPIC CRUD ---
+taskRoutes.post("/projects/:projectId/epics", epicController.createEpic);
+taskRoutes.get("/projects/:projectId/epics", epicController.getEpics);
+taskRoutes.get("/epics/:id", epicController.getEpic);
+taskRoutes.patch("/epics/:id", epicController.updateEpic);
+taskRoutes.delete("/epics/:id", epicController.deleteEpic);
+
+// --- LABEL CRUD ---
+taskRoutes.post("/projects/:projectId/labels", labelController.createLabel);
+taskRoutes.get("/projects/:projectId/labels", labelController.getLabels);
+taskRoutes.patch("/labels/:id", labelController.updateLabel);
+taskRoutes.delete("/labels/:id", labelController.deleteLabel);
+
+// --- MILESTONE CRUD ---
+taskRoutes.post("/projects/:projectId/milestones", milestoneController.createMilestone);
+taskRoutes.get("/projects/:projectId/milestones", milestoneController.getMilestones);
+taskRoutes.patch("/milestones/:id", milestoneController.updateMilestone);
+taskRoutes.delete("/milestones/:id", milestoneController.deleteMilestone);
+
 

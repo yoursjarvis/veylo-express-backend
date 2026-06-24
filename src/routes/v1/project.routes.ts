@@ -8,6 +8,8 @@ export const projectRoutes = Router();
 // Projects management
 projectRoutes.post("/workspaces/:workspaceId/projects", requireAuth, projectController.createProject);
 projectRoutes.get("/workspaces/:workspaceId/projects", requireAuth, projectController.getProjects);
+projectRoutes.get("/project-templates", projectController.getProjectTemplates);
+projectRoutes.get("/project-templates/:slug", projectController.getProjectTemplateBySlug);
 
 projectRoutes.get("/projects/:id", requireAuth, projectController.getProject);
 projectRoutes.patch("/projects/:id", requireAuth, projectController.updateProject);

@@ -1,89 +1,27 @@
 import { asyncHandler } from "@/app/http/middlewares/async-handler.middleware";
+import { verifyProjectAccess } from "@/app/http/middlewares/project-access.middleware";
 import prisma from "@/lib/prisma";
 import { ok } from "@/utils/http-response";
 import type { Request, Response } from "express";
-import { auth } from "@/lib/auth/auth";
-import { betterAuthHeaders } from "@/lib/auth/node-headers";
 import { z } from "zod";
 import {
-  UnauthorizedException,
   ForbiddenException,
   BadRequestException,
   NotFoundException,
 } from "@/utils/app-error";
 import { notificationService } from "@/app/services/notification.service";
 
-async function verifyProjectAccess(req: Request, projectId: string) {
-  const session = await auth.api.getSession({
-    headers: betterAuthHeaders(req),
-  });
-
-  if (!session?.user) {
-    throw new UnauthorizedException();
-  }
-
-  const activeOrgId = session.session.activeOrganizationId;
-  if (!activeOrgId) {
-    throw new BadRequestException("No active organization found");
-  }
-
-  const project = await prisma.project.findUnique({
-    where: { id: projectId },
-  });
-
-  if (!project) {
-    throw new NotFoundException("Project not found");
-  }
-
-  // Check Org Admin/Owner
-  const callerOrgMember = await prisma.member.findFirst({
-    where: {
-      organizationId: activeOrgId,
-      userId: session.user.id,
-      role: { in: ["owner", "admin"] },
-    },
-  });
-
-  if (callerOrgMember) {
-    return { activeOrgId, userId: session.user.id, project };
-  }
-
-  // Check Workspace Admin
-  const callerWorkspaceMember = await prisma.workspaceMember.findFirst({
-    where: {
-      workspaceId: project.workspaceId,
-      userId: session.user.id,
-      role: "admin",
-      workspace: { organizationId: activeOrgId },
-    },
-  });
-
-  if (callerWorkspaceMember) {
-    return { activeOrgId, userId: session.user.id, project };
-  }
-
-  // Check Project Member
-  const projectMember = await prisma.projectMember.findUnique({
-    where: {
-      projectId_userId: {
-        projectId,
-        userId: session.user.id,
-      },
-    },
-  });
-
-  if (!projectMember) {
-    throw new ForbiddenException("Forbidden: You must be a project member or workspace/org admin");
-  }
-
-  return { activeOrgId, userId: session.user.id, project };
-}
-
 // Validation schemas
 const statusSchema = z.object({
   name: z.string().min(1, "Status name is required"),
   category: z.enum(["backlog", "todo", "in_progress", "done"]),
   order: z.number().int().optional().default(0),
+});
+
+const statusUpdateSchema = z.object({
+  name: z.string().min(1, "Status name is required").optional(),
+  category: z.enum(["backlog", "todo", "in_progress", "done"]).optional(),
+  order: z.number().int().optional(),
 });
 
 const subtaskSchema = z.object({
@@ -100,14 +38,15 @@ const commentSchema = z.object({
 const customFieldSchema = z.object({
   name: z.string().min(1, "Field name is required"),
   type: z.enum(["text", "number", "date", "select", "checkbox"]),
-  options: z.array(z.string()).optional().nullable(), // For select type
+  options: z.array(z.string()).optional().nullable(),
 });
 
 export const taskExtrasController = {
   // --- TASK STATUS CODES ---
   createStatus: asyncHandler(async (req: Request, res: Response) => {
     const projectId = req.params.projectId as string;
-    await verifyProjectAccess(req, projectId);
+    const { project } = await verifyProjectAccess(req, projectId);
+    const { organizationId } = project;
 
     const validatedData = statusSchema.parse(req.body);
 
@@ -124,6 +63,7 @@ export const taskExtrasController = {
         category: validatedData.category,
         order: validatedData.order,
         projectId,
+        organizationId,
       },
     });
 
@@ -154,7 +94,7 @@ export const taskExtrasController = {
 
     await verifyProjectAccess(req, existingStatus.projectId);
 
-    const validatedData = statusSchema.partial().parse(req.body);
+    const validatedData = statusUpdateSchema.parse(req.body);
 
     const updated = await prisma.taskStatus.update({
       where: { id: statusId },
@@ -176,7 +116,6 @@ export const taskExtrasController = {
 
     await verifyProjectAccess(req, existingStatus.projectId);
 
-    // Safety check: verify if there are active tasks mapped to this status
     const tasksCount = await prisma.task.count({
       where: { statusId, deletedAt: null },
     });
@@ -197,32 +136,27 @@ export const taskExtrasController = {
   createSubtask: asyncHandler(async (req: Request, res: Response) => {
     const taskId = req.params.taskId as string;
 
-    const task = await prisma.task.findUnique({
-      where: { id: taskId },
-    });
+    const task = await prisma.task.findUnique({ where: { id: taskId } });
     if (!task) {
       throw new NotFoundException("Parent task not found");
     }
 
-    const { userId } = await verifyProjectAccess(req, task.projectId);
+    const { userId, project } = await verifyProjectAccess(req, task.projectId);
+    const { organizationId } = project;
     const validatedData = subtaskSchema.parse(req.body);
 
     const subtask = await prisma.subtask.create({
       data: {
         title: validatedData.title,
         taskId,
-        assigneeId: validatedData.assigneeId || null,
+        organizationId,
+        assigneeId: validatedData.assigneeId ?? null,
         isCompleted: false,
       },
     });
 
     await prisma.taskActivity.create({
-      data: {
-        taskId,
-        userId,
-        action: "subtask_added",
-        newValue: subtask.title,
-      },
+      data: { taskId, userId, organizationId, action: "subtask_added", newValue: subtask.title },
     });
 
     return ok(res, "Subtask added successfully", subtask);
@@ -239,7 +173,8 @@ export const taskExtrasController = {
       throw new NotFoundException("Subtask not found");
     }
 
-    const { userId } = await verifyProjectAccess(req, subtask.task.projectId);
+    const { userId, project } = await verifyProjectAccess(req, subtask.task.projectId);
+    const { organizationId } = project;
     const validatedData = subtaskSchema.partial().parse(req.body);
 
     const updated = await prisma.subtask.update({
@@ -247,12 +182,12 @@ export const taskExtrasController = {
       data: validatedData,
     });
 
-    // Log complete toggle check
     if (validatedData.isCompleted !== undefined && validatedData.isCompleted !== subtask.isCompleted) {
       await prisma.taskActivity.create({
         data: {
           taskId: subtask.taskId,
           userId,
+          organizationId,
           action: validatedData.isCompleted ? "subtask_completed" : "subtask_reopened",
           newValue: subtask.title,
         },
@@ -273,19 +208,13 @@ export const taskExtrasController = {
       throw new NotFoundException("Subtask not found");
     }
 
-    const { userId } = await verifyProjectAccess(req, subtask.task.projectId);
+    const { userId, project } = await verifyProjectAccess(req, subtask.task.projectId);
+    const { organizationId } = project;
 
-    await prisma.subtask.delete({
-      where: { id: subtaskId },
-    });
+    await prisma.subtask.delete({ where: { id: subtaskId } });
 
     await prisma.taskActivity.create({
-      data: {
-        taskId: subtask.taskId,
-        userId,
-        action: "subtask_deleted",
-        oldValue: subtask.title,
-      },
+      data: { taskId: subtask.taskId, userId, organizationId, action: "subtask_deleted", oldValue: subtask.title },
     });
 
     return ok(res, "Subtask deleted successfully");
@@ -295,14 +224,13 @@ export const taskExtrasController = {
   createComment: asyncHandler(async (req: Request, res: Response) => {
     const taskId = req.params.taskId as string;
 
-    const task = await prisma.task.findUnique({
-      where: { id: taskId },
-    });
+    const task = await prisma.task.findUnique({ where: { id: taskId } });
     if (!task) {
       throw new NotFoundException("Task not found");
     }
 
-    const { userId } = await verifyProjectAccess(req, task.projectId);
+    const { userId, project } = await verifyProjectAccess(req, task.projectId);
+    const { organizationId } = project;
     const validatedData = commentSchema.parse(req.body);
 
     const comment = await prisma.comment.create({
@@ -310,7 +238,8 @@ export const taskExtrasController = {
         content: validatedData.content,
         taskId,
         userId,
-        parentId: validatedData.parentId || null,
+        organizationId,
+        parentId: validatedData.parentId ?? null,
       },
       include: {
         user: { select: { id: true, name: true, image: true } },
@@ -318,15 +247,10 @@ export const taskExtrasController = {
     });
 
     await prisma.taskActivity.create({
-      data: {
-        taskId,
-        userId,
-        action: "comment_added",
-        newValue: "Added a comment",
-      },
+      data: { taskId, userId, organizationId, action: "comment_added", newValue: "Added a comment" },
     });
 
-    // Trigger comment added notifications
+    // Trigger comment added notifications (fire-and-forget)
     notificationService.handleCommentAdded(comment.id, userId);
 
     return ok(res, "Comment added successfully", comment);
@@ -343,47 +267,32 @@ export const taskExtrasController = {
       throw new NotFoundException("Comment not found");
     }
 
-    const { userId } = await verifyProjectAccess(req, comment.task.projectId);
+    const { userId, activeOrgId } = await verifyProjectAccess(req, comment.task.projectId);
 
-    // Verify if caller is either the comment author OR holds admin/owner roles in project/workspace/org
     const isAuthor = comment.userId === userId;
-    let isAdmin = false;
 
     if (!isAuthor) {
-      const session = await auth.api.getSession({
-        headers: betterAuthHeaders(req),
+      // Only org/workspace admins can delete others' comments
+      const callerOrgMember = await prisma.member.findFirst({
+        where: { organizationId: activeOrgId, userId, role: { in: ["owner", "admin"] } },
       });
-      const activeOrgId = session?.session.activeOrganizationId;
-      if (activeOrgId) {
-        const callerOrgMember = await prisma.member.findFirst({
-          where: {
-            organizationId: activeOrgId,
-            userId,
-            role: { in: ["owner", "admin"] },
-          },
-        });
-        if (callerOrgMember) isAdmin = true;
 
-        if (!isAdmin) {
-          const workspaceMember = await prisma.workspaceMember.findFirst({
+      const callerWorkspaceMember = !callerOrgMember
+        ? await prisma.workspaceMember.findFirst({
             where: {
-              workspaceId: comment.task.projectId, // project's workspace checking needed, let's fetch it
+              workspaceId: comment.task.projectId,
               userId,
               role: "admin",
             },
-          });
-          if (workspaceMember) isAdmin = true;
-        }
+          })
+        : null;
+
+      if (!callerOrgMember && !callerWorkspaceMember) {
+        throw new ForbiddenException("Forbidden: You can only delete your own comments");
       }
     }
 
-    if (!isAuthor && !isAdmin) {
-      throw new ForbiddenException("Forbidden: You can only delete your own comments");
-    }
-
-    await prisma.comment.delete({
-      where: { id: commentId },
-    });
+    await prisma.comment.delete({ where: { id: commentId } });
 
     return ok(res, "Comment deleted successfully");
   }),
@@ -401,9 +310,7 @@ export const taskExtrasController = {
 
     const { userId } = await verifyProjectAccess(req, comment.task.projectId);
 
-    // Verify if caller is the comment author
-    const isAuthor = comment.userId === userId;
-    if (!isAuthor) {
+    if (comment.userId !== userId) {
       throw new ForbiddenException("Forbidden: You can only edit your own comments");
     }
 
@@ -411,10 +318,7 @@ export const taskExtrasController = {
 
     const updatedComment = await prisma.comment.update({
       where: { id: commentId },
-      data: {
-        content: validatedData.content,
-        isEdited: true,
-      },
+      data: { content: validatedData.content, isEdited: true },
       include: {
         user: { select: { id: true, name: true, image: true, email: true } },
       },
@@ -426,7 +330,8 @@ export const taskExtrasController = {
   // --- CUSTOM FIELDS ---
   createCustomField: asyncHandler(async (req: Request, res: Response) => {
     const projectId = req.params.projectId as string;
-    await verifyProjectAccess(req, projectId);
+    const { project } = await verifyProjectAccess(req, projectId);
+    const { organizationId } = project;
 
     const validatedData = customFieldSchema.parse(req.body);
 
@@ -441,8 +346,9 @@ export const taskExtrasController = {
       data: {
         name: validatedData.name,
         type: validatedData.type,
-        options: validatedData.options ? (validatedData.options as any) : undefined,
+        options: validatedData.options ?? undefined,
         projectId,
+        organizationId,
       },
     });
 
@@ -464,18 +370,14 @@ export const taskExtrasController = {
   deleteCustomField: asyncHandler(async (req: Request, res: Response) => {
     const fieldId = req.params.id as string;
 
-    const field = await prisma.customFieldDefinition.findUnique({
-      where: { id: fieldId },
-    });
+    const field = await prisma.customFieldDefinition.findUnique({ where: { id: fieldId } });
     if (!field) {
       throw new NotFoundException("Custom field not found");
     }
 
     await verifyProjectAccess(req, field.projectId);
 
-    await prisma.customFieldDefinition.delete({
-      where: { id: fieldId },
-    });
+    await prisma.customFieldDefinition.delete({ where: { id: fieldId } });
 
     return ok(res, "Custom field deleted successfully");
   }),
@@ -502,17 +404,15 @@ export const taskExtrasController = {
       orderBy: { createdAt: "asc" },
     });
 
-    const users = reactions.map((r) => r.user);
-    return ok(res, "Users fetched successfully", users);
+    return ok(res, "Users fetched successfully", reactions.map((r) => r.user));
   }),
 
   toggleCommentReaction: asyncHandler(async (req: Request, res: Response) => {
     const commentId = req.params.commentId as string;
-    const emojiSchema = z.object({
-      emoji: z.string().min(1, "Emoji is required"),
-    });
-    const validatedData = emojiSchema.parse(req.body);
-    const emoji = validatedData.emoji.trim();
+    const { emoji: rawEmoji } = z
+      .object({ emoji: z.string().min(1, "Emoji is required") })
+      .parse(req.body);
+    const emoji = rawEmoji.trim();
 
     const comment = await prisma.comment.findUnique({
       where: { id: commentId },
@@ -524,33 +424,18 @@ export const taskExtrasController = {
 
     const { userId } = await verifyProjectAccess(req, comment.task.projectId);
 
-    // Check if reaction already exists
     const existing = await prisma.commentReaction.findUnique({
-      where: {
-        commentId_userId_emoji: {
-          commentId,
-          userId,
-          emoji,
-        },
-      },
+      where: { commentId_userId_emoji: { commentId, userId, emoji } },
     });
 
     if (existing) {
-      // Toggle off: remove reaction
-      await prisma.commentReaction.delete({
-        where: { id: existing.id },
-      });
+      await prisma.commentReaction.delete({ where: { id: existing.id } });
       return ok(res, "Reaction removed successfully", { toggledOn: false });
-    } else {
-      // Toggle on: add reaction
-      const reaction = await prisma.commentReaction.create({
-        data: {
-          commentId,
-          userId,
-          emoji,
-        },
-      });
-      return ok(res, "Reaction added successfully", { toggledOn: true, reaction });
     }
+
+    const reaction = await prisma.commentReaction.create({
+      data: { commentId, userId, emoji },
+    });
+    return ok(res, "Reaction added successfully", { toggledOn: true, reaction });
   }),
 };

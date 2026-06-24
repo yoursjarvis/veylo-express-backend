@@ -1,94 +1,49 @@
 import { asyncHandler } from "@/app/http/middlewares/async-handler.middleware";
+import { verifyProjectAccess } from "@/app/http/middlewares/project-access.middleware";
 import prisma from "@/lib/prisma";
 import { ok } from "@/utils/http-response";
 import type { Request, Response } from "express";
-import { auth } from "@/lib/auth/auth";
-import { betterAuthHeaders } from "@/lib/auth/node-headers";
 import { z } from "zod";
 import {
-  UnauthorizedException,
-  ForbiddenException,
   BadRequestException,
   NotFoundException,
 } from "@/utils/app-error";
 import { notificationService } from "@/app/services/notification.service";
 
-// Local helper to verify access
-async function verifyProjectAccess(req: Request, projectId: string) {
-  const session = await auth.api.getSession({
-    headers: betterAuthHeaders(req),
-  });
+async function logActivity(
+  taskId: string,
+  userId: string,
+  organizationIdOrAction: string,
+  actionOrOldValue?: string | null,
+  oldValueOrNewValue?: string | null,
+  newValue?: string | null
+) {
+  let organizationId = organizationIdOrAction;
+  let action = actionOrOldValue as string;
+  let oldValue = oldValueOrNewValue;
+  let valNew = newValue;
 
-  if (!session?.user) {
-    throw new UnauthorizedException();
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!uuidRegex.test(organizationId)) {
+    action = organizationIdOrAction;
+    oldValue = actionOrOldValue;
+    valNew = oldValueOrNewValue;
+
+    const task = await prisma.task.findUnique({
+      where: { id: taskId },
+      select: { organizationId: true },
+    });
+    organizationId = task?.organizationId || "";
   }
 
-  const activeOrgId = session.session.activeOrganizationId;
-  if (!activeOrgId) {
-    throw new BadRequestException("No active organization found");
-  }
-
-  const project = await prisma.project.findUnique({
-    where: { id: projectId },
-  });
-
-  if (!project) {
-    throw new NotFoundException("Project not found");
-  }
-
-  // Check Org Admin/Owner
-  const callerOrgMember = await prisma.member.findFirst({
-    where: {
-      organizationId: activeOrgId,
-      userId: session.user.id,
-      role: { in: ["owner", "admin"] },
-    },
-  });
-
-  if (callerOrgMember) {
-    return { activeOrgId, userId: session.user.id, project };
-  }
-
-  // Check Workspace Admin
-  const callerWorkspaceMember = await prisma.workspaceMember.findFirst({
-    where: {
-      workspaceId: project.workspaceId,
-      userId: session.user.id,
-      role: "admin",
-      workspace: { organizationId: activeOrgId },
-    },
-  });
-
-  if (callerWorkspaceMember) {
-    return { activeOrgId, userId: session.user.id, project };
-  }
-
-  // Check Project Member
-  const projectMember = await prisma.projectMember.findUnique({
-    where: {
-      projectId_userId: {
-        projectId,
-        userId: session.user.id,
-      },
-    },
-  });
-
-  if (!projectMember) {
-    throw new ForbiddenException("Forbidden: You must be a project member or workspace/org admin");
-  }
-
-  return { activeOrgId, userId: session.user.id, project };
-}
-
-// Helper to log task activity
-async function logActivity(taskId: string, userId: string, action: string, oldValue?: string | null, newValue?: string | null) {
   await prisma.taskActivity.create({
     data: {
       taskId,
       userId,
+      organizationId,
       action,
-      oldValue: oldValue || null,
-      newValue: newValue || null,
+      oldValue: oldValue ?? null,
+      newValue: valNew ?? null,
     },
   });
 }
@@ -98,20 +53,38 @@ const taskCreateSchema = z.object({
   description: z.string().optional().nullable(),
   statusId: z.string().uuid("Invalid status ID"),
   sprintId: z.string().uuid().optional().nullable(),
+  epicId: z.string().uuid().optional().nullable(),
+  milestoneId: z.string().uuid().optional().nullable(),
   type: z.enum(["task", "bug", "feature"]).optional().default("task"),
   priority: z.enum(["low", "medium", "high", "urgent"]).optional().default("medium"),
   estimate: z.number().optional().nullable(),
   dueDate: z.string().datetime().optional().nullable(),
   assigneeId: z.string().uuid().optional().nullable(),
   customFields: z.record(z.string(), z.any()).optional().default({}),
+  labelIds: z.array(z.string().uuid()).optional(),
 });
 
-const taskUpdateSchema = taskCreateSchema.partial();
+const taskUpdateSchema = z.object({
+  title: z.string().min(1, "Title is required").optional(),
+  description: z.string().optional().nullable(),
+  statusId: z.string().uuid("Invalid status ID").optional(),
+  sprintId: z.string().uuid().optional().nullable(),
+  epicId: z.string().uuid().optional().nullable(),
+  milestoneId: z.string().uuid().optional().nullable(),
+  type: z.enum(["task", "bug", "feature"]).optional(),
+  priority: z.enum(["low", "medium", "high", "urgent"]).optional(),
+  estimate: z.number().optional().nullable(),
+  dueDate: z.string().datetime().optional().nullable(),
+  assigneeId: z.string().uuid().optional().nullable(),
+  customFields: z.record(z.string(), z.any()).optional(),
+  labelIds: z.array(z.string().uuid()).optional(),
+});
 
 export const taskController = {
   createTask: asyncHandler(async (req: Request, res: Response) => {
     const projectId = req.params.projectId as string;
-    const { userId } = await verifyProjectAccess(req, projectId);
+    const { userId, project } = await verifyProjectAccess(req, projectId);
+    const { organizationId } = project;
 
     const validatedData = taskCreateSchema.parse(req.body);
 
@@ -133,6 +106,26 @@ export const taskController = {
       }
     }
 
+    // Verify epic belongs to project
+    if (validatedData.epicId) {
+      const epic = await prisma.epic.findFirst({
+        where: { id: validatedData.epicId, projectId },
+      });
+      if (!epic) {
+        throw new BadRequestException("Selected epic does not belong to this project");
+      }
+    }
+
+    // Verify milestone belongs to project
+    if (validatedData.milestoneId) {
+      const milestone = await prisma.milestone.findFirst({
+        where: { id: validatedData.milestoneId, projectId },
+      });
+      if (!milestone) {
+        throw new BadRequestException("Selected milestone does not belong to this project");
+      }
+    }
+
     // Create task
     const task = await prisma.task.create({
       data: {
@@ -140,25 +133,38 @@ export const taskController = {
         description: validatedData.description,
         statusId: validatedData.statusId,
         projectId,
-        sprintId: validatedData.sprintId || null,
+        organizationId,
+        sprintId: validatedData.sprintId ?? null,
+        epicId: validatedData.epicId ?? null,
+        milestoneId: validatedData.milestoneId ?? null,
         type: validatedData.type,
         priority: validatedData.priority,
         estimate: validatedData.estimate,
         dueDate: validatedData.dueDate ? new Date(validatedData.dueDate) : null,
         creatorId: userId,
-        assigneeId: validatedData.assigneeId || null,
+        assigneeId: validatedData.assigneeId ?? null,
         customFields: validatedData.customFields,
+        labels: validatedData.labelIds && validatedData.labelIds.length > 0 ? {
+          create: validatedData.labelIds.map((labelId) => ({ labelId })),
+        } : undefined,
       },
       include: {
         status: true,
         assignee: {
           select: { id: true, name: true, image: true, email: true },
         },
+        epic: true,
+        milestone: true,
+        labels: {
+          include: {
+            label: true,
+          },
+        },
       },
     });
 
     // Log creation
-    await logActivity(task.id, userId, "created", null, task.title);
+    await logActivity(task.id, userId, organizationId, "created", null, task.title);
 
     // Trigger notification in background
     notificationService.handleTaskCreated(task.id, userId);
@@ -170,7 +176,7 @@ export const taskController = {
     const projectId = req.params.projectId as string;
     await verifyProjectAccess(req, projectId);
 
-    const { sprintId, assigneeId, statusId, priority, type, search } = req.query;
+    const { sprintId, assigneeId, statusId, priority, type, search, epicId, milestoneId, labelId } = req.query;
 
     const whereClause: any = {
       projectId,
@@ -181,6 +187,27 @@ export const taskController = {
       whereClause.sprintId = null;
     } else if (sprintId) {
       whereClause.sprintId = sprintId as string;
+    }
+
+    if (epicId === "null") {
+      whereClause.epicId = null;
+    } else if (epicId) {
+      whereClause.epicId = epicId as string;
+    }
+
+    if (milestoneId === "null") {
+      whereClause.milestoneId = null;
+    } else if (milestoneId) {
+      whereClause.milestoneId = milestoneId as string;
+    }
+
+    if (labelId) {
+      const labelIds = (labelId as string).split(",");
+      whereClause.labels = {
+        some: {
+          labelId: { in: labelIds },
+        },
+      };
     }
 
     if (assigneeId === "null") {
@@ -215,6 +242,13 @@ export const taskController = {
         assignee: {
           select: { id: true, name: true, image: true, email: true },
         },
+        epic: true,
+        milestone: true,
+        labels: {
+          include: {
+            label: true,
+          },
+        },
         _count: {
           select: { subtasks: true, comments: true },
         },
@@ -237,6 +271,13 @@ export const taskController = {
         },
         creator: {
           select: { id: true, name: true, image: true, email: true },
+        },
+        epic: true,
+        milestone: true,
+        labels: {
+          include: {
+            label: true,
+          },
         },
         subtasks: {
           include: {
@@ -281,7 +322,7 @@ export const taskController = {
 
     const existingTask = await prisma.task.findUnique({
       where: { id: taskId },
-      include: { status: true, assignee: true, sprint: true },
+      include: { status: true, assignee: true, sprint: true, epic: true, milestone: true },
     });
 
     if (!existingTask) {
@@ -391,6 +432,62 @@ export const taskController = {
       );
     }
 
+    // Validate and audit epic change
+    if (validatedData.epicId !== undefined && validatedData.epicId !== existingTask.epicId) {
+      let epicName = "None";
+      if (validatedData.epicId) {
+        const epic = await prisma.epic.findFirst({
+          where: { id: validatedData.epicId, projectId: existingTask.projectId },
+        });
+        if (!epic) {
+          throw new BadRequestException("Selected epic does not belong to this project");
+        }
+        updateData.epicId = validatedData.epicId;
+        epicName = epic.title;
+      } else {
+        updateData.epicId = null;
+      }
+      await logActivity(
+        taskId,
+        userId,
+        "epic_changed",
+        existingTask.epic?.title || "None",
+        epicName
+      );
+    }
+
+    // Validate and audit milestone change
+    if (validatedData.milestoneId !== undefined && validatedData.milestoneId !== existingTask.milestoneId) {
+      let milestoneName = "None";
+      if (validatedData.milestoneId) {
+        const milestone = await prisma.milestone.findFirst({
+          where: { id: validatedData.milestoneId, projectId: existingTask.projectId },
+        });
+        if (!milestone) {
+          throw new BadRequestException("Selected milestone does not belong to this project");
+        }
+        updateData.milestoneId = validatedData.milestoneId;
+        milestoneName = milestone.title;
+      } else {
+        updateData.milestoneId = null;
+      }
+      await logActivity(
+        taskId,
+        userId,
+        "milestone_changed",
+        existingTask.milestone?.title || "None",
+        milestoneName
+      );
+    }
+
+    // Handle labelIds changes
+    if (validatedData.labelIds !== undefined) {
+      updateData.labels = {
+        deleteMany: {},
+        create: validatedData.labelIds.map((labelId) => ({ labelId })),
+      };
+    }
+
     // Rest of fields
     if (validatedData.title !== undefined) updateData.title = validatedData.title;
     if (validatedData.description !== undefined) updateData.description = validatedData.description;
@@ -407,6 +504,13 @@ export const taskController = {
         status: true,
         assignee: {
           select: { id: true, name: true, image: true, email: true },
+        },
+        epic: true,
+        milestone: true,
+        labels: {
+          include: {
+            label: true,
+          },
         },
       },
     });

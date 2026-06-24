@@ -47,7 +47,7 @@ describe("authController", () => {
         first_name: "Jane",
         last_name: "Doe",
         email: "jane@example.com",
-        password: "super-secure-password",
+        password: "secure-password",
       },
     };
     const res = createRes();
@@ -58,7 +58,7 @@ describe("authController", () => {
       firstName: "Jane",
       lastName: "Doe",
       email: "jane@example.com",
-      password: "super-secure-password",
+      password: "secure-password",
     });
     expect(res.json).toHaveBeenCalledWith({
       success: true,
@@ -72,7 +72,7 @@ describe("authController", () => {
     authServiceMock.login.mockResolvedValueOnce(undefined);
 
     const req: any = {
-      body: { email: "jane@example.com", password: "pw" },
+      body: { email: "jane@example.com", password: "password" },
     };
     const res = createRes();
 
@@ -80,7 +80,7 @@ describe("authController", () => {
 
     expect(authServiceMock.login).toHaveBeenCalledWith(req, res, {
       email: "jane@example.com",
-      password: "pw",
+      password: "password",
     });
     expect(res.json).toHaveBeenCalledWith({
       success: true,
@@ -251,7 +251,7 @@ describe("authController", () => {
     const req: any = {
       body: {
         token: "0123456789TOKEN",
-        new_password: "super-secure-password",
+        new_password: "secure-password",
       },
     };
     const res = createRes();
@@ -260,7 +260,7 @@ describe("authController", () => {
 
     expect(authServiceMock.resetPassword).toHaveBeenCalledWith(req, res, {
       token: "0123456789TOKEN",
-      newPassword: "super-secure-password",
+      newPassword: "secure-password",
     });
     expect(res.json).toHaveBeenCalledWith({
       success: true,
@@ -287,7 +287,7 @@ describe("authController", () => {
   it("changePassword: validates input, calls service, and returns ok", async () => {
     authServiceMock.changePassword.mockResolvedValueOnce(undefined);
     const req: any = {
-      body: { current_password: "current", new_password: "super-secure-password" },
+      body: { current_password: "current", new_password: "secure-password" },
     };
     const res = createRes();
 
@@ -295,7 +295,7 @@ describe("authController", () => {
 
     expect(authServiceMock.changePassword).toHaveBeenCalledWith(req, res, {
       currentPassword: "current",
-      newPassword: "super-secure-password",
+      newPassword: "secure-password",
     });
     expect(res.json).toHaveBeenCalledWith({
       success: true,
@@ -340,7 +340,7 @@ describe("authController", () => {
 
     await (authController.revokeSession as any)(req, res);
 
-    expect(authServiceMock.revokeSession).toHaveBeenCalledWith(req, 42);
+    expect(authServiceMock.revokeSession).toHaveBeenCalledWith(req, "42");
     expect(res.json).toHaveBeenCalledWith({
       success: true,
       message: "Session revoked",

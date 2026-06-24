@@ -1,22 +1,21 @@
 import { asyncHandler } from "@/app/http/middlewares/async-handler.middleware";
+import {
+  verifyProjectAccess,
+  verifyProjectAdmin,
+  verifyWorkspaceAdmin,
+  resolveSession,
+} from "@/app/http/middlewares/project-access.middleware";
 import prisma from "@/lib/prisma";
 import { ok } from "@/utils/http-response";
 import type { Request, Response } from "express";
-import { auth } from "@/lib/auth/auth";
-import { betterAuthHeaders } from "@/lib/auth/node-headers";
 import { z } from "zod";
 import { encrypt, decrypt } from "@/utils/crypto";
 import { mediaService } from "@/core/media";
 import path from "path";
 import {
-  UnauthorizedException,
-  ForbiddenException,
   BadRequestException,
   NotFoundException,
 } from "@/utils/app-error";
-
-// Relax prisma type checks for newly added models to bypass local/global schema mismatch
-const db = prisma as any;
 
 // Malicious files filtering constants
 const DISALLOWED_EXTENSIONS = [
@@ -40,146 +39,23 @@ const DISALLOWED_MIMETYPES = [
   "application/x-sharedlib"
 ];
 
-/**
- * Verify if the caller is an Org Admin/Owner, or a Workspace Admin.
- */
-async function verifyWorkspaceAdmin(req: Request, workspaceId: string) {
-  const session = await auth.api.getSession({
-    headers: betterAuthHeaders(req),
-  });
-
-  if (!session?.user) {
-    throw new UnauthorizedException();
-  }
-
-  const activeOrgId = session.session.activeOrganizationId;
-  if (!activeOrgId) {
-    throw new BadRequestException("No active organization found");
-  }
-
-  // Check Org Admin/Owner
-  const callerOrgMember = await db.member.findFirst({
-    where: {
-      organizationId: activeOrgId,
-      userId: session.user.id,
-      role: { in: ["owner", "admin"] },
-    },
-  });
-
-  if (callerOrgMember) {
-    return { activeOrgId, userId: session.user.id };
-  }
-
-  // Check Workspace Admin
-  const callerWorkspaceMember = await db.workspaceMember.findFirst({
-    where: {
-      workspaceId,
-      userId: session.user.id,
-      role: "admin",
-      workspace: { organizationId: activeOrgId },
-    },
-  });
-
-  if (!callerWorkspaceMember) {
-    throw new ForbiddenException("Forbidden: You must be an organization or workspace admin");
-  }
-
-  return { activeOrgId, userId: session.user.id };
-}
-
-/**
- * Verify if caller is Workspace Admin / Org Admin for a specific project.
- */
-async function verifyProjectAdmin(req: Request, projectId: string) {
-  const project = await db.project.findUnique({
-    where: { id: projectId },
-  });
-
-  if (!project) {
-    throw new NotFoundException("Project not found");
-  }
-
-  const verified = await verifyWorkspaceAdmin(req, project.workspaceId);
-  return { ...verified, project };
-}
-
-/**
- * Verify if the caller has access to the project (Org Admin, Workspace Admin, or Project Member).
- */
-async function verifyProjectAccess(req: Request, projectId: string) {
-  const session = await auth.api.getSession({
-    headers: betterAuthHeaders(req),
-  });
-
-  if (!session?.user) {
-    throw new UnauthorizedException();
-  }
-
-  const activeOrgId = session.session.activeOrganizationId;
-  if (!activeOrgId) {
-    throw new BadRequestException("No active organization found");
-  }
-
-  const project = await db.project.findUnique({
-    where: { id: projectId },
-  });
-
-  if (!project) {
-    throw new NotFoundException("Project not found");
-  }
-
-  // Check Org Admin/Owner
-  const callerOrgMember = await db.member.findFirst({
-    where: {
-      organizationId: activeOrgId,
-      userId: session.user.id,
-      role: { in: ["owner", "admin"] },
-    },
-  });
-
-  if (callerOrgMember) {
-    return { activeOrgId, userId: session.user.id, project };
-  }
-
-  // Check Workspace Admin
-  const callerWorkspaceMember = await db.workspaceMember.findFirst({
-    where: {
-      workspaceId: project.workspaceId,
-      userId: session.user.id,
-      role: "admin",
-      workspace: { organizationId: activeOrgId },
-    },
-  });
-
-  if (callerWorkspaceMember) {
-    return { activeOrgId, userId: session.user.id, project };
-  }
-
-  // Check Project Member
-  const projectMember = await db.projectMember.findUnique({
-    where: {
-      projectId_userId: {
-        projectId,
-        userId: session.user.id,
-      },
-    },
-  });
-
-  if (!projectMember) {
-    throw new ForbiddenException("Forbidden: You must be a project member or workspace/org admin");
-  }
-
-  return { activeOrgId, userId: session.user.id, project };
-}
-
 const projectCreateSchema = z.object({
   title: z.string().min(2, "Project title must be at least 2 characters long"),
   description: z.string().optional(),
   icon: z.string().optional(),
-  template: z.enum(["simple", "kanban", "scrum"]).optional().default("simple"),
+  template: z.string().optional().default("general-project"),
+  teamMode: z.string().optional(),
 });
 
-const DEFAULT_STATUSES = {
+const projectUpdateSchema = z.object({
+  title: z.string().min(2, "Project title must be at least 2 characters long").optional(),
+  description: z.string().optional(),
+  icon: z.string().optional(),
+  template: z.string().optional(),
+  teamMode: z.string().optional(),
+});
+
+const DEFAULT_STATUSES: Record<string, { name: string; category: string; order: number }[]> = {
   simple: [
     { name: "To Do", category: "todo", order: 0 },
     { name: "Done", category: "done", order: 1 },
@@ -202,61 +78,109 @@ const DEFAULT_STATUSES = {
 export const projectController = {
   createProject: asyncHandler(async (req: Request, res: Response) => {
     const workspaceId = req.params.workspaceId as string;
-    await verifyWorkspaceAdmin(req, workspaceId);
+    const { activeOrgId } = await verifyWorkspaceAdmin(req, workspaceId);
 
     const validatedData = projectCreateSchema.parse(req.body);
-    const template = validatedData.template;
+    const templateSlug = validatedData.template;
 
-    const project = await db.project.create({
+    // Load template configuration from database
+    const dbTemplate = await prisma.projectTemplate.findUnique({
+      where: { slug: templateSlug },
+    });
+
+    let resolvedStatuses: { name: string; category: string; order: number }[] = [];
+    let resolvedCustomFields: { name: string; type: string }[] = [];
+    let resolvedTeamMode = validatedData.teamMode || "general";
+
+    if (dbTemplate) {
+      const config = dbTemplate.config as any;
+      if (config.statuses) resolvedStatuses = config.statuses;
+      if (config.customFields) resolvedCustomFields = config.customFields;
+      if (config.teamMode) resolvedTeamMode = validatedData.teamMode || config.teamMode;
+    } else {
+      // Fallback for custom or legacy templates
+      resolvedStatuses = DEFAULT_STATUSES[templateSlug] || DEFAULT_STATUSES["simple"];
+    }
+
+    // Retrieve workspace to get its organizationId
+    const workspace = await prisma.workspace.findUnique({
+      where: { id: workspaceId },
+      select: { organizationId: true },
+    });
+
+    const organizationId = workspace?.organizationId ?? activeOrgId;
+
+    const project = await prisma.project.create({
       data: {
         title: validatedData.title,
         description: validatedData.description,
         icon: validatedData.icon,
-        template,
+        template: templateSlug,
+        teamMode: resolvedTeamMode,
         workspaceId,
+        organizationId,
         vault: {
           create: {},
         },
         taskStatuses: {
           createMany: {
-            data: DEFAULT_STATUSES[template],
+            data: resolvedStatuses.map((s) => ({ ...s, organizationId })),
           },
         },
+        customFields: resolvedCustomFields.length > 0 ? {
+          createMany: {
+            data: resolvedCustomFields.map((cf) => ({
+              name: cf.name,
+              type: cf.type,
+              organizationId,
+            })),
+          },
+        } : undefined,
       },
       include: {
         taskStatuses: true,
+        customFields: true,
       },
     });
 
     return ok(res, "Project created successfully", project);
   }),
 
+  getProjectTemplates: asyncHandler(async (req: Request, res: Response) => {
+    const templates = await prisma.projectTemplate.findMany({
+      orderBy: { name: "asc" },
+    });
+    return ok(res, "Project templates fetched successfully", templates);
+  }),
+
+  getProjectTemplateBySlug: asyncHandler(async (req: Request, res: Response) => {
+    const slug = req.params.slug as string;
+    const template = await prisma.projectTemplate.findUnique({
+      where: { slug },
+    });
+    if (!template) {
+      throw new NotFoundException("Project template not found");
+    }
+    return ok(res, "Project template fetched successfully", template);
+  }),
+
   getProjects: asyncHandler(async (req: Request, res: Response) => {
     const workspaceId = req.params.workspaceId as string;
 
-    const session = await auth.api.getSession({
-      headers: betterAuthHeaders(req),
-    });
-
-    if (!session?.user) {
-      return res.status(401).json({ message: "Unauthorized" });
-    }
-
-    const activeOrgId = session.session.activeOrganizationId;
-    if (!activeOrgId) {
-      return res.status(400).json({ message: "No active organization found" });
-    }
-
-    // Check if user can see all projects in the workspace (Admins/Owners)
     let canSeeAll = false;
+    let userId: string;
+
     try {
-      await verifyWorkspaceAdmin(req, workspaceId);
+      const ctx = await verifyWorkspaceAdmin(req, workspaceId);
       canSeeAll = true;
+      userId = ctx.userId;
     } catch {
-      // User is not an admin, we will filter by project membership
+      // Not an admin — fall back to member-only access
+      const ctx = await resolveSession(req);
+      userId = ctx.userId;
     }
 
-    const projects = await db.project.findMany({
+    const projects = await prisma.project.findMany({
       where: {
         workspaceId,
         deletedAt: null,
@@ -264,9 +188,7 @@ export const projectController = {
           ? {}
           : {
               members: {
-                some: {
-                  userId: session.user.id,
-                },
+                some: { userId },
               },
             }),
       },
@@ -285,7 +207,7 @@ export const projectController = {
     const projectId = req.params.id as string;
     await verifyProjectAccess(req, projectId);
 
-    const projectDetails = await db.project.findUnique({
+    const projectDetails = await prisma.project.findUnique({
       where: { id: projectId },
       include: {
         members: {
@@ -311,12 +233,11 @@ export const projectController = {
 
   updateProject: asyncHandler(async (req: Request, res: Response) => {
     const projectId = req.params.id as string;
-    await db.project.findUnique({ where: { id: projectId } }); // Just verify project exists
     await verifyProjectAdmin(req, projectId);
 
-    const validatedData = projectCreateSchema.partial().parse(req.body);
+    const validatedData = projectUpdateSchema.parse(req.body);
 
-    const updatedProject = await db.project.update({
+    const updatedProject = await prisma.project.update({
       where: { id: projectId },
       data: validatedData,
     });
@@ -328,8 +249,7 @@ export const projectController = {
     const projectId = req.params.id as string;
     await verifyProjectAdmin(req, projectId);
 
-    // Delete project and all related cascades
-    await db.project.delete({
+    await prisma.project.delete({
       where: { id: projectId },
     });
 
@@ -341,7 +261,7 @@ export const projectController = {
     const projectId = req.params.id as string;
     await verifyProjectAccess(req, projectId);
 
-    const members = await db.projectMember.findMany({
+    const members = await prisma.projectMember.findMany({
       where: { projectId },
       include: {
         user: {
@@ -361,14 +281,14 @@ export const projectController = {
   addProjectMembers: asyncHandler(async (req: Request, res: Response) => {
     const projectId = req.params.id as string;
     const { project } = await verifyProjectAdmin(req, projectId);
-    const { userIds } = req.body;
+    const { userIds } = req.body as { userIds: string[] };
 
     if (!Array.isArray(userIds) || userIds.length === 0) {
-      return res.status(400).json({ message: "User IDs are required" });
+      throw new BadRequestException("User IDs are required");
     }
 
-    // Verify all users are members of the Workspace (Requirement 4)
-    const workspaceMembers = await db.workspaceMember.findMany({
+    // Verify all users are members of the Workspace
+    const workspaceMembers = await prisma.workspaceMember.findMany({
       where: {
         workspaceId: project.workspaceId,
         userId: { in: userIds },
@@ -376,14 +296,14 @@ export const projectController = {
     });
 
     if (workspaceMembers.length !== userIds.length) {
-      return res.status(400).json({
-        message: "One or more users are not members of this workspace. Assign them to the workspace first.",
-      });
+      throw new BadRequestException(
+        "One or more users are not members of this workspace. Assign them to the workspace first."
+      );
     }
 
     const members = await Promise.all(
       userIds.map((userId) =>
-        db.projectMember.upsert({
+        prisma.projectMember.upsert({
           where: { projectId_userId: { projectId, userId } },
           update: {},
           create: { projectId, userId, role: "member" },
@@ -399,7 +319,7 @@ export const projectController = {
     const userId = req.params.userId as string;
     await verifyProjectAdmin(req, projectId);
 
-    await db.projectMember.delete({
+    await prisma.projectMember.delete({
       where: { projectId_userId: { projectId, userId } },
     });
 
@@ -411,7 +331,7 @@ export const projectController = {
     const projectId = req.params.id as string;
     await verifyProjectAccess(req, projectId);
 
-    let vault = await db.vault.findUnique({
+    let vault = await prisma.vault.findUnique({
       where: { projectId },
       include: {
         services: {
@@ -426,7 +346,7 @@ export const projectController = {
     });
 
     if (!vault) {
-      vault = await db.vault.create({
+      vault = await prisma.vault.create({
         data: { projectId },
         include: {
           services: {
@@ -442,9 +362,9 @@ export const projectController = {
     }
 
     // Decrypt confidential values and notes securely
-    const services = vault.services.map((service: any) => ({
+    const services = vault.services.map((service) => ({
       ...service,
-      items: service.items.map((item: any) => {
+      items: service.items.map((item) => {
         let decryptedValue = "";
         let decryptedNote: string | null = null;
         try {
@@ -476,7 +396,7 @@ export const projectController = {
 
     const { name } = z.object({ name: z.string().min(1) }).parse(req.body);
 
-    const vault = await db.vault.findUnique({
+    const vault = await prisma.vault.findUnique({
       where: { projectId },
     });
 
@@ -484,8 +404,7 @@ export const projectController = {
       throw new NotFoundException("Vault not found for this project");
     }
 
-    // Check if service name already exists in this vault
-    const existing = await db.vaultService.findFirst({
+    const existing = await prisma.vaultService.findFirst({
       where: { vaultId: vault.id, name },
     });
 
@@ -493,7 +412,7 @@ export const projectController = {
       throw new BadRequestException("Service already exists");
     }
 
-    const service = await db.vaultService.create({
+    const service = await prisma.vaultService.create({
       data: {
         vaultId: vault.id,
         name,
@@ -509,7 +428,7 @@ export const projectController = {
 
     const serviceId = req.params.serviceId as string;
 
-    await db.vaultService.delete({
+    await prisma.vaultService.delete({
       where: { id: serviceId },
     });
 
@@ -529,11 +448,10 @@ export const projectController = {
       })
       .parse(req.body);
 
-    // Encrypt the sensitive fields securely!
     const encryptedValue = encrypt(value);
     const encryptedNote = note ? encrypt(note) : null;
 
-    const item = await db.vaultItem.upsert({
+    const item = await prisma.vaultItem.upsert({
       where: {
         serviceId_key: { serviceId, key },
       },
@@ -571,7 +489,7 @@ export const projectController = {
       })
       .parse(req.body);
 
-    const updateData: any = {};
+    const updateData: Record<string, string | null> = {};
     if (value !== undefined) {
       updateData.value = encrypt(value);
     }
@@ -579,7 +497,7 @@ export const projectController = {
       updateData.note = note ? encrypt(note) : null;
     }
 
-    const item = await db.vaultItem.update({
+    const item = await prisma.vaultItem.update({
       where: { id: itemId },
       data: updateData,
     });
@@ -600,7 +518,7 @@ export const projectController = {
 
     const itemId = req.params.itemId as string;
 
-    await db.vaultItem.delete({
+    await prisma.vaultItem.delete({
       where: { id: itemId },
     });
 
@@ -616,7 +534,6 @@ export const projectController = {
       throw new BadRequestException("No file uploaded");
     }
 
-    // Malicious File Filtering
     const ext = path.extname(req.file.originalname).toLowerCase();
     const mime = req.file.mimetype.toLowerCase();
 
@@ -634,7 +551,7 @@ export const projectController = {
         size: req.file.size,
       },
       "project_files",
-      false // Do not replace, keep multiple files
+      false
     );
 
     const url = await mediaService.getUrl(media.id);
@@ -678,8 +595,7 @@ export const projectController = {
     const fileId = req.params.fileId as string;
     await verifyProjectAccess(req, projectId);
 
-    // Verify file belongs to project
-    const file = await db.media.findFirst({
+    const file = await prisma.media.findFirst({
       where: {
         id: fileId,
         modelType: "Project",

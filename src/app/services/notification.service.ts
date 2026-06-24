@@ -31,6 +31,7 @@ export const notificationService = {
     recipientId: string;
     senderId?: string | null;
     taskId?: string | null;
+    organizationId: string;
     type: string;
     title: string;
     message: string;
@@ -43,8 +44,9 @@ export const notificationService = {
       await prisma.notification.create({
         data: {
           recipientId: data.recipientId,
-          senderId: data.senderId || null,
-          taskId: data.taskId || null,
+          senderId: data.senderId ?? null,
+          taskId: data.taskId ?? null,
+          organizationId: data.organizationId,
           type: data.type,
           title: data.title,
           message: data.message,
@@ -78,6 +80,7 @@ export const notificationService = {
           recipientId: task.assigneeId,
           senderId: creatorId,
           taskId: task.id,
+          organizationId: task.organizationId,
           type: "assignment",
           title: "New Task Assigned",
           message: `${creatorName} assigned you a new task: "${task.title}"`,
@@ -98,7 +101,7 @@ export const notificationService = {
   },
 
   // Handle task updated notifications
-  async handleTaskUpdated(taskId: string, updaterId: string, oldTask: any) {
+  async handleTaskUpdated(taskId: string, updaterId: string, oldTask: Record<string, unknown>) {
     try {
       const task = await prisma.task.findUnique({
         where: { id: taskId },
@@ -121,9 +124,8 @@ export const notificationService = {
 
       // Status change check
       if (oldTask.statusId !== task.statusId) {
-        changes.push(`Status updated from *${oldTask.statusName}* to *${task.status.name}*`);
+        changes.push(`Status updated from *${oldTask.statusName as string}* to *${task.status.name}*`);
 
-        // Notify Assignee and Creator
         const notifyIds = new Set<string>();
         if (task.assigneeId) notifyIds.add(task.assigneeId);
         if (task.creatorId) notifyIds.add(task.creatorId);
@@ -133,6 +135,7 @@ export const notificationService = {
             recipientId,
             senderId: updaterId,
             taskId: task.id,
+            organizationId: task.organizationId,
             type: "status_change",
             title: "Task Status Updated",
             message: `${updaterName} updated the status of "${task.title}" to "${task.status.name}"`,
@@ -142,7 +145,7 @@ export const notificationService = {
 
       // Assignee change check
       if (oldTask.assigneeId !== task.assigneeId) {
-        const oldAssigneeName = oldTask.assigneeName || "Unassigned";
+        const oldAssigneeName = (oldTask.assigneeName as string) || "Unassigned";
         changes.push(`Assignee updated from *${oldAssigneeName}* to *${task.assignee?.name || "Unassigned"}*`);
 
         if (task.assigneeId) {
@@ -150,6 +153,7 @@ export const notificationService = {
             recipientId: task.assigneeId,
             senderId: updaterId,
             taskId: task.id,
+            organizationId: task.organizationId,
             type: "assignment",
             title: "Task Assigned to You",
             message: `${updaterName} assigned the task "${task.title}" to you.`,
@@ -157,7 +161,6 @@ export const notificationService = {
         }
       }
 
-      // If there are changes, dispatch Slack webhook
       if (changes.length > 0) {
         const slackMessage = `*Task Updated*: *${task.title}* (Project: *${task.project.title}*)\n` +
           `• *Updated By*: ${updaterName}\n` +
@@ -191,7 +194,6 @@ export const notificationService = {
       const task = comment.task;
 
       // 1. In-app notifications for @mentions
-      // Extract matches: e.g. "@John Doe"
       const mentionRegex = /@([A-Za-z0-9_]+(?:\s+[A-Za-z0-9_]+)?)/g;
       let match;
       const mentionedNames = new Set<string>();
@@ -202,7 +204,6 @@ export const notificationService = {
       const notifiedUserIds = new Set<string>();
 
       if (mentionedNames.size > 0) {
-        // Fetch project members to match names
         const projectMembers = await prisma.projectMember.findMany({
           where: { projectId: task.projectId },
           include: { user: { select: { id: true, name: true } } },
@@ -210,7 +211,6 @@ export const notificationService = {
 
         for (const member of projectMembers) {
           const u = member.user;
-          // Exact name match or contains check
           const isMentioned = Array.from(mentionedNames).some(
             name => name.toLowerCase() === u.name.toLowerCase()
           );
@@ -221,6 +221,7 @@ export const notificationService = {
               recipientId: u.id,
               senderId: authorId,
               taskId: task.id,
+              organizationId: task.organizationId,
               type: "mention",
               title: "Mentioned in Comment",
               message: `${authorName} mentioned you in a comment on "${task.title}": "${comment.content.slice(0, 50)}..."`,
@@ -235,6 +236,7 @@ export const notificationService = {
           recipientId: task.assigneeId,
           senderId: authorId,
           taskId: task.id,
+          organizationId: task.organizationId,
           type: "comment",
           title: "New Comment on Task",
           message: `${authorName} commented on task "${task.title}"`,

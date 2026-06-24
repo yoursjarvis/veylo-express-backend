@@ -1,83 +1,13 @@
 import { asyncHandler } from "@/app/http/middlewares/async-handler.middleware";
+import { verifyProjectAccess } from "@/app/http/middlewares/project-access.middleware";
 import prisma from "@/lib/prisma";
 import { ok } from "@/utils/http-response";
 import type { Request, Response } from "express";
-import { auth } from "@/lib/auth/auth";
-import { betterAuthHeaders } from "@/lib/auth/node-headers";
 import { z } from "zod";
 import {
-  UnauthorizedException,
-  ForbiddenException,
   BadRequestException,
   NotFoundException,
 } from "@/utils/app-error";
-
-// Local helper to verify access
-async function verifyProjectAccess(req: Request, projectId: string) {
-  const session = await auth.api.getSession({
-    headers: betterAuthHeaders(req),
-  });
-
-  if (!session?.user) {
-    throw new UnauthorizedException();
-  }
-
-  const activeOrgId = session.session.activeOrganizationId;
-  if (!activeOrgId) {
-    throw new BadRequestException("No active organization found");
-  }
-
-  const project = await prisma.project.findUnique({
-    where: { id: projectId },
-  });
-
-  if (!project) {
-    throw new NotFoundException("Project not found");
-  }
-
-  // Check Org Admin/Owner
-  const callerOrgMember = await prisma.member.findFirst({
-    where: {
-      organizationId: activeOrgId,
-      userId: session.user.id,
-      role: { in: ["owner", "admin"] },
-    },
-  });
-
-  if (callerOrgMember) {
-    return { activeOrgId, userId: session.user.id, project };
-  }
-
-  // Check Workspace Admin
-  const callerWorkspaceMember = await prisma.workspaceMember.findFirst({
-    where: {
-      workspaceId: project.workspaceId,
-      userId: session.user.id,
-      role: "admin",
-      workspace: { organizationId: activeOrgId },
-    },
-  });
-
-  if (callerWorkspaceMember) {
-    return { activeOrgId, userId: session.user.id, project };
-  }
-
-  // Check Project Member
-  const projectMember = await prisma.projectMember.findUnique({
-    where: {
-      projectId_userId: {
-        projectId,
-        userId: session.user.id,
-      },
-    },
-  });
-
-  if (!projectMember) {
-    throw new ForbiddenException("Forbidden: You must be a project member or workspace/org admin");
-  }
-
-  return { activeOrgId, userId: session.user.id, project };
-}
 
 const webhookSchema = z.object({
   url: z.string().url("Must be a valid URL"),
@@ -108,7 +38,7 @@ export const slackWebhookController = {
       data: {
         projectId,
         url: validatedData.url,
-        channel: validatedData.channel || null,
+        channel: validatedData.channel ?? null,
         isActive: validatedData.isActive,
       },
     });
@@ -129,9 +59,7 @@ export const slackWebhookController = {
 
     await verifyProjectAccess(req, webhook.projectId);
 
-    await prisma.slackWebhook.delete({
-      where: { id: webhookId },
-    });
+    await prisma.slackWebhook.delete({ where: { id: webhookId } });
 
     return ok(res, "Slack webhook deleted successfully");
   }),

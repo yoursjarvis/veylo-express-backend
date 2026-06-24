@@ -22,7 +22,12 @@ const { authApiMock, authRepositoryMock, configMock, loggerMock, betterAuthHeade
       updateSessionMetadataByToken: vi.fn(),
       revokeSessionByIdForUser: vi.fn(),
     },
-    configMock: vi.fn(),
+    configMock: vi.fn().mockImplementation((key: string) => {
+      if (key === "mail.queue.name") return "mail-queue";
+      if (key === "database.redis.host") return "localhost";
+      if (key === "database.redis.port") return 6379;
+      return undefined;
+    }),
     loggerMock: {
       error: vi.fn(),
       warn: vi.fn(),

@@ -1,82 +1,13 @@
 import { asyncHandler } from "@/app/http/middlewares/async-handler.middleware";
+import { verifyProjectAccess } from "@/app/http/middlewares/project-access.middleware";
 import prisma from "@/lib/prisma";
 import { ok } from "@/utils/http-response";
 import type { Request, Response } from "express";
-import { auth } from "@/lib/auth/auth";
-import { betterAuthHeaders } from "@/lib/auth/node-headers";
 import { z } from "zod";
 import {
-  UnauthorizedException,
-  ForbiddenException,
   BadRequestException,
   NotFoundException,
 } from "@/utils/app-error";
-
-async function verifyProjectAccess(req: Request, projectId: string) {
-  const session = await auth.api.getSession({
-    headers: betterAuthHeaders(req),
-  });
-
-  if (!session?.user) {
-    throw new UnauthorizedException();
-  }
-
-  const activeOrgId = session.session.activeOrganizationId;
-  if (!activeOrgId) {
-    throw new BadRequestException("No active organization found");
-  }
-
-  const project = await prisma.project.findUnique({
-    where: { id: projectId },
-  });
-
-  if (!project) {
-    throw new NotFoundException("Project not found");
-  }
-
-  // Check Org Admin/Owner
-  const callerOrgMember = await prisma.member.findFirst({
-    where: {
-      organizationId: activeOrgId,
-      userId: session.user.id,
-      role: { in: ["owner", "admin"] },
-    },
-  });
-
-  if (callerOrgMember) {
-    return { activeOrgId, userId: session.user.id, project };
-  }
-
-  // Check Workspace Admin
-  const callerWorkspaceMember = await prisma.workspaceMember.findFirst({
-    where: {
-      workspaceId: project.workspaceId,
-      userId: session.user.id,
-      role: "admin",
-      workspace: { organizationId: activeOrgId },
-    },
-  });
-
-  if (callerWorkspaceMember) {
-    return { activeOrgId, userId: session.user.id, project };
-  }
-
-  // Check Project Member
-  const projectMember = await prisma.projectMember.findUnique({
-    where: {
-      projectId_userId: {
-        projectId,
-        userId: session.user.id,
-      },
-    },
-  });
-
-  if (!projectMember) {
-    throw new ForbiddenException("Forbidden: You must be a project member or workspace/org admin");
-  }
-
-  return { activeOrgId, userId: session.user.id, project };
-}
 
 const sprintCreateSchema = z.object({
   name: z.string().min(1, "Sprint name is required"),
@@ -97,7 +28,8 @@ const sprintUpdateSchema = z.object({
 export const sprintController = {
   createSprint: asyncHandler(async (req: Request, res: Response) => {
     const projectId = req.params.projectId as string;
-    await verifyProjectAccess(req, projectId);
+    const { project } = await verifyProjectAccess(req, projectId);
+    const { organizationId } = project;
 
     const validatedData = sprintCreateSchema.parse(req.body);
 
@@ -106,6 +38,7 @@ export const sprintController = {
         name: validatedData.name,
         goal: validatedData.goal,
         projectId,
+        organizationId,
         startDate: validatedData.startDate ? new Date(validatedData.startDate) : null,
         endDate: validatedData.endDate ? new Date(validatedData.endDate) : null,
         status: "planned",
@@ -170,7 +103,7 @@ export const sprintController = {
     const { userId } = await verifyProjectAccess(req, existingSprint.projectId);
     const validatedData = sprintUpdateSchema.parse(req.body);
 
-    const updateData: any = {};
+    const updateData: Record<string, unknown> = {};
     if (validatedData.name !== undefined) updateData.name = validatedData.name;
     if (validatedData.goal !== undefined) updateData.goal = validatedData.goal;
     if (validatedData.startDate !== undefined) {
@@ -188,26 +121,28 @@ export const sprintController = {
           where: { projectId: existingSprint.projectId, status: "active" },
         });
         if (activeSprint) {
-          throw new BadRequestException("An active sprint already exists. Close it before starting a new one.");
+          throw new BadRequestException(
+            "An active sprint already exists. Close it before starting a new one."
+          );
         }
         updateData.status = "active";
         if (!existingSprint.startDate) {
           updateData.startDate = new Date();
         }
       } else if (validatedData.status === "completed") {
-        // Run Sprint Completion Logic
         updateData.status = "completed";
         updateData.completedAt = new Date();
 
-        const destSprintId = validatedData.uncompletedTasksDestination || null;
+        const destSprintId = validatedData.uncompletedTasksDestination ?? null;
 
-        // If a destination sprint is specified, verify it belongs to the same project
         if (destSprintId) {
           const destSprint = await prisma.sprint.findFirst({
             where: { id: destSprintId, projectId: existingSprint.projectId },
           });
           if (!destSprint) {
-            throw new BadRequestException("Selected destination sprint does not belong to this project");
+            throw new BadRequestException(
+              "Selected destination sprint does not belong to this project"
+            );
           }
         }
 
@@ -225,16 +160,15 @@ export const sprintController = {
         if (uncompletedTasks.length > 0) {
           const taskIds = uncompletedTasks.map((t) => t.id);
 
-          // Move uncompleted tasks to target sprint or backlog (null)
           await prisma.task.updateMany({
             where: { id: { in: taskIds } },
             data: { sprintId: destSprintId },
           });
 
-          // Log activity for each task moved
           const logPayloads = taskIds.map((taskId) => ({
             taskId,
             userId,
+            organizationId: existingSprint.organizationId,
             action: "sprint_changed",
             oldValue: existingSprint.name,
             newValue: destSprintId ? "Next Sprint" : "Backlog",
@@ -270,7 +204,7 @@ export const sprintController = {
 
     await verifyProjectAccess(req, sprint.projectId);
 
-    // Tasks associated with the deleted sprint are set to null (backlog) via prisma schema SetNull constraint.
+    // Tasks associated with the deleted sprint are set to null (backlog) via SetNull constraint.
     await prisma.sprint.delete({
       where: { id: sprintId },
     });

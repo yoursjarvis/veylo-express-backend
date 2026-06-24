@@ -1,8 +1,9 @@
 import { logger } from "@/lib/logger";
-import { AppError } from "@/utils/app-error";
+import { AppError, ValidationException } from "@/utils/app-error";
 import { config } from "@/utils/config";
 import { parseStack } from "@/utils/parse-stack";
 import { NextFunction, Request, Response } from "express";
+import { ZodError, type ZodIssue } from "zod";
 
 export const errorMiddleware = (
   err: unknown,
@@ -10,12 +11,22 @@ export const errorMiddleware = (
   res: Response,
   _next: NextFunction
 ) => {
-  const error =
-    err instanceof AppError
-      ? err
-      : new AppError(
-          err instanceof Error ? err.message : "Internal Server Error"
-        );
+  let error: AppError;
+
+  if (err instanceof ZodError) {
+    error = new ValidationException(
+      err.issues.map((e: ZodIssue) => ({
+        field: e.path.join("."),
+        message: e.message,
+      }))
+    );
+  } else if (err instanceof AppError) {
+    error = err;
+  } else {
+    error = new AppError(
+      err instanceof Error ? err.message : "Internal Server Error"
+    );
+  }
 
   logger.error({
     requestId: req.headers["x-request-id"],
