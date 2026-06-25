@@ -8,6 +8,7 @@ import "@/app/workers/index";
 import "@/monitoring/tracing";
 import { config } from "@/utils/config";
 import { logger } from "@/lib/logger";
+import { webSocketManager } from "@/core/notification";
 
 process.on("unhandledRejection", (reason) => {
   logger.error({ reason }, "Unhandled Rejection");
@@ -28,11 +29,15 @@ if (SSL_KEY && SSL_CRT && fs.existsSync(SSL_KEY) && fs.existsSync(SSL_CRT)) {
     cert: fs.readFileSync(SSL_CRT),
   };
 
-  https.createServer(options, app).listen(PORT, () => {
+  const server = https.createServer(options, app);
+  webSocketManager.init(server);
+  server.listen(PORT, () => {
     logger.info(`HTTPS Server running on https://${config("app.domain")}:${PORT}`);
   });
 } else {
-  http.createServer(app).listen(PORT, () => {
+  const server = http.createServer(app);
+  webSocketManager.init(server);
+  server.listen(PORT, () => {
     logger.info(`HTTP Server running on http://${config("app.domain")}:${PORT}`);
     if (config("app.env") === "development") {
       logger.warn("SSL certificates not found. Google OAuth might fail for subdomains.");

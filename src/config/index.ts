@@ -3,6 +3,7 @@ import auth from "./auth.config";
 import cors from "./cors.config";
 import database from "./database.config";
 import mail from "./mail.config";
+import notification from "./notification.config";
 import otel from "./otel.config";
 import storage from "./storage.config";
 
@@ -12,6 +13,7 @@ export default {
   cors,
   database,
   mail,
+  notification,
   otel,
   storage,
 };
