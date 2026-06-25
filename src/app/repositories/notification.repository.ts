@@ -8,6 +8,7 @@ export const notificationRepository = {
       include: {
         sender: { select: { id: true, name: true, image: true } },
         task: { select: { id: true, title: true, projectId: true } },
+        project: { select: { id: true, title: true } },
       },
       orderBy: { createdAt: "desc" },
     });
@@ -44,6 +45,7 @@ export const notificationRepository = {
     recipientId: string;
     senderId?: string | null;
     taskId?: string | null;
+    projectId?: string | null;
     organizationId: string;
     type: string;
     title: string;
@@ -54,6 +56,7 @@ export const notificationRepository = {
         recipientId: data.recipientId,
         senderId: data.senderId ?? null,
         taskId: data.taskId ?? null,
+        projectId: data.projectId ?? null,
         organizationId: data.organizationId,
         type: data.type,
         title: data.title,
@@ -92,6 +95,12 @@ export const notificationRepository = {
           },
         },
         user: { select: { name: true } },
+        parent: {
+          select: {
+            userId: true,
+            user: { select: { name: true } },
+          },
+        },
       },
     });
   },
@@ -100,6 +109,33 @@ export const notificationRepository = {
     return prisma.projectMember.findMany({
       where: { projectId },
       include: { user: { select: { id: true, name: true } } },
+    });
+  },
+
+  async findProjectForNotification(projectId: string) {
+    return prisma.project.findUnique({
+      where: { id: projectId },
+      select: { id: true, title: true, organizationId: true },
+    });
+  },
+
+  async findReactionForNotification(reactionId: string) {
+    return prisma.commentReaction.findUnique({
+      where: { id: reactionId },
+      include: {
+        user: { select: { id: true, name: true } },
+        comment: {
+          include: {
+            task: {
+              select: {
+                id: true,
+                title: true,
+                organizationId: true,
+              },
+            },
+          },
+        },
+      },
     });
   },
 };

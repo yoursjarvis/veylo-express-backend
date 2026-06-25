@@ -106,10 +106,10 @@ export const projectController = {
 
   addProjectMembers: asyncHandler(async (req: Request, res: Response) => {
     const projectId = req.params.id as string;
-    const { project } = await verifyProjectAdmin(req, projectId);
+    const { project, userId } = await verifyProjectAdmin(req, projectId);
     const { userIds } = req.body as { userIds: string[] };
 
-    const members = await projectService.addProjectMembers(projectId, project.workspaceId, userIds);
+    const members = await projectService.addProjectMembers(projectId, project.workspaceId, userIds, userId);
 
     return ok(res, "Members assigned to project", members);
   }),

@@ -12,6 +12,7 @@ export const taskCreateSchema = z.object({
   estimate: z.number().optional().nullable(),
   dueDate: z.string().datetime().optional().nullable(),
   assigneeId: z.uuid().optional().nullable(),
+  position: z.number().optional(),
   customFields: z.record(z.string(), z.any()).optional().default({}),
   labelIds: z.array(z.uuid()).optional(),
 });
@@ -28,6 +29,7 @@ export const taskUpdateSchema = z.object({
   estimate: z.number().optional().nullable(),
   dueDate: z.string().datetime().optional().nullable(),
   assigneeId: z.uuid().optional().nullable(),
+  position: z.number().optional(),
   customFields: z.record(z.string(), z.any()).optional(),
   labelIds: z.array(z.string().uuid()).optional(),
 });

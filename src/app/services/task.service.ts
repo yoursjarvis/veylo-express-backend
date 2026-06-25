@@ -52,6 +52,7 @@ export const taskService = {
       estimate?: number | null;
       dueDate?: string | null;
       assigneeId?: string | null;
+      position?: number;
       customFields?: Record<string, any>;
       labelIds?: string[];
     }
@@ -101,6 +102,7 @@ export const taskService = {
       dueDate: data.dueDate ? new Date(data.dueDate) : null,
       creatorId: userId,
       assigneeId: data.assigneeId ?? null,
+      position: data.position ?? 0,
       customFields: data.customFields,
       labels:
         data.labelIds && data.labelIds.length > 0
@@ -205,6 +207,7 @@ export const taskService = {
       estimate?: number | null;
       dueDate?: string | null;
       assigneeId?: string | null;
+      position?: number;
       customFields?: Record<string, any>;
       labelIds?: string[];
     }
@@ -219,6 +222,7 @@ export const taskService = {
       statusName: existingTask.status.name,
       assigneeId: existingTask.assigneeId,
       assigneeName: existingTask.assignee?.name,
+      description: existingTask.description,
     };
 
     const updateData: any = {};
@@ -230,14 +234,9 @@ export const taskService = {
         throw new BadRequestException("Selected status does not belong to this project");
       }
 
-      // Advanced transition validation: Cannot move to Done if there are incomplete subtasks
+      // Advanced transition validation: Auto-complete subtasks when transitioning to Done
       if (newStatus.category === "done") {
-        const incompleteCount = await taskRepository.countIncompleteSubtasks(taskId);
-        if (incompleteCount > 0) {
-          throw new BadRequestException(
-            "Cannot transition to Done while there are incomplete subtasks. Complete all subtasks first."
-          );
-        }
+        await taskRepository.completeAllSubtasks(taskId);
       }
 
       updateData.statusId = data.statusId;
@@ -366,6 +365,7 @@ export const taskService = {
       updateData.dueDate = data.dueDate ? new Date(data.dueDate) : null;
     }
     if (data.customFields !== undefined) updateData.customFields = data.customFields;
+    if (data.position !== undefined) updateData.position = data.position;
 
     const updatedTask = await taskRepository.updateTask(taskId, updateData);
 

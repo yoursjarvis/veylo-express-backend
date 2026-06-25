@@ -123,13 +123,20 @@ export const taskRepository = {
           select: { subtasks: true, comments: true },
         },
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: [{ position: "asc" }, { createdAt: "desc" }],
     });
   },
 
   countIncompleteSubtasks(taskId: string) {
     return prisma.subtask.count({
       where: { taskId, isCompleted: false },
+    });
+  },
+
+  completeAllSubtasks(taskId: string) {
+    return prisma.subtask.updateMany({
+      where: { taskId, isCompleted: false },
+      data: { isCompleted: true },
     });
   },
 

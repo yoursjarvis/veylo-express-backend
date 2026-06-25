@@ -34,6 +34,8 @@ const { mockVerifyProjectAccess, mockNotificationService } = vi.hoisted(() => ({
     handleTaskCreated: vi.fn(),
     handleTaskUpdated: vi.fn(),
     handleCommentAdded: vi.fn(),
+    handleCommentReaction: vi.fn(),
+    handleAddedToProject: vi.fn(),
   },
 }));
 

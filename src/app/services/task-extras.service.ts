@@ -235,6 +235,10 @@ export const taskExtrasService = {
     }
 
     const reaction = await taskExtrasRepository.createCommentReaction(commentId, userId, emoji);
+    
+    // Trigger notification (fire-and-forget)
+    notificationService.handleCommentReaction(reaction.id);
+
     return { toggledOn: true, reaction };
   },
 };

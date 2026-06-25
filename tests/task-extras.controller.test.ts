@@ -61,6 +61,10 @@ const { mockVerifyProjectAccess, prismaMock, mockNotificationService } = vi.hois
   },
   mockNotificationService: {
     handleCommentAdded: vi.fn(),
+    handleCommentReaction: vi.fn(),
+    handleAddedToProject: vi.fn(),
+    handleTaskCreated: vi.fn(),
+    handleTaskUpdated: vi.fn(),
   },
 }));
 

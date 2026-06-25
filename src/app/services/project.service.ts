@@ -3,6 +3,7 @@ import { mediaService } from "@/core/media";
 import { BadRequestException, NotFoundException } from "@/utils/app-error";
 import { decrypt, encrypt } from "@/utils/crypto";
 import path from "path";
+import { notificationService } from "@/app/services/notification.service";
 
 // Malicious files filtering constants
 const DISALLOWED_EXTENSIONS = [
@@ -133,7 +134,7 @@ export const projectService = {
     return projectRepository.getProjectMembers(projectId);
   },
 
-  async addProjectMembers(projectId: string, projectWorkspaceId: string, userIds: string[]) {
+  async addProjectMembers(projectId: string, projectWorkspaceId: string, userIds: string[], adderId: string) {
     if (!Array.isArray(userIds) || userIds.length === 0) {
       throw new BadRequestException("User IDs are required");
     }
@@ -146,9 +147,14 @@ export const projectService = {
       );
     }
 
-    return Promise.all(
+    const members = await Promise.all(
       userIds.map((userId) => projectRepository.upsertProjectMember(projectId, userId, "member"))
     );
+
+    // Trigger notification (fire-and-forget)
+    notificationService.handleAddedToProject(projectId, adderId, userIds);
+
+    return members;
   },
 
   removeProjectMember(projectId: string, userId: string) {

@@ -35,6 +35,7 @@ const { mockVerifyProjectAccess, prismaMock, mockNotificationService } = vi.hois
     },
     subtask: {
       count: vi.fn(),
+      updateMany: vi.fn(),
     },
     user: {
       findUnique: vi.fn(),
@@ -43,6 +44,9 @@ const { mockVerifyProjectAccess, prismaMock, mockNotificationService } = vi.hois
   mockNotificationService: {
     handleTaskCreated: vi.fn(),
     handleTaskUpdated: vi.fn(),
+    handleCommentAdded: vi.fn(),
+    handleCommentReaction: vi.fn(),
+    handleAddedToProject: vi.fn(),
   },
 }));
 
@@ -159,8 +163,7 @@ describe("taskController", () => {
       expect(prismaMock.task.update).toHaveBeenCalled();
       expect(mockNotificationService.handleTaskUpdated).toHaveBeenCalled();
     });
-
-    it("throws BadRequestException if Done status transition fails due to incomplete subtasks", async () => {
+    it("completes all incomplete subtasks when transitioning to Done", async () => {
       const existing = {
         id: "task-1",
         projectId: "p1",
@@ -168,8 +171,9 @@ describe("taskController", () => {
         status: { name: "To Do" },
       };
       prismaMock.task.findUnique.mockResolvedValue(existing);
-      prismaMock.taskStatus.findFirst.mockResolvedValueOnce({ id: "status-done", category: "done" });
-      prismaMock.subtask.count.mockResolvedValueOnce(5); // 5 incomplete subtasks
+      prismaMock.taskStatus.findFirst.mockResolvedValueOnce({ id: "550e8400-e29b-41d4-a716-446655440002", category: "done" });
+      prismaMock.subtask.updateMany.mockResolvedValueOnce({ count: 5 });
+      prismaMock.task.update.mockResolvedValueOnce({ ...existing, statusId: "550e8400-e29b-41d4-a716-446655440002" });
 
       const req: any = {
         params: { id: "task-1" },
@@ -177,9 +181,13 @@ describe("taskController", () => {
       };
       const res = createRes();
 
-      await expect((taskController.updateTask as any)(req, res)).rejects.toThrow(
-        "Cannot transition to Done while there are incomplete subtasks"
-      );
+      await (taskController.updateTask as any)(req, res);
+
+      expect(prismaMock.subtask.updateMany).toHaveBeenCalledWith({
+        where: { taskId: "task-1", isCompleted: false },
+        data: { isCompleted: true },
+      });
+      expect(res.json).toHaveBeenCalled();
     });
   });
 

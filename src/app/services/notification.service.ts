@@ -47,6 +47,7 @@ export const notificationService = {
     recipientId: string;
     senderId?: string | null;
     taskId?: string | null;
+    projectId?: string | null;
     organizationId: string;
     type: string;
     title: string;
@@ -83,6 +84,11 @@ export const notificationService = {
           title: "New Task Assigned",
           message: `${creatorName} assigned you a new task: "${task.title}"`,
         });
+      }
+
+      // Handle mentions in description
+      if (task.description) {
+        await this.handleMentionsInDescription(task.id, creatorId, task.description);
       }
 
       // 2. Slack Notification
@@ -137,6 +143,7 @@ export const notificationService = {
         const oldAssigneeName = (oldTask.assigneeName as string) || "Unassigned";
         changes.push(`Assignee updated from *${oldAssigneeName}* to *${task.assignee?.name || "Unassigned"}*`);
 
+        // Notify new assignee
         if (task.assigneeId) {
           await this.createInAppNotification({
             recipientId: task.assigneeId,
@@ -148,6 +155,29 @@ export const notificationService = {
             message: `${updaterName} assigned the task "${task.title}" to you.`,
           });
         }
+
+        // Notify old assignee if removed
+        if (oldTask.assigneeId && oldTask.assigneeId !== task.assigneeId && oldTask.assigneeId !== updaterId) {
+          await this.createInAppNotification({
+            recipientId: oldTask.assigneeId as string,
+            senderId: updaterId,
+            taskId: task.id,
+            organizationId: task.organizationId,
+            type: "assignment_removed",
+            title: "Removed from Task",
+            message: `${updaterName} removed you from the task "${task.title}".`,
+          });
+        }
+      }
+
+      // Handle mentions in description if description changed
+      if (oldTask.description !== task.description && task.description) {
+        await this.handleMentionsInDescription(
+          task.id,
+          updaterId,
+          task.description,
+          oldTask.description as string
+        );
       }
 
       if (changes.length > 0) {
@@ -206,7 +236,21 @@ export const notificationService = {
         }
       }
 
-      // 2. In-app notification to Assignee (if not already notified via mention)
+      // 2. In-app notification for Comment Reply
+      if (comment.parentId && comment.parent && comment.parent.userId !== authorId && !notifiedUserIds.has(comment.parent.userId)) {
+        notifiedUserIds.add(comment.parent.userId);
+        await this.createInAppNotification({
+          recipientId: comment.parent.userId,
+          senderId: authorId,
+          taskId: task.id,
+          organizationId: task.organizationId,
+          type: "reply",
+          title: "New Reply to Your Comment",
+          message: `${authorName} replied to your comment: "${comment.content.slice(0, 50)}..."`,
+        });
+      }
+
+      // 3. In-app notification to Assignee (if not already notified via mention/reply)
       if (task.assigneeId && task.assigneeId !== authorId && !notifiedUserIds.has(task.assigneeId)) {
         await this.createInAppNotification({
           recipientId: task.assigneeId,
@@ -219,13 +263,131 @@ export const notificationService = {
         });
       }
 
-      // 3. Slack Webhook Notification
+      // 4. Slack Webhook Notification
       const slackMessage =
         `*New Comment* by *${authorName}* on task *${task.title}*\n` +
         `> ${comment.content}`;
       await this.dispatchSlackWebhook(task.projectId, slackMessage);
     } catch (error) {
       console.error("Error in handleCommentAdded notification:", error);
+    }
+  },
+
+  // Parse and handle mentions in task description
+  async handleMentionsInDescription(
+    taskId: string,
+    authorId: string,
+    newDescription: string,
+    oldDescription?: string
+  ) {
+    try {
+      if (!newDescription) return;
+      const mentionRegex = /@([A-Za-z0-9_]+(?:\s+[A-Za-z0-9_]+)?)/g;
+      
+      const newMentions = new Set<string>();
+      let match;
+      while ((match = mentionRegex.exec(newDescription)) !== null) {
+        newMentions.add(match[1].trim().toLowerCase());
+      }
+      
+      if (newMentions.size === 0) return;
+
+      const oldMentions = new Set<string>();
+      if (oldDescription) {
+        let oldMatch;
+        while ((oldMatch = mentionRegex.exec(oldDescription)) !== null) {
+          oldMentions.add(oldMatch[1].trim().toLowerCase());
+        }
+      }
+
+      // Filter out users already mentioned in old description
+      const freshMentions = Array.from(newMentions).filter(name => !oldMentions.has(name));
+      if (freshMentions.length === 0) return;
+
+      const task = await notificationRepository.findTaskForNotification(taskId);
+      if (!task) return;
+
+      const projectMembers = await notificationRepository.findProjectMembers(task.projectId);
+      const author = await notificationRepository.findUserName(authorId);
+      const authorName = author?.name || "Someone";
+
+      for (const member of projectMembers) {
+        const u = member.user;
+        const isMentioned = freshMentions.some(
+          (name) => name === u.name.toLowerCase()
+        );
+
+        if (isMentioned && u.id !== authorId) {
+          await this.createInAppNotification({
+            recipientId: u.id,
+            senderId: authorId,
+            taskId: task.id,
+            organizationId: task.organizationId,
+            type: "mention",
+            title: "Mentioned in Task Description",
+            message: `${authorName} mentioned you in the description of "${task.title}"`,
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Error in handleMentionsInDescription:", error);
+    }
+  },
+
+  // Handle when users are added to a project
+  async handleAddedToProject(projectId: string, adderId: string, addedUserIds: string[]) {
+    try {
+      const project = await notificationRepository.findProjectForNotification(projectId);
+      if (!project) return;
+
+      const adder = await notificationRepository.findUserName(adderId);
+      const adderName = adder?.name || "Someone";
+
+      for (const recipientId of addedUserIds) {
+        if (recipientId === adderId) continue;
+        await this.createInAppNotification({
+          recipientId,
+          senderId: adderId,
+          projectId: project.id,
+          organizationId: project.organizationId,
+          type: "project_added",
+          title: "Added to Project",
+          message: `${adderName} added you to the project "${project.title}"`,
+        });
+      }
+    } catch (error) {
+      console.error("Error in handleAddedToProject notification:", error);
+    }
+  },
+
+  // Handle when someone reacts to a comment/reply
+  async handleCommentReaction(reactionId: string) {
+    try {
+      const reaction = await notificationRepository.findReactionForNotification(reactionId);
+      if (!reaction) return;
+
+      const reactorId = reaction.userId;
+      const recipientId = reaction.comment.userId;
+
+      // Don't notify yourself
+      if (reactorId === recipientId) return;
+
+      const reactor = reaction.user;
+      const reactorName = reactor.name;
+      const commentContent = reaction.comment.content;
+      const task = reaction.comment.task;
+
+      await this.createInAppNotification({
+        recipientId,
+        senderId: reactorId,
+        taskId: task.id,
+        organizationId: task.organizationId,
+        type: "reaction",
+        title: "New Reaction on Comment",
+        message: `${reactorName} reacted with ${reaction.emoji} to your comment: "${commentContent.slice(0, 50)}..."`,
+      });
+    } catch (error) {
+      console.error("Error in handleCommentReaction notification:", error);
     }
   },
 };
