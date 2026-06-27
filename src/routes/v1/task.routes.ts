@@ -9,6 +9,7 @@ import { dependencyController } from "@/app/http/controllers/dependency.controll
 import { epicController } from "@/app/http/controllers/epic.controller";
 import { labelController } from "@/app/http/controllers/label.controller";
 import { milestoneController } from "@/app/http/controllers/milestone.controller";
+import { upload } from "@/app/http/middlewares/upload.middleware";
 
 export const taskRoutes = Router();
 
@@ -21,6 +22,7 @@ taskRoutes.get("/projects/:projectId/tasks", taskController.getTasks);
 taskRoutes.get("/tasks/:id", taskController.getTask);
 taskRoutes.patch("/tasks/:id", taskController.updateTask);
 taskRoutes.delete("/tasks/:id", taskController.deleteTask);
+taskRoutes.post("/tasks/:taskId/attachments", upload.single("file"), taskController.uploadAttachment);
 
 // --- SPRINT CRUD ---
 taskRoutes.post("/projects/:projectId/sprints", sprintController.createSprint);

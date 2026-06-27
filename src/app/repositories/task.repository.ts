@@ -128,16 +128,22 @@ export const taskRepository = {
   },
 
   countIncompleteSubtasks(taskId: string) {
-    return prisma.subtask.count({
-      where: { taskId, isCompleted: false },
+    return prisma.task.count({
+      where: { parentTaskId: taskId, status: { category: { not: "done" } } },
     });
   },
 
-  completeAllSubtasks(taskId: string) {
-    return prisma.subtask.updateMany({
-      where: { taskId, isCompleted: false },
-      data: { isCompleted: true },
+  async completeAllSubtasks(taskId: string, projectId: string) {
+    const doneStatus = await prisma.taskStatus.findFirst({
+      where: { projectId, category: "done" },
     });
+    if (doneStatus) {
+      return prisma.task.updateMany({
+        where: { parentTaskId: taskId, status: { category: { not: "done" } } },
+        data: { statusId: doneStatus.id },
+      });
+    }
+    return { count: 0 };
   },
 
   findUserById(userId: string) {

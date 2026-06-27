@@ -1,5 +1,6 @@
 import { taskRepository } from "@/app/repositories/task.repository";
 import { notificationService } from "@/app/services/notification.service";
+import { mediaService } from "@/core/media";
 import { BadRequestException, NotFoundException } from "@/utils/app-error";
 
 async function logActivity(
@@ -47,11 +48,12 @@ export const taskService = {
       sprintId?: string | null;
       epicId?: string | null;
       milestoneId?: string | null;
-      type: "task" | "bug" | "feature";
+      type: "task" | "bug" | "feature" | "subtask";
       priority: "low" | "medium" | "high" | "urgent";
       estimate?: number | null;
       dueDate?: string | null;
       assigneeId?: string | null;
+      parentTaskId?: string | null;
       position?: number;
       customFields?: Record<string, any>;
       labelIds?: string[];
@@ -102,6 +104,7 @@ export const taskService = {
       dueDate: data.dueDate ? new Date(data.dueDate) : null,
       creatorId: userId,
       assigneeId: data.assigneeId ?? null,
+      parentTaskId: data.parentTaskId ?? null,
       position: data.position ?? 0,
       customFields: data.customFields,
       labels:
@@ -127,6 +130,7 @@ export const taskService = {
     const whereClause: any = {
       projectId,
       deletedAt: null,
+      parentTaskId: null,
     };
 
     if (sprintId === "null") {
@@ -189,7 +193,19 @@ export const taskService = {
     if (!task) {
       throw new NotFoundException("Task not found");
     }
-    return task;
+
+    const attachments = await mediaService.getMedia("Task", taskId, "task_attachments");
+    const attachmentsWithUrls = await Promise.all(
+      attachments.map(async (a: any) => ({
+        ...a,
+        url: await mediaService.getUrl(a.id),
+      }))
+    );
+
+    return {
+      ...task,
+      attachments: attachmentsWithUrls,
+    };
   },
 
   async updateTask(
@@ -236,7 +252,7 @@ export const taskService = {
 
       // Advanced transition validation: Auto-complete subtasks when transitioning to Done
       if (newStatus.category === "done") {
-        await taskRepository.completeAllSubtasks(taskId);
+        await taskRepository.completeAllSubtasks(taskId, existingTask.projectId);
       }
 
       updateData.statusId = data.statusId;

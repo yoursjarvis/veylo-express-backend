@@ -47,7 +47,6 @@ model User {
   twoFactors            TwoFactor[]
   createdTasks          Task[]            @relation("TaskCreator")
   assignedTasks         Task[]            @relation("TaskAssignee")
-  assignedSubtasks      Subtask[]
   comments              Comment[]
   commentReactions      CommentReaction[]
   taskActivities        TaskActivity[]
@@ -139,7 +138,6 @@ model Organization {
   tasks           Task[]
   taskStatuses    TaskStatus[]
   sprints         Sprint[]
-  subtasks        Subtask[]
   comments        Comment[]
   taskActivities  TaskActivity[]
   notifications   Notification[]
@@ -350,6 +348,7 @@ model Task {
   dueDate        DateTime? @map("due_date") @db.Timestamptz(6)
   creatorId      String    @map("creator_id") @db.Uuid
   assigneeId     String?   @map("assignee_id") @db.Uuid
+  parentTaskId   String?   @map("parent_task_id") @db.Uuid
   customFields   Json?     @default("{}") @map("custom_fields") // JSONB storage
   deletedAt      DateTime? @map("deleted_at") @db.Timestamptz(6)
   createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
@@ -363,7 +362,8 @@ model Task {
   status                TaskStatus       @relation(fields: [statusId], references: [id])
   creator               User             @relation("TaskCreator", fields: [creatorId], references: [id])
   assignee              User?            @relation("TaskAssignee", fields: [assigneeId], references: [id])
-  subtasks              Subtask[]
+  parentTask            Task?            @relation("Subtasks", fields: [parentTaskId], references: [id], onDelete: Cascade)
+  subtasks              Task[]           @relation("Subtasks")
   comments              Comment[]
   activityLogs          TaskActivity[]
   labels                TaskLabel[]
@@ -378,6 +378,7 @@ model Task {
   @@index([sprintId], map: "idx_tasks_sprint_id")
   @@index([statusId], map: "idx_tasks_status_id")
   @@index([assigneeId], map: "idx_tasks_assignee_id")
+  @@index([parentTaskId], map: "idx_tasks_parent_task_id")
   @@index([deletedAt], map: "idx_tasks_deleted_at")
   @@map("tasks")
 }
@@ -419,23 +420,6 @@ model Sprint {
   @@index([organizationId], map: "idx_sprints_org_id")
   @@index([projectId], map: "idx_sprints_project_id")
   @@map("sprints")
-}
-
-model Subtask {
-  id             String   @id @default(uuid(7)) @db.Uuid
-  taskId         String   @map("task_id") @db.Uuid
-  organizationId String   @map("organization_id") @db.Uuid
-  title          String
-  isCompleted    Boolean  @default(false) @map("is_completed")
-  assigneeId     String?  @map("assignee_id") @db.Uuid
-  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-
-  task         Task         @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  organization Organization @relation(fields: [organizationId], references: [id])
-  assignee     User?        @relation(fields: [assigneeId], references: [id])
-
-  @@index([organizationId], map: "idx_subtasks_org_id")
-  @@map("subtasks")
 }
 
 model CustomFieldDefinition {

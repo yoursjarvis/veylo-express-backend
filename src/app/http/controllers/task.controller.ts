@@ -1,6 +1,8 @@
 import { asyncHandler } from "@/app/http/middlewares/async-handler.middleware";
 import { verifyProjectAccess } from "@/app/http/middlewares/project-access.middleware";
 import { taskService } from "@/app/services/task.service";
+import { mediaService } from "@/core/media";
+import { BadRequestException } from "@/utils/app-error";
 import { ok } from "@/utils/http-response";
 import type { Request, Response } from "express";
 import { taskCreateSchema, taskUpdateSchema } from "@/app/http/validators/task.validator";
@@ -67,5 +69,41 @@ export const taskController = {
     await taskService.deleteTask(taskId, userId);
 
     return ok(res, "Task deleted successfully");
+  }),
+
+  uploadAttachment: asyncHandler(async (req: Request, res: Response) => {
+    const taskId = req.params.taskId as string;
+    
+    if (!req.file) {
+      throw new BadRequestException("No file uploaded");
+    }
+
+    const task = await taskService.getTask(taskId);
+    await verifyProjectAccess(req, task.projectId);
+
+    const media = await mediaService.addMedia(
+      "Task",
+      taskId,
+      {
+        buffer: req.file.buffer,
+        originalname: req.file.originalname,
+        mimetype: req.file.mimetype,
+        size: req.file.size,
+      },
+      "task_attachments",
+      false
+    );
+
+    const url = await mediaService.getUrl(media.id);
+
+    return ok(res, "Attachment uploaded successfully", {
+      id: media.id,
+      name: media.name,
+      fileName: media.fileName,
+      mimeType: media.mimeType,
+      size: media.size,
+      url,
+      createdAt: media.createdAt,
+    });
   }),
 };

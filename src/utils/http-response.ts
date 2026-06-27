@@ -3,9 +3,10 @@ import type { Response } from "express";
 export function ok<T>(
   res: Response,
   message: string,
-  data?: T
+  data?: T,
+  statusCode = 200
 ): Response {
-  return res.json({
+  return res.status(statusCode).json({
     success: true,
     message,
     data: data ?? {},
