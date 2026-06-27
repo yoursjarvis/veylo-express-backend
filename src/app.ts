@@ -22,6 +22,8 @@ app.disable("x-powered-by");
 
 app.use(helmet({
   crossOriginResourcePolicy: false, // Allow loading images from different origins if needed
+  xFrameOptions: false, // Allow frontend to frame PDFs for preview
+  contentSecurityPolicy: false, // Allow browser to render PDFs
 }));
 
 app.use(requestIdMiddleware);

@@ -23,6 +23,7 @@ taskRoutes.get("/tasks/:id", taskController.getTask);
 taskRoutes.patch("/tasks/:id", taskController.updateTask);
 taskRoutes.delete("/tasks/:id", taskController.deleteTask);
 taskRoutes.post("/tasks/:taskId/attachments", upload.single("file"), taskController.uploadAttachment);
+taskRoutes.delete("/tasks/:taskId/attachments/:attachmentId", taskController.deleteAttachment);
 
 // --- SPRINT CRUD ---
 taskRoutes.post("/projects/:projectId/sprints", sprintController.createSprint);

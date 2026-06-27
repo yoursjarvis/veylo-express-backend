@@ -106,4 +106,16 @@ export const taskController = {
       createdAt: media.createdAt,
     });
   }),
+
+  deleteAttachment: asyncHandler(async (req: Request, res: Response) => {
+    const taskId = req.params.taskId as string;
+    const attachmentId = req.params.attachmentId as string;
+
+    const task = await taskService.getTask(taskId);
+    await verifyProjectAccess(req, task.projectId);
+
+    await mediaService.deleteMedia(attachmentId);
+
+    return ok(res, "Attachment deleted successfully");
+  }),
 };
