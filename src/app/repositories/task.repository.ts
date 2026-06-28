@@ -140,6 +140,15 @@ export const taskRepository = {
         _count: {
           select: { subtasks: true, comments: true },
         },
+        subtasks: {
+          include: {
+            status: true,
+            assignee: {
+              select: { id: true, name: true, image: true, email: true },
+            },
+          },
+          orderBy: [{ position: "asc" }, { createdAt: "desc" }],
+        },
       },
       orderBy: [{ position: "asc" }, { createdAt: "desc" }],
     });
