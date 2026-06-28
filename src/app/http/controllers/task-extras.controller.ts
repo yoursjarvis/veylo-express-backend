@@ -95,10 +95,14 @@ export const taskExtrasController = {
       throw new NotFoundException("Subtask not found");
     }
 
-    const { userId } = await verifyProjectAccess(req, subtask.task.projectId);
+    const { userId } = await verifyProjectAccess(req, subtask.parentTask!.projectId);
     const validatedData = subtaskSchema.partial().parse(req.body);
 
-    const updated = await taskExtrasService.updateSubtask(subtask, validatedData, userId);
+    const updated = await taskExtrasService.updateSubtask(
+      { ...subtask, taskId: subtask.parentTaskId!, isCompleted: subtask.status?.category === "done" },
+      validatedData,
+      userId
+    );
 
     return ok(res, "Subtask updated successfully", updated);
   }),
@@ -111,9 +115,9 @@ export const taskExtrasController = {
       throw new NotFoundException("Subtask not found");
     }
 
-    const { userId } = await verifyProjectAccess(req, subtask.task.projectId);
+    const { userId } = await verifyProjectAccess(req, subtask.parentTask!.projectId);
 
-    await taskExtrasService.deleteSubtask(subtask, userId);
+    await taskExtrasService.deleteSubtask({ ...subtask, taskId: subtask.parentTaskId! }, userId);
 
     return ok(res, "Subtask deleted successfully");
   }),

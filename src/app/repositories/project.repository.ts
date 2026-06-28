@@ -23,6 +23,7 @@ export const projectRepository = {
   createProject(
     data: {
       title: string;
+      projectKey: string;
       description?: string;
       icon?: string;
       template: string;
@@ -36,6 +37,7 @@ export const projectRepository = {
     return prisma.project.create({
       data: {
         title: data.title,
+        projectKey: data.projectKey,
         description: data.description,
         icon: data.icon,
         template: data.template,

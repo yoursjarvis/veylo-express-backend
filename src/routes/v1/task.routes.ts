@@ -13,80 +13,78 @@ import { upload } from "@/app/http/middlewares/upload.middleware";
 
 export const taskRoutes = Router();
 
-// Apply auth middleware to all routes
-taskRoutes.use(requireAuth);
 
 // --- TASK CRUD ---
-taskRoutes.post("/projects/:projectId/tasks", taskController.createTask);
-taskRoutes.get("/projects/:projectId/tasks", taskController.getTasks);
-taskRoutes.get("/tasks/:id", taskController.getTask);
-taskRoutes.patch("/tasks/:id", taskController.updateTask);
-taskRoutes.delete("/tasks/:id", taskController.deleteTask);
-taskRoutes.post("/tasks/:taskId/attachments", upload.single("file"), taskController.uploadAttachment);
-taskRoutes.delete("/tasks/:taskId/attachments/:attachmentId", taskController.deleteAttachment);
+taskRoutes.post("/projects/:projectId/tasks", requireAuth, taskController.createTask);
+taskRoutes.get("/projects/:projectId/tasks", requireAuth, taskController.getTasks);
+taskRoutes.get("/tasks/:id", requireAuth, taskController.getTask);
+taskRoutes.patch("/tasks/:id", requireAuth, taskController.updateTask);
+taskRoutes.delete("/tasks/:id", requireAuth, taskController.deleteTask);
+taskRoutes.post("/tasks/:taskId/attachments", requireAuth, upload.single("file"), taskController.uploadAttachment);
+taskRoutes.delete("/tasks/:taskId/attachments/:attachmentId", requireAuth, taskController.deleteAttachment);
 
 // --- SPRINT CRUD ---
-taskRoutes.post("/projects/:projectId/sprints", sprintController.createSprint);
-taskRoutes.get("/projects/:projectId/sprints", sprintController.getSprints);
-taskRoutes.get("/sprints/:id", sprintController.getSprint);
-taskRoutes.patch("/sprints/:id", sprintController.updateSprint);
-taskRoutes.delete("/sprints/:id", sprintController.deleteSprint);
+taskRoutes.post("/projects/:projectId/sprints", requireAuth, sprintController.createSprint);
+taskRoutes.get("/projects/:projectId/sprints", requireAuth, sprintController.getSprints);
+taskRoutes.get("/sprints/:id", requireAuth, sprintController.getSprint);
+taskRoutes.patch("/sprints/:id", requireAuth, sprintController.updateSprint);
+taskRoutes.delete("/sprints/:id", requireAuth, sprintController.deleteSprint);
 
 // --- TASK STATUS CRUD ---
-taskRoutes.post("/projects/:projectId/statuses", taskExtrasController.createStatus);
-taskRoutes.get("/projects/:projectId/statuses", taskExtrasController.getStatuses);
-taskRoutes.patch("/statuses/:id", taskExtrasController.updateStatus);
-taskRoutes.delete("/statuses/:id", taskExtrasController.deleteStatus);
+taskRoutes.post("/projects/:projectId/statuses", requireAuth, taskExtrasController.createStatus);
+taskRoutes.get("/projects/:projectId/statuses", requireAuth, taskExtrasController.getStatuses);
+taskRoutes.patch("/statuses/:id", requireAuth, taskExtrasController.updateStatus);
+taskRoutes.delete("/statuses/:id", requireAuth, taskExtrasController.deleteStatus);
 
 // --- SUBTASK CHECKLIST CRUD ---
-taskRoutes.post("/tasks/:taskId/subtasks", taskExtrasController.createSubtask);
-taskRoutes.patch("/subtasks/:id", taskExtrasController.updateSubtask);
-taskRoutes.delete("/subtasks/:id", taskExtrasController.deleteSubtask);
+taskRoutes.post("/tasks/:taskId/subtasks", requireAuth, taskExtrasController.createSubtask);
+taskRoutes.patch("/subtasks/:id", requireAuth, taskExtrasController.updateSubtask);
+taskRoutes.delete("/subtasks/:id", requireAuth, taskExtrasController.deleteSubtask);
 
 // --- COMMENTS CRUD ---
-taskRoutes.post("/tasks/:taskId/comments", taskExtrasController.createComment);
-taskRoutes.patch("/comments/:id", taskExtrasController.updateComment);
-taskRoutes.delete("/comments/:id", taskExtrasController.deleteComment);
-taskRoutes.get("/comments/:commentId/reactions/:emoji/users", taskExtrasController.getReactionUsers);
-taskRoutes.post("/comments/:commentId/reactions", taskExtrasController.toggleCommentReaction);
+taskRoutes.post("/tasks/:taskId/comments", requireAuth, taskExtrasController.createComment);
+taskRoutes.patch("/comments/:id", requireAuth, taskExtrasController.updateComment);
+taskRoutes.delete("/comments/:id", requireAuth, taskExtrasController.deleteComment);
+taskRoutes.get("/comments/:commentId/reactions/:emoji/users", requireAuth, taskExtrasController.getReactionUsers);
+taskRoutes.post("/comments/:commentId/reactions", requireAuth, taskExtrasController.toggleCommentReaction);
 
 // --- CUSTOM FIELDS CRUD ---
-taskRoutes.post("/projects/:projectId/custom-fields", taskExtrasController.createCustomField);
-taskRoutes.get("/projects/:projectId/custom-fields", taskExtrasController.getCustomFields);
-taskRoutes.delete("/custom-fields/:id", taskExtrasController.deleteCustomField);
+taskRoutes.post("/projects/:projectId/custom-fields", requireAuth, taskExtrasController.createCustomField);
+taskRoutes.get("/projects/:projectId/custom-fields", requireAuth, taskExtrasController.getCustomFields);
+taskRoutes.delete("/custom-fields/:id", requireAuth, taskExtrasController.deleteCustomField);
 
 // --- IN-APP NOTIFICATIONS ---
-taskRoutes.get("/notifications", notificationController.getNotifications);
-taskRoutes.patch("/notifications/read-all", notificationController.markAllAsRead);
-taskRoutes.patch("/notifications/:id/read", notificationController.markAsRead);
+taskRoutes.get("/notifications", requireAuth, notificationController.getNotifications);
+taskRoutes.patch("/notifications/read-all", requireAuth, notificationController.markAllAsRead);
+taskRoutes.patch("/notifications/:id/read", requireAuth, notificationController.markAsRead);
 
 // --- SLACK INTEGRATIONS ---
-taskRoutes.post("/projects/:projectId/slack-webhooks", slackWebhookController.createWebhook);
-taskRoutes.get("/projects/:projectId/slack-webhooks", slackWebhookController.getWebhooks);
-taskRoutes.delete("/slack-webhooks/:id", slackWebhookController.deleteWebhook);
+taskRoutes.post("/projects/:projectId/slack-webhooks", requireAuth, slackWebhookController.createWebhook);
+taskRoutes.get("/projects/:projectId/slack-webhooks", requireAuth, slackWebhookController.getWebhooks);
+taskRoutes.delete("/slack-webhooks/:id", requireAuth, slackWebhookController.deleteWebhook);
 
 // --- TASK DEPENDENCIES ---
-taskRoutes.get("/tasks/:taskId/dependencies", dependencyController.getDependencies);
-taskRoutes.post("/tasks/:taskId/dependencies", dependencyController.createDependency);
-taskRoutes.delete("/dependencies/:id", dependencyController.deleteDependency);
+taskRoutes.get("/tasks/:taskId/dependencies", requireAuth, dependencyController.getDependencies);
+taskRoutes.post("/tasks/:taskId/dependencies", requireAuth, dependencyController.createDependency);
+taskRoutes.delete("/dependencies/:id", requireAuth, dependencyController.deleteDependency);
 
 // --- EPIC CRUD ---
-taskRoutes.post("/projects/:projectId/epics", epicController.createEpic);
-taskRoutes.get("/projects/:projectId/epics", epicController.getEpics);
-taskRoutes.get("/epics/:id", epicController.getEpic);
-taskRoutes.patch("/epics/:id", epicController.updateEpic);
-taskRoutes.delete("/epics/:id", epicController.deleteEpic);
+taskRoutes.post("/projects/:projectId/epics", requireAuth, epicController.createEpic);
+taskRoutes.get("/projects/:projectId/epics", requireAuth, epicController.getEpics);
+taskRoutes.get("/epics/:id", requireAuth, epicController.getEpic);
+taskRoutes.patch("/epics/:id", requireAuth, epicController.updateEpic);
+taskRoutes.delete("/epics/:id", requireAuth, epicController.deleteEpic);
 
 // --- LABEL CRUD ---
-taskRoutes.post("/projects/:projectId/labels", labelController.createLabel);
-taskRoutes.get("/projects/:projectId/labels", labelController.getLabels);
-taskRoutes.patch("/labels/:id", labelController.updateLabel);
-taskRoutes.delete("/labels/:id", labelController.deleteLabel);
+taskRoutes.post("/projects/:projectId/labels", requireAuth, labelController.createLabel);
+taskRoutes.get("/projects/:projectId/labels", requireAuth, labelController.getLabels);
+taskRoutes.patch("/labels/:id", requireAuth, labelController.updateLabel);
+taskRoutes.delete("/labels/:id", requireAuth, labelController.deleteLabel);
 
 // --- MILESTONE CRUD ---
-taskRoutes.post("/projects/:projectId/milestones", milestoneController.createMilestone);
-taskRoutes.get("/projects/:projectId/milestones", milestoneController.getMilestones);
-taskRoutes.patch("/milestones/:id", milestoneController.updateMilestone);
-taskRoutes.delete("/milestones/:id", milestoneController.deleteMilestone);
+taskRoutes.post("/projects/:projectId/milestones", requireAuth, milestoneController.createMilestone);
+taskRoutes.get("/projects/:projectId/milestones", requireAuth, milestoneController.getMilestones);
+taskRoutes.patch("/milestones/:id", requireAuth, milestoneController.updateMilestone);
+taskRoutes.delete("/milestones/:id", requireAuth, milestoneController.deleteMilestone);
 
 

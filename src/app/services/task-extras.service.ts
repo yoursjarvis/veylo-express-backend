@@ -1,4 +1,5 @@
 import { taskExtrasRepository } from "@/app/repositories/task-extras.repository";
+import { taskRepository } from "@/app/repositories/task.repository";
 import { notificationService } from "@/app/services/notification.service";
 import { BadRequestException, NotFoundException, ForbiddenException } from "@/utils/app-error";
 
@@ -56,12 +57,28 @@ export const taskExtrasService = {
     validatedData: { title: string; assigneeId?: string | null },
     userId: string
   ) {
+    const parentTask = await taskExtrasRepository.findTaskById(taskId);
+    if (!parentTask) {
+      throw new NotFoundException("Parent task not found");
+    }
+    const statuses = await taskExtrasRepository.findStatusesByProjectId(parentTask.projectId);
+    const statusId = statuses.length > 0 ? statuses[0].id : undefined;
+    if (!statusId) {
+      throw new BadRequestException("No statuses found in project");
+    }
+
+    const projectData = await taskRepository.incrementTaskSequence(parentTask.projectId);
+    const taskKey = `${projectData.projectKey}-${projectData.taskSequence}`;
+
     const subtask = await taskExtrasRepository.createSubtask({
       title: validatedData.title,
-      taskId,
+      taskKey,
+      parentTaskId: taskId,
       organizationId,
+      projectId: parentTask.projectId,
+      statusId: statusId,
+      creatorId: userId,
       assigneeId: validatedData.assigneeId ?? null,
-      isCompleted: false,
     });
 
     await taskExtrasRepository.createTaskActivity({
@@ -80,6 +97,7 @@ export const taskExtrasService = {
       id: string;
       taskId: string;
       isCompleted: boolean;
+      statusId: string;
       title: string;
       organizationId: string;
     },
@@ -89,14 +107,14 @@ export const taskExtrasService = {
     const updated = await taskExtrasRepository.updateSubtask(subtask.id, validatedData);
 
     if (
-      validatedData.isCompleted !== undefined &&
-      validatedData.isCompleted !== subtask.isCompleted
+      validatedData.statusId !== undefined &&
+      validatedData.statusId !== subtask.statusId
     ) {
       await taskExtrasRepository.createTaskActivity({
         taskId: subtask.taskId,
         userId,
         organizationId: subtask.organizationId,
-        action: validatedData.isCompleted ? "subtask_completed" : "subtask_reopened",
+        action: "subtask_status_changed",
         newValue: subtask.title,
       });
     }

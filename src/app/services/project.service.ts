@@ -4,6 +4,7 @@ import { BadRequestException, NotFoundException } from "@/utils/app-error";
 import { decrypt, encrypt } from "@/utils/crypto";
 import path from "path";
 import { notificationService } from "@/app/services/notification.service";
+import prisma from "@/lib/prisma";
 
 // Malicious files filtering constants
 const DISALLOWED_EXTENSIONS = [
@@ -57,8 +58,16 @@ export const projectService = {
       icon?: string;
       template: string;
       teamMode?: string;
+      projectKey: string;
     }
   ) {
+    const existingProject = await prisma.project.findUnique({
+      where: { projectKey: data.projectKey },
+    });
+    if (existingProject) {
+      throw new BadRequestException("Project Key already exists");
+    }
+
     const templateSlug = data.template;
 
     // Load template configuration from database
@@ -85,6 +94,7 @@ export const projectService = {
     return projectRepository.createProject(
       {
         title: data.title,
+        projectKey: data.projectKey,
         description: data.description,
         icon: data.icon,
         template: templateSlug,

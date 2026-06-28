@@ -61,32 +61,45 @@ export const taskExtrasRepository = {
   // --- SUBTASKS ---
   async createSubtask(data: {
     title: string;
-    taskId: string;
+    taskKey: string;
+    parentTaskId: string;
     organizationId: string;
+    projectId: string;
+    statusId: string;
+    creatorId: string;
     assigneeId?: string | null;
-    isCompleted: boolean;
   }) {
-    return prisma.subtask.create({
-      data,
+    return prisma.task.create({
+      data: {
+        taskKey: data.taskKey,
+        title: data.title,
+        parentTaskId: data.parentTaskId,
+        organizationId: data.organizationId,
+        projectId: data.projectId,
+        statusId: data.statusId,
+        creatorId: data.creatorId,
+        assigneeId: data.assigneeId,
+        type: "subtask",
+      },
     });
   },
 
   async findSubtaskById(id: string) {
-    return prisma.subtask.findUnique({
+    return prisma.task.findUnique({
       where: { id },
-      include: { task: true },
+      include: { parentTask: true, status: true },
     });
   },
 
   async updateSubtask(id: string, data: Record<string, any>) {
-    return prisma.subtask.update({
+    return prisma.task.update({
       where: { id },
       data,
     });
   },
 
   async deleteSubtask(id: string) {
-    return prisma.subtask.delete({
+    return prisma.task.delete({
       where: { id },
     });
   },

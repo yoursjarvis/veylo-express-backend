@@ -47,6 +47,7 @@ model User {
   twoFactors            TwoFactor[]
   createdTasks          Task[]            @relation("TaskCreator")
   assignedTasks         Task[]            @relation("TaskAssignee")
+  reportedTasks         Task[]            @relation("TaskReporter")
   comments              Comment[]
   commentReactions      CommentReaction[]
   taskActivities        TaskActivity[]
@@ -246,6 +247,7 @@ model TwoFactor {
 
 model Project {
   id             String    @id @default(uuid(7)) @db.Uuid
+  projectKey     String    @unique @map("project_key") @db.VarChar(10)
   title          String
   description    String?
   icon           String?
@@ -253,6 +255,7 @@ model Project {
   teamMode       String    @default("general") @map("team_mode") // software, general, hybrid
   workspaceId    String    @map("workspace_id") @db.Uuid
   organizationId String    @map("organization_id") @db.Uuid
+  taskSequence   Int       @default(0) @map("task_sequence")
   deletedAt      DateTime? @map("deleted_at") @db.Timestamptz(6)
   createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
@@ -333,6 +336,7 @@ model VaultItem {
 
 model Task {
   id             String    @id @default(uuid(7)) @db.Uuid
+  taskKey        String    @unique @map("task_key")
   title          String
   description    String?   @db.Text
   projectId      String    @map("project_id") @db.Uuid
@@ -348,6 +352,7 @@ model Task {
   dueDate        DateTime? @map("due_date") @db.Timestamptz(6)
   creatorId      String    @map("creator_id") @db.Uuid
   assigneeId     String?   @map("assignee_id") @db.Uuid
+  reporterId     String?   @map("reporter_id") @db.Uuid
   parentTaskId   String?   @map("parent_task_id") @db.Uuid
   customFields   Json?     @default("{}") @map("custom_fields") // JSONB storage
   deletedAt      DateTime? @map("deleted_at") @db.Timestamptz(6)
@@ -362,6 +367,7 @@ model Task {
   status                TaskStatus       @relation(fields: [statusId], references: [id])
   creator               User             @relation("TaskCreator", fields: [creatorId], references: [id])
   assignee              User?            @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  reporter              User?            @relation("TaskReporter", fields: [reporterId], references: [id])
   parentTask            Task?            @relation("Subtasks", fields: [parentTaskId], references: [id], onDelete: Cascade)
   subtasks              Task[]           @relation("Subtasks")
   comments              Comment[]

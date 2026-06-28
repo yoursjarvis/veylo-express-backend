@@ -15,6 +15,9 @@ export const taskRepository = {
         assignee: {
           select: { id: true, name: true, image: true, email: true },
         },
+        reporter: {
+          select: { id: true, name: true, image: true, email: true },
+        },
         creator: {
           select: { id: true, name: true, image: true, email: true },
         },
@@ -28,6 +31,7 @@ export const taskRepository = {
         subtasks: {
           include: {
             assignee: { select: { id: true, name: true, image: true } },
+            reporter: { select: { id: true, name: true, image: true } },
           },
           orderBy: { createdAt: "asc" },
         },
@@ -57,7 +61,7 @@ export const taskRepository = {
   async findTaskWithRelations(taskId: string) {
     return prisma.task.findUnique({
       where: { id: taskId },
-      include: { status: true, assignee: true, sprint: true, epic: true, milestone: true },
+      include: { status: true, assignee: true, reporter: true, sprint: true, epic: true, milestone: true },
     });
   },
 
@@ -85,12 +89,23 @@ export const taskRepository = {
     });
   },
 
+  async incrementTaskSequence(projectId: string) {
+    return prisma.project.update({
+      where: { id: projectId },
+      data: { taskSequence: { increment: 1 } },
+      select: { projectKey: true, taskSequence: true },
+    });
+  },
+
   createTask(data: any) {
     return prisma.task.create({
       data,
       include: {
         status: true,
         assignee: {
+          select: { id: true, name: true, image: true, email: true },
+        },
+        reporter: {
           select: { id: true, name: true, image: true, email: true },
         },
         epic: true,
@@ -110,6 +125,9 @@ export const taskRepository = {
       include: {
         status: true,
         assignee: {
+          select: { id: true, name: true, image: true, email: true },
+        },
+        reporter: {
           select: { id: true, name: true, image: true, email: true },
         },
         epic: true,
@@ -159,6 +177,9 @@ export const taskRepository = {
       include: {
         status: true,
         assignee: {
+          select: { id: true, name: true, image: true, email: true },
+        },
+        reporter: {
           select: { id: true, name: true, image: true, email: true },
         },
         epic: true,

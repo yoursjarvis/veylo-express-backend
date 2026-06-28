@@ -53,6 +53,7 @@ export const taskService = {
       estimate?: number | null;
       dueDate?: string | null;
       assigneeId?: string | null;
+      reporterId?: string | null;
       parentTaskId?: string | null;
       position?: number;
       customFields?: Record<string, any>;
@@ -89,7 +90,11 @@ export const taskService = {
       }
     }
 
+    const projectData = await taskRepository.incrementTaskSequence(projectId);
+    const taskKey = `${projectData.projectKey}-${projectData.taskSequence}`;
+
     const task = await taskRepository.createTask({
+      taskKey,
       title: data.title,
       description: data.description,
       statusId: data.statusId,
@@ -104,6 +109,7 @@ export const taskService = {
       dueDate: data.dueDate ? new Date(data.dueDate) : null,
       creatorId: userId,
       assigneeId: data.assigneeId ?? null,
+      reporterId: data.reporterId ?? null,
       parentTaskId: data.parentTaskId ?? null,
       position: data.position ?? 0,
       customFields: data.customFields,
@@ -218,11 +224,12 @@ export const taskService = {
       sprintId?: string | null;
       epicId?: string | null;
       milestoneId?: string | null;
-      type?: "task" | "bug" | "feature";
+      type?: "task" | "bug" | "feature" | "subtask";
       priority?: "low" | "medium" | "high" | "urgent";
       estimate?: number | null;
       dueDate?: string | null;
       assigneeId?: string | null;
+      reporterId?: string | null;
       position?: number;
       customFields?: Record<string, any>;
       labelIds?: string[];
@@ -300,6 +307,28 @@ export const taskService = {
         "assignee_changed",
         existingTask.assignee?.name || "Unassigned",
         assigneeName
+      );
+    }
+
+    // Validate and audit reporter change
+    if (data.reporterId !== undefined && data.reporterId !== existingTask.reporterId) {
+      let reporterName = "Unassigned";
+      if (data.reporterId) {
+        const newReporter = await taskRepository.findUserById(data.reporterId);
+        if (!newReporter) {
+          throw new BadRequestException("Reporter not found");
+        }
+        updateData.reporterId = data.reporterId;
+        reporterName = newReporter.name;
+      } else {
+        updateData.reporterId = null;
+      }
+      await logActivity(
+        taskId,
+        userId,
+        "reporter_changed",
+        existingTask.reporter?.name || "Unassigned",
+        reporterName
       );
     }
 
