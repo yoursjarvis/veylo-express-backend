@@ -129,6 +129,11 @@ export const taskService = {
     // Trigger notification in background
     notificationService.handleTaskCreated(task.id, userId);
 
+    // Trigger automation rules in background
+    automationService
+      .handleTaskCreated(task.id, userId)
+      .catch((err) => console.error("Error running task_created automation:", err));
+
     return task;
   },
 
@@ -523,6 +528,13 @@ export const taskService = {
           .handleTaskStatusChanged(taskId, userId, existingTask.status.name, newStatus.name)
           .catch((err) => console.error("Error running automation rules:", err));
       }
+    }
+
+    // Trigger automation rules in background if priority changed
+    if (data.priority && data.priority !== existingTask.priority) {
+      automationService
+        .handlePriorityChanged(taskId, userId, existingTask.priority, data.priority)
+        .catch((err) => console.error("Error running priority changed automation:", err));
     }
 
     return updatedTask;

@@ -2,6 +2,32 @@ import prisma from "@/lib/prisma";
 
 export const automationService = {
   /**
+   * Run automation rules for a project when a task is created
+   */
+  async handleTaskCreated(taskId: string, userId: string) {
+    try {
+      const task = await prisma.task.findUnique({
+        where: { id: taskId },
+      });
+      if (!task) return;
+
+      const rules = await prisma.automationRule.findMany({
+        where: {
+          projectId: task.projectId,
+          trigger: "task_created",
+          isActive: true,
+        },
+      });
+
+      for (const rule of rules) {
+        await this.executeAction(rule, task, userId);
+      }
+    } catch (error) {
+      console.error("Error in handleTaskCreated automation:", error);
+    }
+  },
+
+  /**
    * Run automation rules for a project when a task status changes
    */
   async handleTaskStatusChanged(taskId: string, userId: string, fromStatusName: string, toStatusName: string) {
@@ -39,6 +65,38 @@ export const automationService = {
       }
     } catch (error) {
       console.error("Error in handleTaskStatusChanged automation:", error);
+    }
+  },
+
+  /**
+   * Run automation rules for a project when a task priority changes
+   */
+  async handlePriorityChanged(taskId: string, userId: string, fromPriority: string, toPriority: string) {
+    try {
+      const task = await prisma.task.findUnique({
+        where: { id: taskId },
+      });
+      if (!task) return;
+
+      const rules = await prisma.automationRule.findMany({
+        where: {
+          projectId: task.projectId,
+          trigger: "priority_changed",
+          isActive: true,
+        },
+      });
+
+      for (const rule of rules) {
+        const matchesPriority =
+          !rule.triggerVal ||
+          rule.triggerVal.toLowerCase() === toPriority.toLowerCase();
+
+        if (!matchesPriority) continue;
+
+        await this.executeAction(rule, task, userId);
+      }
+    } catch (error) {
+      console.error("Error in handlePriorityChanged automation:", error);
     }
   },
 
@@ -104,8 +162,6 @@ export const automationService = {
           statuses.find((s) => s.category.toLowerCase() === "done");
 
         if (targetStatus && task.statusId !== targetStatus.id) {
-          // Update the task status!
-          // We can update it using the taskService.updateTask, which will trigger audit trails, notifications, and workflow rules
           await taskService.updateTask(task.id, userId, {
             statusId: targetStatus.id,
           });
@@ -122,6 +178,23 @@ export const automationService = {
             assigneeId: rule.actionVal,
           });
         }
+      } else if (rule.action === "set_priority") {
+        const priorityVal = (rule.actionVal || "medium").toLowerCase();
+        if (["low", "medium", "high", "urgent"].includes(priorityVal) && task.priority !== priorityVal) {
+          await taskService.updateTask(task.id, userId, {
+            priority: priorityVal as any,
+          });
+        }
+      } else if (rule.action === "add_comment") {
+        const commentContent = rule.actionVal || "Automated action executed.";
+        await prisma.comment.create({
+          data: {
+            taskId: task.id,
+            userId: userId || task.creatorId,
+            content: commentContent,
+            organizationId: task.organizationId,
+          },
+        });
       }
     } catch (error) {
       console.error(`Failed to execute action for rule ${rule.id}:`, error);
