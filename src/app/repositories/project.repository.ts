@@ -262,4 +262,51 @@ export const projectRepository = {
       },
     });
   },
+
+  findAutomationRules(projectId: string) {
+    return prisma.automationRule.findMany({
+      where: { projectId },
+      orderBy: { createdAt: "desc" },
+    });
+  },
+
+  findAutomationRuleById(ruleId: string) {
+    return prisma.automationRule.findUnique({
+      where: { id: ruleId },
+    });
+  },
+
+  createAutomationRule(projectId: string, data: { name: string; trigger: string; triggerVal?: string | null; action: string; actionVal?: string | null; isActive?: boolean }) {
+    return prisma.automationRule.create({
+      data: {
+        projectId,
+        name: data.name,
+        trigger: data.trigger,
+        triggerVal: data.triggerVal ?? null,
+        action: data.action,
+        actionVal: data.actionVal ?? null,
+        isActive: data.isActive !== undefined ? data.isActive : true,
+      },
+    });
+  },
+
+  updateAutomationRule(ruleId: string, data: { name?: string; trigger?: string; triggerVal?: string | null; action?: string; actionVal?: string | null; isActive?: boolean }) {
+    return prisma.automationRule.update({
+      where: { id: ruleId },
+      data: {
+        name: data.name,
+        trigger: data.trigger,
+        triggerVal: data.triggerVal,
+        action: data.action,
+        actionVal: data.actionVal,
+        isActive: data.isActive,
+      },
+    });
+  },
+
+  deleteAutomationRule(ruleId: string) {
+    return prisma.automationRule.delete({
+      where: { id: ruleId },
+    });
+  },
 };

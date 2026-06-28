@@ -333,4 +333,31 @@ export const projectService = {
 
     await mediaService.deleteMedia(fileId);
   },
+
+  getAutomationRules(projectId: string) {
+    return projectRepository.findAutomationRules(projectId);
+  },
+
+  createAutomationRule(projectId: string, data: any) {
+    if (!data.name || !data.trigger || !data.action) {
+      throw new BadRequestException("Name, trigger, and action are required");
+    }
+    return projectRepository.createAutomationRule(projectId, data);
+  },
+
+  async updateAutomationRule(ruleId: string, data: any) {
+    const existing = await projectRepository.findAutomationRuleById(ruleId);
+    if (!existing) {
+      throw new NotFoundException("Automation rule not found");
+    }
+    return projectRepository.updateAutomationRule(ruleId, data);
+  },
+
+  async deleteAutomationRule(ruleId: string) {
+    const existing = await projectRepository.findAutomationRuleById(ruleId);
+    if (!existing) {
+      throw new NotFoundException("Automation rule not found");
+    }
+    return projectRepository.deleteAutomationRule(ruleId);
+  },
 };

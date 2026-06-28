@@ -34,3 +34,9 @@ projectRoutes.delete("/projects/:id/vault/items/:itemId", requireAuth, projectCo
 projectRoutes.post("/projects/:id/files", requireAuth, upload.single("file"), projectController.uploadProjectFile);
 projectRoutes.get("/projects/:id/files", requireAuth, projectController.getProjectFiles);
 projectRoutes.delete("/projects/:id/files/:fileId", requireAuth, projectController.deleteProjectFile);
+
+// Project Automation Rules
+projectRoutes.get("/projects/:id/automation-rules", requireAuth, projectController.getAutomationRules);
+projectRoutes.post("/projects/:id/automation-rules", requireAuth, projectController.createAutomationRule);
+projectRoutes.put("/projects/:id/automation-rules/:ruleId", requireAuth, projectController.updateAutomationRule);
+projectRoutes.delete("/projects/:id/automation-rules/:ruleId", requireAuth, projectController.deleteAutomationRule);

@@ -298,7 +298,7 @@ export const authService = {
   async updateUser(
     req: Request,
     res: Response,
-    input: { firstName?: string; lastName?: string; name?: string; image?: string }
+    input: { firstName?: string; lastName?: string; name?: string; image?: string; notificationPreferences?: string }
   ) {
     const headers = betterAuthHeaders(req);
     const result = await auth.api.updateUser({

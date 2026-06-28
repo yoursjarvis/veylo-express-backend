@@ -84,6 +84,13 @@ export const notificationRepository = {
     });
   },
 
+  async getUserPreferences(userId: string) {
+    return prisma.user.findUnique({
+      where: { id: userId },
+      select: { notificationPreferences: true },
+    });
+  },
+
   async findCommentForNotification(commentId: string) {
     return prisma.comment.findUnique({
       where: { id: commentId },

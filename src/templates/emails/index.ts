@@ -4,8 +4,8 @@ import { resetPasswordSuccessEmail, type ResetPasswordSuccessEmailData } from ".
 import { verifyEmailEmail, type VerifyEmailData } from "./verify-email";
 import { welcomeEmail, type WelcomeEmailData } from "./welcome";
 import { inviteEmail, type InviteEmailData } from "./invite";
-
 import { twoFactorOtpEmail, type TwoFactorOtpData } from "./two-factor-otp";
+import { notificationEmail, type NotificationEmailData } from "./notification";
 
 export type EmailTemplateMap = {
   welcome: WelcomeEmailData;
@@ -14,6 +14,7 @@ export type EmailTemplateMap = {
   "verify-email": VerifyEmailData;
   "two-factor-otp": TwoFactorOtpData;
   "invite": InviteEmailData;
+  "notification": NotificationEmailData;
 };
 
 export type EmailTemplateName = keyof EmailTemplateMap;
@@ -45,6 +46,8 @@ export function renderEmail<N extends EmailTemplateName>(
       return twoFactorOtpEmail({ ...(data as TwoFactorOtpData), appName });
     case "invite":
       return inviteEmail(data as InviteEmailData);
+    case "notification":
+      return notificationEmail({ ...(data as NotificationEmailData), appName });
     default:
       throw new Error(`Template ${name} not found`);
   }

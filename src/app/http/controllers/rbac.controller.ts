@@ -11,7 +11,7 @@ export const rbacController = {
 
   getOrganizationRoles: asyncHandler(async (req: Request, res: Response) => {
     const { orgId } = req.params;
-    const roles = await rbacService.getOrganizationRoles(orgId);
+    const roles = await rbacService.getOrganizationRoles(orgId as string);
     return res.status(200).json({ data: roles });
   }),
 
@@ -24,13 +24,13 @@ export const rbacController = {
   updateRolePermissions: asyncHandler(async (req: Request, res: Response) => {
     const { roleId } = req.params;
     const validatedData = updateRoleSchema.parse(req.body);
-    const role = await rbacService.updateRole(roleId, validatedData.permissionIds);
+    const role = await rbacService.updateRole(roleId as string, validatedData.permissionIds);
     return res.status(200).json({ message: "Role updated successfully", data: role });
   }),
 
   deleteRole: asyncHandler(async (req: Request, res: Response) => {
     const { roleId } = req.params;
-    await rbacService.deleteRole(roleId);
+    await rbacService.deleteRole(roleId as string);
     return res.status(200).json({ message: "Role deleted successfully" });
   }),
 

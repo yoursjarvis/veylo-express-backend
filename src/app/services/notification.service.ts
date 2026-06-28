@@ -1,5 +1,6 @@
 import { notificationRepository } from "@/app/repositories/notification.repository";
 import { NotFoundException } from "@/utils/app-error";
+import prisma from "@/lib/prisma";
 
 export const notificationService = {
   // Controller service methods
@@ -58,7 +59,57 @@ export const notificationService = {
       if (data.recipientId === data.senderId) {
         return;
       }
-      await notificationRepository.createNotification(data);
+
+      // Check recipient notification preferences
+      const preferencesRecord = await notificationRepository.getUserPreferences(data.recipientId);
+      let channels = { in_app: true, email: true, push: true };
+
+      if (preferencesRecord && preferencesRecord.notificationPreferences) {
+        try {
+          const preferences = JSON.parse(preferencesRecord.notificationPreferences);
+          if (preferences && typeof preferences === "object") {
+            const types = preferences.types || preferences;
+            // If explicitly set to false, skip notification creation completely
+            if (types[data.type] === false) {
+              return;
+            }
+
+            if (preferences.channels && typeof preferences.channels === "object") {
+              channels = {
+                ...channels,
+                ...preferences.channels,
+              };
+            }
+          }
+        } catch (e) {
+          console.error("Failed to parse user notification preferences", e);
+        }
+      }
+
+      // 1. IN APP CHANNEL
+      if (channels.in_app !== false) {
+        await notificationRepository.createNotification(data);
+      }
+
+      // 2. EMAIL CHANNEL
+      if (channels.email !== false) {
+        try {
+          const recipientUser = await prisma.user.findUnique({
+            where: { id: data.recipientId },
+            select: { email: true, name: true },
+          });
+
+          if (recipientUser?.email) {
+            const { mailService } = await import("@/core/mail");
+            await mailService
+              .to(recipientUser.email, recipientUser.name)
+              .view("notification", { title: data.title, message: data.message })
+              .queue();
+          }
+        } catch (mailErr) {
+          console.error("Failed to queue email notification:", mailErr);
+        }
+      }
     } catch (error) {
       console.error("Error creating in-app notification:", error);
     }

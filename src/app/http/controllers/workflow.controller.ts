@@ -1,13 +1,13 @@
 import { Request, Response } from "express";
 import { workflowService } from "@/app/services/workflow.service";
 import { workflowRepository } from "@/app/repositories/workflow.repository";
-import { HttpResponse } from "@/utils/http-response";
+import { ok } from "@/utils/http-response";
 
 export const workflowController = {
   async getTransitions(req: Request, res: Response) {
     const { projectId } = req.params;
-    const transitions = await workflowService.getProjectWorkflow(projectId);
-    return HttpResponse.ok(transitions);
+    const transitions = await workflowService.getProjectWorkflow(projectId as string);
+    return ok(res, "Transitions fetched successfully", transitions);
   },
 
   async createTransition(req: Request, res: Response) {
@@ -19,12 +19,12 @@ export const workflowController = {
       toStatusId,
       requiredRoleId,
     });
-    return HttpResponse.ok(transition);
+    return ok(res, "Transition created successfully", transition);
   },
 
   async deleteTransition(req: Request, res: Response) {
     const id = req.params.id as string;
     await workflowRepository.deleteTransition(id);
-    return HttpResponse.ok({ message: "Transition deleted successfully" });
+    return ok(res, "Transition deleted successfully");
   },
 };

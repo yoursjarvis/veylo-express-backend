@@ -76,6 +76,7 @@ export const auth = betterAuth({
     additionalFields: {
       firstName: { type: "string", required: true },
       lastName: { type: "string", required: true },
+      notificationPreferences: { type: "string", required: false, defaultValue: "[]" },
       isActive: { type: "boolean", required: false, defaultValue: true, input: false },
       lastLoginAt: { type: "date", required: false, input: false },
       passwordChangedAt: { type: "date", required: false, input: false },

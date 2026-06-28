@@ -223,4 +223,42 @@ export const projectController = {
 
     return ok(res, "Project file deleted successfully");
   }),
+
+  getAutomationRules: asyncHandler(async (req: Request, res: Response) => {
+    const projectId = req.params.id as string;
+    await verifyProjectAccess(req, projectId);
+
+    const rules = await projectService.getAutomationRules(projectId);
+
+    return ok(res, "Automation rules fetched successfully", rules);
+  }),
+
+  createAutomationRule: asyncHandler(async (req: Request, res: Response) => {
+    const projectId = req.params.id as string;
+    await verifyProjectAdmin(req, projectId);
+
+    const rule = await projectService.createAutomationRule(projectId, req.body);
+
+    return ok(res, "Automation rule created successfully", rule);
+  }),
+
+  updateAutomationRule: asyncHandler(async (req: Request, res: Response) => {
+    const projectId = req.params.id as string;
+    await verifyProjectAdmin(req, projectId);
+    const ruleId = req.params.ruleId as string;
+
+    const rule = await projectService.updateAutomationRule(ruleId, req.body);
+
+    return ok(res, "Automation rule updated successfully", rule);
+  }),
+
+  deleteAutomationRule: asyncHandler(async (req: Request, res: Response) => {
+    const projectId = req.params.id as string;
+    await verifyProjectAdmin(req, projectId);
+    const ruleId = req.params.ruleId as string;
+
+    await projectService.deleteAutomationRule(ruleId);
+
+    return ok(res, "Automation rule deleted successfully");
+  }),
 };

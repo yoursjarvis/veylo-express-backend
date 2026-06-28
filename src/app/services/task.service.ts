@@ -1,6 +1,7 @@
 import { workflowService } from "@/app/services/workflow.service";
 import { taskRepository } from "@/app/repositories/task.repository";
 import { notificationService } from "@/app/services/notification.service";
+import { automationService } from "@/app/services/automation.service";
 import { mediaService } from "@/core/media";
 import { BadRequestException, NotFoundException } from "@/utils/app-error";
 
@@ -513,6 +514,16 @@ export const taskService = {
 
     // Trigger notification
     notificationService.handleTaskUpdated(taskId, userId, oldTaskInfo);
+
+    // Trigger automation rules in background if status changed
+    if (data.statusId && data.statusId !== existingTask.statusId) {
+      const newStatus = await taskRepository.findTaskStatusById(data.statusId, existingTask.projectId);
+      if (newStatus) {
+        automationService
+          .handleTaskStatusChanged(taskId, userId, existingTask.status.name, newStatus.name)
+          .catch((err) => console.error("Error running automation rules:", err));
+      }
+    }
 
     return updatedTask;
   },
