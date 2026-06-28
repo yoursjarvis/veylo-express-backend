@@ -127,27 +127,28 @@ model Verification {
 }
 
 model Organization {
-  id              String                  @id @default(uuid(7)) @db.Uuid
-  name            String
-  slug            String?                 @unique
-  logo            String?
-  createdAt       DateTime                @default(now()) @map("created_at") @db.Timestamptz(6)
-  metadata        Json?
-  members         Member[]
-  invitations     Invitation[]
-  workspaces      Workspace[]
-  projects        Project[]
-  tasks           Task[]
-  taskStatuses    TaskStatus[]
-  sprints         Sprint[]
-  comments        Comment[]
-  taskActivities  TaskActivity[]
-  notifications   Notification[]
-  customFieldDefs CustomFieldDefinition[]
-  epics           Epic[]
-  labels          Label[]
-  milestones      Milestone[]
-  roles           Role[]
+  id                  String                  @id @default(uuid(7)) @db.Uuid
+  name                String
+  slug                String?                 @unique
+  logo                String?
+  createdAt           DateTime                @default(now()) @map("created_at") @db.Timestamptz(6)
+  metadata            Json?
+  members             Member[]
+  invitations         Invitation[]
+  workspaces          Workspace[]
+  projects            Project[]
+  tasks               Task[]
+  taskStatuses        TaskStatus[]
+  sprints             Sprint[]
+  comments            Comment[]
+  taskActivities      TaskActivity[]
+  notifications       Notification[]
+  customFieldDefs     CustomFieldDefinition[]
+  epics               Epic[]
+  labels              Label[]
+  milestones          Milestone[]
+  roles               Role[]
+  workflowTransitions WorkflowTransition[]
 
   @@map("organizations")
 }
@@ -262,19 +263,20 @@ model Project {
   createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  workspace     Workspace               @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  organization  Organization            @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  members       ProjectMember[]
-  vault         Vault?
-  tasks         Task[]
-  taskStatuses  TaskStatus[]
-  sprints       Sprint[]
-  epics         Epic[]
-  labels        Label[]
-  milestones    Milestone[]
-  customFields  CustomFieldDefinition[]
-  slackWebhooks SlackWebhook[]
-  notifications Notification[]
+  workspace           Workspace               @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  organization        Organization            @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  members             ProjectMember[]
+  vault               Vault?
+  tasks               Task[]
+  taskStatuses        TaskStatus[]
+  sprints             Sprint[]
+  epics               Epic[]
+  labels              Label[]
+  milestones          Milestone[]
+  customFields        CustomFieldDefinition[]
+  slackWebhooks       SlackWebhook[]
+  notifications       Notification[]
+  workflowTransitions WorkflowTransition[]
 
   @@index([organizationId], map: "idx_projects_org_id")
   @@index([workspaceId], map: "idx_projects_workspace_id")
@@ -400,9 +402,11 @@ model TaskStatus {
   order          Int      @default(0) // Order of columns on Kanban boards
   createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
-  project      Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  organization Organization @relation(fields: [organizationId], references: [id])
-  tasks        Task[]
+  project                 Project              @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  organization            Organization         @relation(fields: [organizationId], references: [id])
+  tasks                   Task[]
+  workflowTransitionsFrom WorkflowTransition[] @relation("FromStatus")
+  workflowTransitionsTo   WorkflowTransition[] @relation("ToStatus")
 
   @@unique([projectId, name])
   @@index([organizationId], map: "idx_task_statuses_org_id")
@@ -600,7 +604,7 @@ model Label {
   createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
   project      Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id])
   tasks        TaskLabel[]
 
   @@unique([projectId, name])
@@ -630,7 +634,7 @@ model Milestone {
   updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   project      Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id])
   tasks        Task[]
 
   @@index([projectId], map: "idx_milestones_project_id")
@@ -660,9 +664,10 @@ model Role {
   createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt       DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  organization Organization?        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  permissions  RolePermission[]
-  assignments  UserRoleAssignment[]
+  organization        Organization?        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  permissions         RolePermission[]
+  assignments         UserRoleAssignment[]
+  workflowTransitions WorkflowTransition[]
 
   @@unique([organizationId, name])
   @@index([organizationId])
@@ -692,7 +697,26 @@ model UserRoleAssignment {
 
   @@unique([userId, roleId, scopeType, scopeId])
   @@index([userId])
-  @@index([roleId])
   @@index([scopeType, scopeId])
   @@map("user_role_assignments")
+}
+
+model WorkflowTransition {
+  id             String   @id @default(uuid(7)) @db.Uuid
+  projectId      String   @map("project_id") @db.Uuid
+  organizationId String   @map("organization_id") @db.Uuid
+  fromStatusId   String   @map("from_status_id") @db.Uuid
+  toStatusId     String   @map("to_status_id") @db.Uuid
+  requiredRoleId String?  @map("required_role_id") @db.Uuid
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  project      Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id])
+  fromStatus   TaskStatus   @relation("FromStatus", fields: [fromStatusId], references: [id])
+  toStatus     TaskStatus   @relation("ToStatus", fields: [toStatusId], references: [id])
+  requiredRole Role?        @relation(fields: [requiredRoleId], references: [id])
+
+  @@unique([projectId, fromStatusId, toStatusId])
+  @@index([organizationId])
+  @@map("workflow_transitions")
 }

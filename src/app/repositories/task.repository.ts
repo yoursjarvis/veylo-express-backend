@@ -35,6 +35,20 @@ export const taskRepository = {
           },
           orderBy: { createdAt: "asc" },
         },
+        blockingDependencies: {
+          include: {
+            blockedTask: {
+              select: { id: true, title: true, taskKey: true, statusId: true }
+            }
+          }
+        },
+        blockedByDependencies: {
+          include: {
+            blockingTask: {
+              select: { id: true, title: true, taskKey: true, statusId: true }
+            }
+          }
+        },
         comments: {
           include: {
             user: { select: { id: true, name: true, image: true, email: true } },

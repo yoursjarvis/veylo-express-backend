@@ -15,6 +15,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "seed:permissions": "tsx src/scripts/seed-permissions.ts",
+    "seed:templates": "tsx src/scripts/seed-templates.ts",
     "start": "node dist/src/index.js",
     "worker:mail": "tsx src/workers/mail.worker.ts",
     "worker:mail:prod": "node dist/src/workers/mail.worker.js",

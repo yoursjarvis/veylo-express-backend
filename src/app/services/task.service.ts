@@ -1,3 +1,4 @@
+import { workflowService } from "@/app/services/workflow.service";
 import { taskRepository } from "@/app/repositories/task.repository";
 import { notificationService } from "@/app/services/notification.service";
 import { mediaService } from "@/core/media";
@@ -191,6 +192,94 @@ export const taskService = {
       ];
     }
 
+    if (query.filters) {
+      try {
+        const filters = JSON.parse(query.filters as string);
+        const andConditions = [];
+        for (const filter of filters) {
+          const { field, operator, values } = filter;
+          if (!field || !operator) continue;
+
+          if (field === 'search') {
+            const val = values[0];
+            if (val) {
+              andConditions.push({
+                OR: [
+                  { title: { contains: val, mode: "insensitive" } },
+                  { description: { contains: val, mode: "insensitive" } },
+                ]
+              });
+            }
+            continue;
+          }
+
+          let condition: any = {};
+          
+          if (field === 'labelId') {
+            if (operator === 'empty') {
+              andConditions.push({ labels: { none: {} } });
+            } else if (operator === 'not_empty') {
+              andConditions.push({ labels: { some: {} } });
+            } else if (values && values.length > 0) {
+              if (operator === 'is' || operator === 'is_any_of' || operator === 'includes_any_of' || operator === 'includes') {
+                andConditions.push({ labels: { some: { labelId: { in: values } } } });
+              } else if (operator === 'is_not' || operator === 'is_not_any_of' || operator === 'excludes_all' || operator === 'excludes') {
+                andConditions.push({ labels: { none: { labelId: { in: values } } } });
+              } else if (operator === 'includes_all') {
+                for (const val of values) {
+                  andConditions.push({ labels: { some: { labelId: val } } });
+                }
+              }
+            }
+            continue;
+          }
+
+          const val = values && values.length > 0 ? values[0] : null;
+          const mappedField = field === "assignee" ? "assigneeId" : field;
+
+          switch (operator) {
+            case 'is':
+            case 'equals':
+              condition[mappedField] = val === "null" ? null : val;
+              break;
+            case 'is_not':
+            case 'not_equals':
+              condition[mappedField] = val === "null" ? { not: null } : { not: val };
+              break;
+            case 'is_any_of':
+              condition[mappedField] = { in: values.map((v: any) => v === "null" ? null : v) };
+              break;
+            case 'is_not_any_of':
+              condition[mappedField] = { notIn: values.map((v: any) => v === "null" ? null : v) };
+              break;
+            case 'empty':
+              condition[mappedField] = null;
+              break;
+            case 'not_empty':
+              condition[mappedField] = { not: null };
+              break;
+            case 'contains':
+              if (val) condition[mappedField] = { contains: val, mode: 'insensitive' };
+              break;
+            case 'not_contains':
+              if (val) condition[mappedField] = { not: { contains: val, mode: 'insensitive' } };
+              break;
+          }
+
+          if (Object.keys(condition).length > 0) {
+            andConditions.push(condition);
+          }
+        }
+        
+        if (andConditions.length > 0) {
+          if (!whereClause.AND) whereClause.AND = [];
+          whereClause.AND.push(...andConditions);
+        }
+      } catch (error) {
+        console.error("Failed to parse filters:", error);
+      }
+    }
+
     return taskRepository.getTasks(whereClause);
   },
 
@@ -256,6 +345,14 @@ export const taskService = {
       if (!newStatus) {
         throw new BadRequestException("Selected status does not belong to this project");
       }
+
+      // Workflow transition validation
+      await workflowService.validateTransition(
+        existingTask.projectId,
+        existingTask.statusId,
+        data.statusId,
+        userId
+      );
 
       // Advanced transition validation: Auto-complete subtasks when transitioning to Done
       if (newStatus.category === "done") {
@@ -426,7 +523,6 @@ export const taskService = {
       throw new NotFoundException("Task not found");
     }
 
-    // Soft delete is automated via middleware, but we invoke delete
     await taskRepository.deleteTask(taskId);
 
     await logActivity(taskId, userId, "deleted", task.title, null);
