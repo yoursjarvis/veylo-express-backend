@@ -45,14 +45,15 @@ model User {
   projectMembers        ProjectMember[]
   invitations           Invitation[]
   twoFactors            TwoFactor[]
-  createdTasks          Task[]            @relation("TaskCreator")
-  assignedTasks         Task[]            @relation("TaskAssignee")
-  reportedTasks         Task[]            @relation("TaskReporter")
+  createdTasks          Task[]               @relation("TaskCreator")
+  assignedTasks         Task[]               @relation("TaskAssignee")
+  reportedTasks         Task[]               @relation("TaskReporter")
   comments              Comment[]
   commentReactions      CommentReaction[]
   taskActivities        TaskActivity[]
-  notificationsReceived Notification[]    @relation("NotificationRecipient")
-  notificationsSent     Notification[]    @relation("NotificationSender")
+  notificationsReceived Notification[]       @relation("NotificationRecipient")
+  notificationsSent     Notification[]       @relation("NotificationSender")
+  roleAssignments       UserRoleAssignment[]
 
   @@index([email], map: "idx_users_email")
   @@index([isActive], map: "idx_users_is_active")
@@ -146,6 +147,7 @@ model Organization {
   epics           Epic[]
   labels          Label[]
   milestones      Milestone[]
+  roles           Role[]
 
   @@map("organizations")
 }
@@ -634,4 +636,63 @@ model Milestone {
   @@index([projectId], map: "idx_milestones_project_id")
   @@index([organizationId], map: "idx_milestones_org_id")
   @@map("milestones")
+}
+
+model Permission {
+  id          String   @id @default(uuid(7)) @db.Uuid
+  resource    String
+  action      String
+  module      String   @default("PROJECT_MANAGEMENT")
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  roles RolePermission[]
+
+  @@unique([resource, action])
+  @@map("permissions")
+}
+
+model Role {
+  id              String   @id @default(uuid(7)) @db.Uuid
+  organizationId  String?  @map("organization_id") @db.Uuid
+  name            String
+  isSystemDefault Boolean  @default(false) @map("is_system_default")
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  organization Organization?        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  permissions  RolePermission[]
+  assignments  UserRoleAssignment[]
+
+  @@unique([organizationId, name])
+  @@index([organizationId])
+  @@map("roles")
+}
+
+model RolePermission {
+  roleId       String @map("role_id") @db.Uuid
+  permissionId String @map("permission_id") @db.Uuid
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+model UserRoleAssignment {
+  id        String @id @default(uuid(7)) @db.Uuid
+  userId    String @map("user_id") @db.Uuid
+  roleId    String @map("role_id") @db.Uuid
+  scopeType String @map("scope_type") // e.g. ORGANIZATION, PROJECT
+  scopeId   String @map("scope_id") @db.Uuid // ID of the organization or project
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, roleId, scopeType, scopeId])
+  @@index([userId])
+  @@index([roleId])
+  @@index([scopeType, scopeId])
+  @@map("user_role_assignments")
 }
