@@ -40,3 +40,30 @@ mediaRoutes.post(
   mediaController.uploadFile
 );
 
+// Versioning & Annotations
+mediaRoutes.post(
+  "/media/:parentMediaId/version",
+  requireAuth,
+  upload.single("file"),
+  mediaController.uploadVersion
+);
+
+mediaRoutes.post(
+  "/media/:mediaId/annotations",
+  requireAuth,
+  mediaController.createAnnotation
+);
+
+mediaRoutes.get(
+  "/media/:mediaId/annotations",
+  requireAuth,
+  mediaController.getAnnotations
+);
+
+mediaRoutes.delete(
+  "/annotations/:id",
+  requireAuth,
+  mediaController.deleteAnnotation
+);
+
+

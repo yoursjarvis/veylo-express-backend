@@ -24,7 +24,7 @@ vi.mock("../src/app/http/middlewares/project-access.middleware", () => ({
   verifyProjectAccess: mockVerifyProjectAccess,
 }));
 
-vi.mock("../src/lib/prisma", () => ({ default: prismaMock }));
+vi.mock("@/lib/prisma", () => ({ default: prismaMock, basePrisma: prismaMock }));
 
 import { epicController } from "../src/app/http/controllers/epic.controller";
 

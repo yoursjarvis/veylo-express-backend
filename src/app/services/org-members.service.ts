@@ -138,8 +138,8 @@ export const orgMembersService = {
     return orgMembersRepository.findPendingInvitations(activeOrgId);
   },
 
-  async inviteMember(activeOrgId: string, email: string, role: any, headers: any) {
-    return auth.api.createInvitation({
+  async inviteMember(activeOrgId: string, email: string, role: any, projectIds: string[] | undefined, headers: any) {
+    const invitation = await auth.api.createInvitation({
       body: {
         email,
         role: role || "member",
@@ -148,6 +148,15 @@ export const orgMembersService = {
       },
       headers,
     });
+
+    if (invitation && projectIds && projectIds.length > 0) {
+      await prisma.invitation.update({
+        where: { id: invitation.id },
+        data: { projectIds },
+      });
+    }
+
+    return invitation;
   },
 
   async bulkInvite(

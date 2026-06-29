@@ -9,6 +9,8 @@ import { dependencyController } from "@/app/http/controllers/dependency.controll
 import { epicController } from "@/app/http/controllers/epic.controller";
 import { labelController } from "@/app/http/controllers/label.controller";
 import { milestoneController } from "@/app/http/controllers/milestone.controller";
+import { workLogController } from "@/app/http/controllers/worklog.controller";
+import { checklistTemplateController } from "@/app/http/controllers/checklist-template.controller";
 import { upload } from "@/app/http/middlewares/upload.middleware";
 
 export const taskRoutes = Router();
@@ -86,5 +88,20 @@ taskRoutes.post("/projects/:projectId/milestones", requireAuth, milestoneControl
 taskRoutes.get("/projects/:projectId/milestones", requireAuth, milestoneController.getMilestones);
 taskRoutes.patch("/milestones/:id", requireAuth, milestoneController.updateMilestone);
 taskRoutes.delete("/milestones/:id", requireAuth, milestoneController.deleteMilestone);
+
+// --- WORK LOGS CRUD ---
+taskRoutes.post("/tasks/:taskId/work-logs", requireAuth, workLogController.createWorkLog);
+taskRoutes.get("/tasks/:taskId/work-logs", requireAuth, workLogController.getTaskWorkLogs);
+taskRoutes.get("/projects/:projectId/work-logs", requireAuth, workLogController.getProjectWorkLogs);
+taskRoutes.patch("/work-logs/:id", requireAuth, workLogController.updateWorkLog);
+taskRoutes.delete("/work-logs/:id", requireAuth, workLogController.deleteWorkLog);
+
+// --- CHECKLIST TEMPLATE CRUD ---
+taskRoutes.get("/checklist-templates", requireAuth, checklistTemplateController.getTemplates);
+taskRoutes.post("/checklist-templates", requireAuth, checklistTemplateController.createTemplate);
+taskRoutes.patch("/checklist-templates/:id", requireAuth, checklistTemplateController.updateTemplate);
+taskRoutes.delete("/checklist-templates/:id", requireAuth, checklistTemplateController.deleteTemplate);
+taskRoutes.post("/tasks/:taskId/apply-checklist", requireAuth, checklistTemplateController.applyTemplate);
+
 
 

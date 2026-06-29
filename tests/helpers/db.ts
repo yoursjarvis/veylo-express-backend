@@ -53,4 +53,5 @@ export const prismaMock = {
   slackWebhook: standardMock(),
   notification: standardMock(),
   taskLabel: standardMock(),
+  workflowTransition: standardMock(),
 };

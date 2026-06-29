@@ -33,7 +33,7 @@ vi.mock("../src/app/http/middlewares/project-access.middleware", () => ({
   verifyProjectAccess: mockVerifyProjectAccess,
 }));
 
-vi.mock("../src/lib/prisma", () => ({ default: prismaMock }));
+vi.mock("@/lib/prisma", () => ({ default: prismaMock, basePrisma: prismaMock }));
 
 import { sprintController } from "../src/app/http/controllers/sprint.controller";
 

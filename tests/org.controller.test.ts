@@ -47,7 +47,7 @@ vi.mock("../src/lib/auth/node-headers", () => ({
   betterAuthHeaders: vi.fn(),
 }));
 
-vi.mock("../src/lib/prisma", () => ({ default: prismaMock }));
+vi.mock("@/lib/prisma", () => ({ default: prismaMock, basePrisma: prismaMock }));
 vi.mock("../src/core/media/media.service", () => ({ mediaService: mockMediaService }));
 vi.mock("../src/lib/redis", () => ({
   redis: {

@@ -13,7 +13,7 @@ vi.mock("../../src/lib/auth/auth", async () => {
   };
 });
 
-vi.mock("../../src/lib/prisma", async () => {
+vi.mock("@/lib/prisma", async () => {
   const { prismaMock } = await import("../helpers/db");
   return {
     default: prismaMock,
@@ -41,6 +41,7 @@ const { mockVerifyProjectAccess, mockNotificationService } = vi.hoisted(() => ({
 
 vi.mock("../../src/app/http/middlewares/project-access.middleware", () => ({
   verifyProjectAccess: mockVerifyProjectAccess,
+  resolveSession: vi.fn().mockResolvedValue({ activeOrgId: "org-123", userId: "u1" }),
 }));
 
 vi.mock("../../src/app/services/notification.service", () => ({
@@ -60,6 +61,7 @@ describe("Task API Endpoint Integration Tests (/api/v1/tasks)", () => {
   describe("POST /api/v1/projects/:projectId/tasks", () => {
     it("creates task successfully", async () => {
       prismaMock.taskStatus.findFirst.mockResolvedValueOnce({ id: "status-1" });
+      prismaMock.project.update.mockResolvedValueOnce({ projectKey: "PROJ", taskSequence: 1 });
       prismaMock.task.create.mockResolvedValueOnce({ id: "t1", title: "New Task" });
 
       const res = await request(app)
@@ -74,6 +76,7 @@ describe("Task API Endpoint Integration Tests (/api/v1/tasks)", () => {
 
   describe("GET /api/v1/projects/:projectId/tasks", () => {
     it("fetches tasks successfully", async () => {
+      prismaMock.project.findUnique.mockResolvedValueOnce({ id: "p1", organizationId: "org-123", workspaceId: "ws-123" });
       prismaMock.task.findMany.mockResolvedValueOnce([{ id: "t1" }]);
 
       const res = await request(app).get("/api/v1/projects/p1/tasks");

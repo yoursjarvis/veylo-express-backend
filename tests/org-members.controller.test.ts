@@ -46,7 +46,7 @@ vi.mock("../src/lib/auth/node-headers", () => ({
   betterAuthHeaders: vi.fn(),
 }));
 
-vi.mock("../src/lib/prisma", () => ({ default: prismaMock }));
+vi.mock("@/lib/prisma", () => ({ default: prismaMock, basePrisma: prismaMock }));
 
 vi.mock("csv-parse/sync", () => ({
   parse: vi.fn(() => [{ email: "csv@example.com", role: "member" }]),

@@ -55,6 +55,8 @@ model User {
   notificationsReceived Notification[]       @relation("NotificationRecipient")
   notificationsSent     Notification[]       @relation("NotificationSender")
   roleAssignments       UserRoleAssignment[]
+  workLogs              WorkLog[]
+  annotations           Annotation[]
 
   @@index([email], map: "idx_users_email")
   @@index([isActive], map: "idx_users_is_active")
@@ -150,6 +152,7 @@ model Organization {
   milestones          Milestone[]
   roles               Role[]
   workflowTransitions WorkflowTransition[]
+  checklistTemplates  ChecklistTemplate[]
 
   @@map("organizations")
 }
@@ -180,6 +183,7 @@ model Workspace {
   organization Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   members      WorkspaceMember[]
   projects     Project[]
+  checklistTemplates  ChecklistTemplate[]
 
   @@map("workspaces")
 }
@@ -206,6 +210,7 @@ model Invitation {
   status         String
   expiresAt      DateTime @map("expires_at") @db.Timestamptz(6)
   inviterId      String   @map("inviter_id") @db.Uuid
+  projectIds     Json?    @map("project_ids")
   createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt      DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
@@ -231,11 +236,33 @@ model Media {
   generatedConversions Json?    @map("generated_conversions")
   responsiveImages     Json?    @map("responsive_images")
   orderColumn          Int?     @map("order_column")
+  version              Int      @default(1)
+  parentMediaId        String?  @map("parent_media_id") @db.Uuid
   createdAt            DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt            DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
 
+  parentMedia          Media?   @relation("MediaVersions", fields: [parentMediaId], references: [id], onDelete: Cascade)
+  versions             Media[]  @relation("MediaVersions")
+  annotations          Annotation[]
+
   @@index([modelType, modelId])
   @@map("media")
+}
+
+model Annotation {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  mediaId   String   @map("media_id") @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  x         Float
+  y         Float
+  content   String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  media     Media    @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([mediaId])
+  @@map("annotations")
 }
 
 model TwoFactor {
@@ -361,6 +388,7 @@ model Task {
   reporterId     String?   @map("reporter_id") @db.Uuid
   parentTaskId   String?   @map("parent_task_id") @db.Uuid
   customFields   Json?     @default("{}") @map("custom_fields") // JSONB storage
+  isPrivate      Boolean   @default(false) @map("is_private")
   deletedAt      DateTime? @map("deleted_at") @db.Timestamptz(6)
   createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
@@ -382,6 +410,7 @@ model Task {
   blockedByDependencies TaskDependency[] @relation("BlockedTasks")
   blockingDependencies  TaskDependency[] @relation("BlockingTasks")
   notifications         Notification[]
+  workLogs              WorkLog[]
 
   @@index([organizationId], map: "idx_tasks_org_id")
   @@index([projectId], map: "idx_tasks_project_id")
@@ -739,4 +768,38 @@ model AutomationRule {
 
   @@map("automation_rules")
 }
+
+model WorkLog {
+  id          String   @id @default(uuid(7)) @db.Uuid
+  taskId      String   @map("task_id") @db.Uuid
+  userId      String   @map("user_id") @db.Uuid
+  hoursLogged Float    @map("hours_logged")
+  loggedAt    DateTime @default(now()) @map("logged_at")
+  description String?  @db.Text
+
+  task        Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+  @@index([userId])
+  @@map("work_logs")
+}
+
+model ChecklistTemplate {
+  id             String   @id @default(uuid(7)) @db.Uuid
+  name           String
+  description    String?  @db.Text
+  items          Json     // Array of strings (checklist items / subtask titles)
+  workspaceId    String   @map("workspace_id") @db.Uuid
+  organizationId String   @map("organization_id") @db.Uuid
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  workspace      Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@map("checklist_templates")
+}
+
 

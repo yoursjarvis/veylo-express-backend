@@ -3,7 +3,7 @@ import { taskRepository } from "@/app/repositories/task.repository";
 import { notificationService } from "@/app/services/notification.service";
 import { automationService } from "@/app/services/automation.service";
 import { mediaService } from "@/core/media";
-import { BadRequestException, NotFoundException } from "@/utils/app-error";
+import { BadRequestException, NotFoundException, ForbiddenException } from "@/utils/app-error";
 
 async function logActivity(
   taskId: string,
@@ -60,6 +60,7 @@ export const taskService = {
       position?: number;
       customFields?: Record<string, any>;
       labelIds?: string[];
+      isPrivate?: boolean;
     }
   ) {
     // Verify status belongs to project
@@ -115,6 +116,7 @@ export const taskService = {
       parentTaskId: data.parentTaskId ?? null,
       position: data.position ?? 0,
       customFields: data.customFields,
+      isPrivate: data.isPrivate ?? false,
       labels:
         data.labelIds && data.labelIds.length > 0
           ? {
@@ -137,14 +139,37 @@ export const taskService = {
     return task;
   },
 
-  async getTasks(projectId: string, query: any) {
+  async getTasks(projectId: string, query: any, userId?: string) {
     const { sprintId, assigneeId, statusId, priority, type, search, epicId, milestoneId, labelId } = query;
+
+    const project = await taskRepository.findProjectById(projectId);
+    if (!project) throw new NotFoundException("Project not found");
+
+    let isAdmin = false;
+    if (userId) {
+      const isOrgAdmin = !!(await taskRepository.findMember(project.organizationId, userId));
+      const isWorkspaceAdmin = !!(await taskRepository.findWorkspaceMember(project.workspaceId, userId));
+      isAdmin = isOrgAdmin || isWorkspaceAdmin;
+    }
 
     const whereClause: any = {
       projectId,
       deletedAt: null,
       parentTaskId: null,
     };
+
+    if (userId && !isAdmin) {
+      whereClause.AND = [
+        {
+          OR: [
+            { isPrivate: false },
+            { creatorId: userId },
+            { assigneeId: userId },
+            { reporterId: userId },
+          ]
+        }
+      ];
+    }
 
     if (sprintId === "null") {
       whereClause.sprintId = null;
@@ -289,10 +314,29 @@ export const taskService = {
     return taskRepository.getTasks(whereClause);
   },
 
-  async getTask(taskId: string) {
+  async getTask(taskId: string, userId?: string) {
     const task = await taskRepository.findTaskDetails(taskId);
     if (!task) {
       throw new NotFoundException("Task not found");
+    }
+
+    if (task.isPrivate && userId) {
+      const project = await taskRepository.findProjectById(task.projectId);
+
+      const isOrgAdmin = !!(await taskRepository.findMember(task.organizationId, userId));
+      const isWorkspaceAdmin = project ? !!(await taskRepository.findWorkspaceMember(project.workspaceId, userId)) : false;
+
+      const isAdmin = isOrgAdmin || isWorkspaceAdmin;
+
+      const isAllowed =
+        task.creatorId === userId ||
+        task.assigneeId === userId ||
+        task.reporterId === userId ||
+        isAdmin;
+
+      if (!isAllowed) {
+        throw new ForbiddenException("Forbidden: This task is private");
+      }
     }
 
     const attachments = await mediaService.getMedia("Task", taskId, "task_attachments");
@@ -328,6 +372,7 @@ export const taskService = {
       position?: number;
       customFields?: Record<string, any>;
       labelIds?: string[];
+      isPrivate?: boolean;
     }
   ) {
     const existingTask = await taskRepository.findTaskWithRelations(taskId);
@@ -514,6 +559,16 @@ export const taskService = {
     }
     if (data.customFields !== undefined) updateData.customFields = data.customFields;
     if (data.position !== undefined) updateData.position = data.position;
+    if (data.isPrivate !== undefined) {
+      updateData.isPrivate = data.isPrivate;
+      await logActivity(
+        taskId,
+        userId,
+        "privacy_changed",
+        existingTask.isPrivate ? "Private" : "Public",
+        data.isPrivate ? "Private" : "Public"
+      );
+    }
 
     const updatedTask = await taskRepository.updateTask(taskId, updateData);
 

@@ -17,6 +17,7 @@ const { mockVerifyProjectAccess, prismaMock, mockNotificationService } = vi.hois
       findUnique: vi.fn(),
       update: vi.fn(),
       delete: vi.fn(),
+      updateMany: vi.fn(),
     },
     taskStatus: {
       findFirst: vi.fn(),
@@ -40,6 +41,22 @@ const { mockVerifyProjectAccess, prismaMock, mockNotificationService } = vi.hois
     user: {
       findUnique: vi.fn(),
     },
+    project: {
+      findUnique: vi.fn().mockResolvedValue({ id: "proj-123", organizationId: "org-123", workspaceId: "ws-123" }),
+      update: vi.fn().mockResolvedValue({ projectKey: "PROJ", taskSequence: 1 }),
+    },
+    member: {
+      findFirst: vi.fn().mockResolvedValue(null),
+    },
+    workspaceMember: {
+      findFirst: vi.fn().mockResolvedValue(null),
+    },
+    media: {
+      findMany: vi.fn().mockResolvedValue([]),
+    },
+    workflowTransition: {
+      findMany: vi.fn().mockResolvedValue([]),
+    },
   },
   mockNotificationService: {
     handleTaskCreated: vi.fn(),
@@ -52,9 +69,10 @@ const { mockVerifyProjectAccess, prismaMock, mockNotificationService } = vi.hois
 
 vi.mock("../src/app/http/middlewares/project-access.middleware", () => ({
   verifyProjectAccess: mockVerifyProjectAccess,
+  resolveSession: vi.fn().mockResolvedValue({ activeOrgId: "org-123", userId: "u1" }),
 }));
 
-vi.mock("../src/lib/prisma", () => ({ default: prismaMock }));
+vi.mock("@/lib/prisma", () => ({ default: prismaMock, basePrisma: prismaMock }));
 
 vi.mock("../src/app/services/notification.service", () => ({
   notificationService: mockNotificationService,
@@ -171,8 +189,8 @@ describe("taskController", () => {
         status: { name: "To Do" },
       };
       prismaMock.task.findUnique.mockResolvedValue(existing);
-      prismaMock.taskStatus.findFirst.mockResolvedValueOnce({ id: "550e8400-e29b-41d4-a716-446655440002", category: "done" });
-      prismaMock.subtask.updateMany.mockResolvedValueOnce({ count: 5 });
+      prismaMock.taskStatus.findFirst.mockResolvedValue({ id: "550e8400-e29b-41d4-a716-446655440002", category: "done" });
+      prismaMock.task.updateMany.mockResolvedValueOnce({ count: 5 });
       prismaMock.task.update.mockResolvedValueOnce({ ...existing, statusId: "550e8400-e29b-41d4-a716-446655440002" });
 
       const req: any = {
@@ -183,9 +201,9 @@ describe("taskController", () => {
 
       await (taskController.updateTask as any)(req, res);
 
-      expect(prismaMock.subtask.updateMany).toHaveBeenCalledWith({
-        where: { taskId: "task-1", isCompleted: false },
-        data: { isCompleted: true },
+      expect(prismaMock.task.updateMany).toHaveBeenCalledWith({
+        where: { parentTaskId: "task-1", status: { category: { not: "done" } } },
+        data: { statusId: "550e8400-e29b-41d4-a716-446655440002" },
       });
       expect(res.json).toHaveBeenCalled();
     });

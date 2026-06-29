@@ -221,6 +221,34 @@ async function main() {
       },
     });
   }
+  
+  console.log("Seeding HR Onboarding Checklist templates...");
+  const workspaces = await prisma.workspace.findMany();
+  for (const ws of workspaces) {
+    const existing = await prisma.checklistTemplate.findFirst({
+      where: { workspaceId: ws.id, name: "HR Onboarding Checklist" },
+    });
+    if (!existing) {
+      await prisma.checklistTemplate.create({
+        data: {
+          name: "HR Onboarding Checklist",
+          description: "Standard checklist items for onboarding a new hire.",
+          items: [
+            "Sign employment contract",
+            "Submit background check forms",
+            "Setup payroll and direct deposit",
+            "Issue laptop and work equipment",
+            "Configure company email and Slack accounts",
+            "Schedule first-day meeting with team manager",
+            "Complete employee handbook review"
+          ],
+          workspaceId: ws.id,
+          organizationId: ws.organizationId,
+        },
+      });
+    }
+  }
+
   console.log("Seeding templates completed successfully.");
 }
 

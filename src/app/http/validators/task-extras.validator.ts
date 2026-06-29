@@ -15,6 +15,7 @@ export const statusUpdateSchema = z.object({
 export const subtaskSchema = z.object({
   title: z.string().min(1, "Subtask title is required"),
   assigneeId: z.string().uuid().optional().nullable(),
+  statusId: z.string().uuid().optional(),
   isCompleted: z.boolean().optional(),
 });
 

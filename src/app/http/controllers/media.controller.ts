@@ -121,4 +121,54 @@ export const mediaController = {
 
     return ok(res, "File uploaded successfully", result);
   }),
+
+  uploadVersion: asyncHandler(async (req: Request, res: Response) => {
+    const { parentMediaId } = req.params;
+    if (!req.file) {
+      throw new Error("No file uploaded");
+    }
+
+    const result = await mediaService.uploadVersion(parentMediaId, req.file);
+    return ok(res, "New file version uploaded successfully", result);
+  }),
+
+  createAnnotation: asyncHandler(async (req: Request, res: Response) => {
+    const { mediaId } = req.params;
+    const { x, y, content } = req.body;
+    const user = req.auth?.user;
+    if (!user) {
+      throw new Error("Unauthorized");
+    }
+
+    if (x === undefined || y === undefined || !content) {
+      return res.status(400).json({ message: "Coordinates x, y, and content are required" });
+    }
+
+    const annotation = await mediaService.createAnnotation({
+      mediaId,
+      userId: user.id as string,
+      x: parseFloat(x),
+      y: parseFloat(y),
+      content,
+    });
+
+    return ok(res, "Annotation added successfully", annotation);
+  }),
+
+  getAnnotations: asyncHandler(async (req: Request, res: Response) => {
+    const { mediaId } = req.params;
+    const annotations = await mediaService.getAnnotations(mediaId);
+    return ok(res, "Annotations fetched successfully", annotations);
+  }),
+
+  deleteAnnotation: asyncHandler(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const user = req.auth?.user;
+    if (!user) {
+      throw new Error("Unauthorized");
+    }
+
+    await mediaService.deleteAnnotation(id, user.id as string);
+    return ok(res, "Annotation deleted successfully");
+  }),
 };

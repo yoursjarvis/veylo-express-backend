@@ -74,7 +74,7 @@ vi.mock("../src/app/http/middlewares/project-access.middleware", () => ({
   resolveSession: mockResolveSession,
 }));
 
-vi.mock("../src/lib/prisma", () => ({ default: prismaMock }));
+vi.mock("@/lib/prisma", () => ({ default: prismaMock, basePrisma: prismaMock }));
 vi.mock("../src/core/media", () => ({ mediaService: mockMediaService }));
 vi.mock("../src/utils/crypto", () => ({
   encrypt: vi.fn((val) => `encrypted_${val}`),
@@ -175,7 +175,7 @@ describe("projectController", () => {
 
       const req: any = {
         params: { workspaceId: "ws-123" },
-        body: { title: "New Project", template: "software-scrum" },
+        body: { title: "New Project", template: "software-scrum", projectKey: "PR" },
       };
       const res = createRes();
 
@@ -185,6 +185,7 @@ describe("projectController", () => {
       expect(prismaMock.project.create).toHaveBeenCalledWith({
         data: {
           title: "New Project",
+          projectKey: "PR",
           description: undefined,
           icon: undefined,
           template: "software-scrum",
@@ -225,7 +226,7 @@ describe("projectController", () => {
 
       const req: any = {
         params: { workspaceId: "ws-123" },
-        body: { title: "New Project", template: "custom-slug" },
+        body: { title: "New Project", template: "custom-slug", projectKey: "PR" },
       };
       const res = createRes();
 

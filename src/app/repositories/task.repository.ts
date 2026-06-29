@@ -234,4 +234,30 @@ export const taskRepository = {
       data,
     });
   },
+
+  findProjectById(projectId: string) {
+    return prisma.project.findUnique({
+      where: { id: projectId },
+    });
+  },
+
+  findMember(organizationId: string, userId: string) {
+    return prisma.member.findFirst({
+      where: {
+        organizationId,
+        userId,
+        role: { in: ["owner", "admin"] },
+      },
+    });
+  },
+
+  findWorkspaceMember(workspaceId: string, userId: string) {
+    return prisma.workspaceMember.findFirst({
+      where: {
+        workspaceId,
+        userId,
+        role: "admin",
+      },
+    });
+  },
 };

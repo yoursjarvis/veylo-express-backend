@@ -1,5 +1,5 @@
 import { asyncHandler } from "@/app/http/middlewares/async-handler.middleware";
-import { verifyProjectAccess } from "@/app/http/middlewares/project-access.middleware";
+import { verifyProjectAccess, resolveSession } from "@/app/http/middlewares/project-access.middleware";
 import { taskService } from "@/app/services/task.service";
 import { mediaService } from "@/core/media";
 import { BadRequestException } from "@/utils/app-error";
@@ -27,16 +27,17 @@ export const taskController = {
 
   getTasks: asyncHandler(async (req: Request, res: Response) => {
     const projectId = req.params.projectId as string;
-    await verifyProjectAccess(req, projectId);
+    const { userId } = await verifyProjectAccess(req, projectId);
 
-    const tasks = await taskService.getTasks(projectId, req.query);
+    const tasks = await taskService.getTasks(projectId, req.query, userId);
 
     return ok(res, "Tasks fetched successfully", tasks);
   }),
 
   getTask: asyncHandler(async (req: Request, res: Response) => {
     const taskId = req.params.id as string;
-    const task = await taskService.getTask(taskId);
+    const { userId } = await resolveSession(req);
+    const task = await taskService.getTask(taskId, userId);
 
     // Verify project access
     await verifyProjectAccess(req, task.projectId);
@@ -46,9 +47,10 @@ export const taskController = {
 
   updateTask: asyncHandler(async (req: Request, res: Response) => {
     const taskId = req.params.id as string;
-    const task = await taskService.getTask(taskId);
+    const { userId } = await resolveSession(req);
+    const task = await taskService.getTask(taskId, userId);
 
-    const { userId } = await verifyProjectAccess(req, task.projectId);
+    await verifyProjectAccess(req, task.projectId);
     const validatedData = taskUpdateSchema.parse(req.body);
 
     const updatedTask = await taskService.updateTask(
@@ -62,9 +64,10 @@ export const taskController = {
 
   deleteTask: asyncHandler(async (req: Request, res: Response) => {
     const taskId = req.params.id as string;
-    const task = await taskService.getTask(taskId);
+    const { userId } = await resolveSession(req);
+    const task = await taskService.getTask(taskId, userId);
 
-    const { userId } = await verifyProjectAccess(req, task.projectId);
+    await verifyProjectAccess(req, task.projectId);
 
     await taskService.deleteTask(taskId, userId);
 

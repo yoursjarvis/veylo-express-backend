@@ -1,6 +1,7 @@
 import { mediaRepository } from "@/app/repositories/media.repository";
 import { mediaService as coreMediaService } from "@/core/media";
 import { ForbiddenException, NotFoundException } from "@/utils/app-error";
+import prisma from "@/lib/prisma";
 
 export const mediaService = {
   async uploadAvatar(
@@ -127,4 +128,108 @@ export const mediaService = {
     const url = await coreMediaService.getUrl(media.id);
     return { media_id: media.id, url };
   },
+
+  async uploadVersion(
+    parentMediaId: string,
+    file: { buffer: Buffer; originalname: string; mimetype: string; size: number }
+  ) {
+    const parent = await prisma.media.findUnique({
+      where: { id: parentMediaId },
+    });
+    if (!parent) {
+      throw new NotFoundException("Parent file not found");
+    }
+
+    const latest = await prisma.media.findFirst({
+      where: {
+        OR: [{ id: parentMediaId }, { parentMediaId }],
+      },
+      orderBy: { version: "desc" },
+    });
+    const nextVersion = (latest?.version || 1) + 1;
+
+    const media = await coreMediaService.addMedia(
+      parent.modelType,
+      parent.modelId,
+      file,
+      parent.collectionName,
+      false
+    );
+
+    const updatedMedia = await prisma.media.update({
+      where: { id: media.id },
+      data: {
+        parentMediaId,
+        version: nextVersion,
+      },
+    });
+
+    const url = await coreMediaService.getUrl(media.id);
+    return {
+      media_id: updatedMedia.id,
+      version: updatedMedia.version,
+      name: updatedMedia.name,
+      url,
+    };
+  },
+
+  async createAnnotation(data: {
+    mediaId: string;
+    userId: string;
+    x: number;
+    y: number;
+    content: string;
+  }) {
+    const media = await prisma.media.findUnique({
+      where: { id: data.mediaId },
+    });
+    if (!media) {
+      throw new NotFoundException("Media not found");
+    }
+
+    return prisma.annotation.create({
+      data,
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
+          },
+        },
+      },
+    });
+  },
+
+  async getAnnotations(mediaId: string) {
+    return prisma.annotation.findMany({
+      where: { mediaId },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
+          },
+        },
+      },
+      orderBy: { createdAt: "asc" },
+    });
+  },
+
+  async deleteAnnotation(id: string, userId: string) {
+    const annotation = await prisma.annotation.findUnique({
+      where: { id },
+    });
+    if (!annotation) {
+      throw new NotFoundException("Annotation not found");
+    }
+    if (annotation.userId !== userId) {
+      throw new ForbiddenException("You cannot delete other user's annotation");
+    }
+    await prisma.annotation.delete({
+      where: { id },
+    });
+  },
 };
+

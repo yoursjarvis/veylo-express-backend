@@ -141,6 +141,23 @@ export const auth = betterAuth({
                 },
               });
 
+              // If projectIds scope is defined, add user to those projects
+              if (inv.projectIds && Array.isArray(inv.projectIds)) {
+                for (const projectId of inv.projectIds) {
+                  if (typeof projectId === "string") {
+                    await prisma.projectMember.create({
+                      data: {
+                        projectId,
+                        userId: user.id,
+                        role: "member",
+                      },
+                    }).catch((err) => {
+                      logger.error({ err, projectId, userId: user.id }, "[AUTH][invite] Failed to auto-assign project");
+                    });
+                  }
+                }
+              }
+
               // Mark invitation as accepted
               await prisma.invitation.update({
                 where: { id: inv.id },

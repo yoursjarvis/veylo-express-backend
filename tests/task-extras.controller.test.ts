@@ -23,6 +23,11 @@ const { mockVerifyProjectAccess, prismaMock, mockNotificationService } = vi.hois
     task: {
       count: vi.fn(),
       findUnique: vi.fn(),
+      update: vi.fn(),
+      create: vi.fn(),
+    },
+    project: {
+      update: vi.fn().mockResolvedValue({ taskSequence: 2 }),
     },
     subtask: {
       create: vi.fn(),
@@ -72,7 +77,7 @@ vi.mock("../src/app/http/middlewares/project-access.middleware", () => ({
   verifyProjectAccess: mockVerifyProjectAccess,
 }));
 
-vi.mock("../src/lib/prisma", () => ({ default: prismaMock }));
+vi.mock("@/lib/prisma", () => ({ default: prismaMock, basePrisma: prismaMock }));
 vi.mock("../src/app/services/notification.service", () => ({
   notificationService: mockNotificationService,
 }));
@@ -145,29 +150,30 @@ describe("taskExtrasController", () => {
 
   describe("subtasks", () => {
     it("creates subtask and logs activity", async () => {
-      prismaMock.task.findUnique.mockResolvedValueOnce({ id: "t1", projectId: "p1" });
-      prismaMock.subtask.create.mockResolvedValueOnce({ id: "sub1", title: "Subtask 1" });
+      prismaMock.task.findUnique.mockResolvedValue({ id: "t1", projectId: "p1" });
+      prismaMock.taskStatus.findMany.mockResolvedValueOnce([{ id: "status-1", category: "todo" }]);
+      prismaMock.task.create.mockResolvedValueOnce({ id: "sub1", title: "Subtask 1" });
 
       const req: any = { params: { taskId: "t1" }, body: { title: "Subtask 1" } };
       const res = createRes();
 
       await (taskExtrasController.createSubtask as any)(req, res);
 
-      expect(prismaMock.subtask.create).toHaveBeenCalled();
+      expect(prismaMock.task.create).toHaveBeenCalled();
       expect(prismaMock.taskActivity.create).toHaveBeenCalled();
     });
 
     it("updates subtask and audits completion change", async () => {
-      const existing = { id: "sub1", title: "Subtask 1", taskId: "t1", isCompleted: false, task: { projectId: "p1" } };
-      prismaMock.subtask.findUnique.mockResolvedValueOnce(existing);
-      prismaMock.subtask.update.mockResolvedValueOnce({ id: "sub1", isCompleted: true });
+      const existing = { id: "sub1", title: "Subtask 1", taskId: "t1", statusId: "550e8400-e29b-41d4-a716-446655440001", organizationId: "org-123", parentTask: { projectId: "p1" } };
+      prismaMock.task.findUnique.mockResolvedValue(existing);
+      prismaMock.task.update.mockResolvedValueOnce({ id: "sub1", statusId: "550e8400-e29b-41d4-a716-446655440002" });
 
-      const req: any = { params: { id: "sub1" }, body: { isCompleted: true } };
+      const req: any = { params: { id: "sub1" }, body: { statusId: "550e8400-e29b-41d4-a716-446655440002" } };
       const res = createRes();
 
       await (taskExtrasController.updateSubtask as any)(req, res);
 
-      expect(prismaMock.subtask.update).toHaveBeenCalled();
+      expect(prismaMock.task.update).toHaveBeenCalled();
       expect(prismaMock.taskActivity.create).toHaveBeenCalled();
     });
   });

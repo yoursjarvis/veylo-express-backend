@@ -13,7 +13,7 @@ vi.mock("../../src/lib/auth/auth", async () => {
   };
 });
 
-vi.mock("../../src/lib/prisma", async () => {
+vi.mock("@/lib/prisma", async () => {
   const { prismaMock } = await import("../helpers/db");
   return {
     default: prismaMock,
@@ -35,7 +35,7 @@ vi.mock("../../src/app/http/middlewares/project-access.middleware", () => ({
   verifyProjectAccess: mockVerifyProjectAccess,
   verifyProjectAdmin: mockVerifyProjectAdmin,
   verifyWorkspaceAdmin: mockWorkspaceAdmin,
-  resolveSession: vi.fn().mockResolvedValue({ userId: "user-123" }),
+  resolveSession: vi.fn().mockResolvedValue({ activeOrgId: "org-123", userId: "user-123" }),
 }));
 
 vi.mock("../../src/utils/crypto", () => ({
@@ -75,7 +75,7 @@ describe("Project API Endpoint Integration Tests (/api/v1/projects)", () => {
 
       const res = await request(app)
         .post("/api/v1/workspaces/ws-123/projects")
-        .send({ title: "New Project", template: "simple" });
+        .send({ title: "New Project", template: "simple", projectKey: "NP" });
 
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);

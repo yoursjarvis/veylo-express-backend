@@ -110,7 +110,7 @@ export const orgMembersController = {
 
   inviteMember: asyncHandler(async (req: Request, res: Response) => {
     const { activeOrgId, sessionUserId } = await getActiveOrgAndSession(req);
-    const { email, role } = req.body;
+    const { email, role, projectIds } = req.body;
 
     if (!email) {
       return res.status(400).json({ message: "Email is required" });
@@ -123,6 +123,7 @@ export const orgMembersController = {
         activeOrgId,
         email,
         role,
+        projectIds,
         betterAuthHeaders(req)
       );
 

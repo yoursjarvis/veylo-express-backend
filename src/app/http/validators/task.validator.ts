@@ -17,6 +17,7 @@ export const taskCreateSchema = z.object({
   position: z.number().optional(),
   customFields: z.record(z.string(), z.any()).optional().default({}),
   labelIds: z.array(z.uuid()).optional(),
+  isPrivate: z.boolean().optional().default(false),
 });
 
 export const taskUpdateSchema = z.object({
@@ -35,4 +36,5 @@ export const taskUpdateSchema = z.object({
   position: z.number().optional(),
   customFields: z.record(z.string(), z.any()).optional(),
   labelIds: z.array(z.string().uuid()).optional(),
+  isPrivate: z.boolean().optional(),
 });
