@@ -1,20 +1,8 @@
 import type { NextFunction, Request, Response } from "express";
+import { RateLimiterRedis } from "rate-limiter-flexible";
 
+import { redis } from "@/lib/redis";
 import { config } from "@/utils/config";
-
-type RateLimitKey = string;
-
-interface Bucket {
-  resetAt: number;
-  count: number;
-}
-
-const buckets = new Map<RateLimitKey, Bucket>();
-let lastCleanupAt = 0;
-
-function nowMs(): number {
-  return Date.now();
-}
 
 export function rateLimit(options: {
   keyPrefix: string;
@@ -25,36 +13,31 @@ export function rateLimit(options: {
 }) {
   const message = options.message ?? "Too many requests";
 
-  return (req: Request, res: Response, next: NextFunction) => {
+  const rlr = new RateLimiterRedis({
+    storeClient: redis,
+    keyPrefix: options.keyPrefix,
+    points: options.max,
+    duration: options.windowMs / 1000,
+  });
+
+  return async (req: Request, res: Response, next: NextFunction) => {
     // If disabled globally
     if (config("app.env") === "test") return next();
 
-    const key = `${options.keyPrefix}:${options.key(req)}`;
-    const ts = nowMs();
+    const key = options.key(req);
 
-    // Opportunistic cleanup to avoid unbounded memory growth.
-    if (ts - lastCleanupAt > 60_000 && buckets.size > 10_000) {
-      for (const [k, v] of buckets.entries()) {
-        if (v.resetAt <= ts) buckets.delete(k);
+    try {
+      await rlr.consume(key);
+      return next();
+    } catch (error: unknown) {
+      if (error && typeof error === "object" && "msBeforeNext" in error) {
+        const msBeforeNext = (error as { msBeforeNext: number }).msBeforeNext;
+        res.setHeader("Retry-After", Math.ceil(msBeforeNext / 1000));
+        return res.status(429).json({ success: false, message });
       }
-      lastCleanupAt = ts;
-    }
 
-    const entry = buckets.get(key);
-
-    if (!entry || entry.resetAt <= ts) {
-      buckets.set(key, { resetAt: ts + options.windowMs, count: 1 });
+      // Fallback for unexpected errors to not block the request
       return next();
     }
-
-    entry.count += 1;
-    buckets.set(key, entry);
-
-    if (entry.count > options.max) {
-      res.setHeader("Retry-After", Math.ceil((entry.resetAt - ts) / 1000));
-      return res.status(429).json({ success: false, message });
-    }
-
-    return next();
   };
 }

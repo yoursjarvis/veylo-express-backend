@@ -115,6 +115,10 @@ export class MediaService {
     const media = await prisma.media.findUnique({ where: { id: mediaId } });
     if (!media) return null;
 
+    return this.generateUrl(media);
+  }
+
+  generateUrl(media: any): string | null {
     if (media.disk === "local") {
       const baseUrl = config("storage.disks.local.publicUrl");
       return `${baseUrl}/${media.modelType}/${media.collectionName}/${media.fileName}`;

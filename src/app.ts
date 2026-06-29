@@ -16,6 +16,7 @@ import { routes } from "@/routes";
 import { config } from "@/utils/config";
 
 import { errorMiddleware } from "./app/http/middlewares/error-handler.middlware";
+import { rateLimit } from "./app/http/middlewares/rate-limit.middleware";
 import { bullBoardAdapter } from "./lib/bull-board";
 
 const app = express();
@@ -23,11 +24,13 @@ const app = express();
 app.set("trust proxy", 1);
 app.disable("x-powered-by");
 
-app.use(helmet({
-  crossOriginResourcePolicy: false, // Allow loading images from different origins if needed
-  xFrameOptions: false, // Allow frontend to frame PDFs for preview
-  contentSecurityPolicy: false, // Allow browser to render PDFs
-}));
+app.use(
+  helmet({
+    crossOriginResourcePolicy: false, // Allow loading images from different origins if needed
+    xFrameOptions: false, // Allow frontend to frame PDFs for preview
+    contentSecurityPolicy: false, // Allow browser to render PDFs
+  }),
+);
 
 app.use(requestIdMiddleware);
 
@@ -35,7 +38,7 @@ app.use(
   pinoHttp({
     logger,
     genReqId: (req) => req.headers["x-request-id"] as string,
-  })
+  }),
 );
 
 app.use(
@@ -44,7 +47,7 @@ app.use(
       const allowed = config("app.origins");
       if (allowed.includes("*")) return callback(null, true);
       if (!origin) return callback(null, true); // non-browser clients
-      
+
       if (allowed.includes(origin)) return callback(null, true);
 
       try {
@@ -55,7 +58,8 @@ app.use(
           if (
             originUrl.protocol === allowedUrl.protocol &&
             originUrl.port === allowedUrl.port &&
-            (originUrl.hostname === allowedUrl.hostname || originUrl.hostname.endsWith(`.${allowedUrl.hostname}`))
+            (originUrl.hostname === allowedUrl.hostname ||
+              originUrl.hostname.endsWith(`.${allowedUrl.hostname}`))
           ) {
             return callback(null, true);
           }
@@ -69,7 +73,7 @@ app.use(
     credentials: config("cors.credentials"),
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "X-Request-Id"],
-  })
+  }),
 );
 
 app.use(express.json({ limit: "32kb" }));
@@ -81,6 +85,15 @@ app.use("/storage", express.static(path.join(process.cwd(), storageRoot)));
 
 app.use(metricsMiddleware);
 
+app.use(
+  rateLimit({
+    keyPrefix: "global",
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 1000, // Limit each IP to 100 requests per window
+    key: (req) => req.ip || "unknown",
+  }),
+);
+
 // BullMQ Admin Dashboard
 app.use("/admin/queues", bullBoardAdapter.getRouter());
 
@@ -89,7 +102,6 @@ app.use(routes);
 
 // Better Auth handler (catches what routes doesn't, like social callbacks)
 app.use("/api/v1/auth", toNodeHandler(auth));
-
 
 app.get("/healthz", healthController.healthz);
 app.get("/readyz", healthController.readyz);
@@ -102,7 +114,7 @@ app.get("/metrics", async (_req, res) => {
 app.get("/", (_req: Request, res: Response) => {
   res.json({
     success: true,
-    env: config("app.env")
+    env: config("app.env"),
   });
 });
 

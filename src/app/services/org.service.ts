@@ -59,7 +59,7 @@ export const orgService = {
           "logo"
         );
 
-        const url = await mediaService.getUrl(media.id);
+        const url = mediaService.generateUrl(media);
         if (url) {
           await orgRepository.updateOrgLogo(result.org.id, url);
           result.org.logo = url;

@@ -77,12 +77,13 @@ export const taskController = {
 
   uploadAttachment: asyncHandler(async (req: Request, res: Response) => {
     const taskId = req.params.taskId as string;
-    
+    const { userId } = await resolveSession(req);
+
     if (!req.file) {
       throw new BadRequestException("No file uploaded");
     }
 
-    const task = await taskService.getTask(taskId);
+    const task = await taskService.getTask(taskId, userId);
     await verifyProjectAccess(req, task.projectId);
 
     const media = await mediaService.addMedia(
@@ -98,7 +99,7 @@ export const taskController = {
       false
     );
 
-    const url = await mediaService.getUrl(media.id);
+    const url = mediaService.generateUrl(media);
 
     return ok(res, "Attachment uploaded successfully", {
       id: media.id,
@@ -114,8 +115,9 @@ export const taskController = {
   deleteAttachment: asyncHandler(async (req: Request, res: Response) => {
     const taskId = req.params.taskId as string;
     const attachmentId = req.params.attachmentId as string;
+    const { userId } = await resolveSession(req);
 
-    const task = await taskService.getTask(taskId);
+    const task = await taskService.getTask(taskId, userId);
     await verifyProjectAccess(req, task.projectId);
 
     await mediaService.deleteMedia(attachmentId);

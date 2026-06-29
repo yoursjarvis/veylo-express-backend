@@ -301,7 +301,7 @@ export const projectService = {
       false
     );
 
-    const url = await mediaService.getUrl(media.id);
+    const url = mediaService.generateUrl(media);
 
     return {
       id: media.id,
@@ -316,20 +316,15 @@ export const projectService = {
 
   async getProjectFiles(projectId: string) {
     const mediaFiles = await mediaService.getMedia("Project", projectId, "project_files");
-    return Promise.all(
-      mediaFiles.map(async (file) => {
-        const url = await mediaService.getUrl(file.id);
-        return {
-          id: file.id,
-          name: file.name,
-          fileName: file.fileName,
-          mimeType: file.mimeType,
-          size: file.size,
-          createdAt: file.createdAt,
-          url,
-        };
-      })
-    );
+    return mediaFiles.map((file) => ({
+      id: file.id,
+      name: file.name,
+      fileName: file.fileName,
+      mimeType: file.mimeType,
+      size: file.size,
+      createdAt: file.createdAt,
+      url: mediaService.generateUrl(file),
+    }));
   },
 
   async deleteProjectFile(projectId: string, fileId: string) {

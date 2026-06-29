@@ -353,12 +353,10 @@ export const taskService = {
     }
 
     const attachments = await mediaService.getMedia("Task", taskId, "task_attachments");
-    const attachmentsWithUrls = await Promise.all(
-      attachments.map(async (a: { id: string; [key: string]: unknown }) => ({
-        ...a,
-        url: await mediaService.getUrl(a.id),
-      }))
-    );
+    const attachmentsWithUrls = attachments.map((a: { id: string; [key: string]: unknown }) => ({
+      ...a,
+      url: mediaService.generateUrl(a),
+    }));
 
     return {
       ...task,
