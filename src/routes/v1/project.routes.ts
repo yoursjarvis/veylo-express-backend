@@ -1,7 +1,8 @@
+import { Router } from "express";
+
 import { projectController } from "@/app/http/controllers/project.controller";
 import { requireAuth } from "@/app/http/middlewares/require-auth.middleware";
 import { upload } from "@/app/http/middlewares/upload.middleware";
-import { Router } from "express";
 
 export const projectRoutes = Router();
 

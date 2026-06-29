@@ -1,7 +1,8 @@
-import { NotificationDriver } from "../contracts/notification-driver";
-import { Notifiable, Notification } from "../notification.types";
 import { mailService } from "@/core/mail/mail.service";
 import { logger } from "@/lib/logger";
+
+import { NotificationDriver } from "../contracts/notification-driver";
+import { Notifiable, Notification } from "../notification.types";
 
 export class MailDriver implements NotificationDriver {
   async send(notifiable: Notifiable, notification: Notification): Promise<void> {

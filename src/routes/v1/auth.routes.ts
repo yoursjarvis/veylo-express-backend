@@ -1,7 +1,8 @@
-import { authController } from "@/app/http/controllers/auth.controller";
-import { requireAuth } from "@/app/http/middlewares/require-auth.middleware";
-import { rateLimit } from "@/app/http/middlewares/rate-limit.middleware";
 import { Router } from "express";
+
+import { authController } from "@/app/http/controllers/auth.controller";
+import { rateLimit } from "@/app/http/middlewares/rate-limit.middleware";
+import { requireAuth } from "@/app/http/middlewares/require-auth.middleware";
 
 export const authRoutes = Router();
 

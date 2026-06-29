@@ -1,10 +1,11 @@
+import type { Request, Response } from "express";
+
 import { asyncHandler } from "@/app/http/middlewares/async-handler.middleware";
 import { notificationService } from "@/app/services/notification.service";
-import { ok } from "@/utils/http-response";
-import type { Request, Response } from "express";
 import { auth } from "@/lib/auth/auth";
 import { betterAuthHeaders } from "@/lib/auth/node-headers";
 import { UnauthorizedException } from "@/utils/app-error";
+import { ok } from "@/utils/http-response";
 
 export const notificationController = {
   // Get notifications for logged-in user

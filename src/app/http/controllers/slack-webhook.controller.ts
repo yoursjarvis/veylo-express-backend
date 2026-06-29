@@ -1,11 +1,12 @@
+import type { Request, Response } from "express";
+
 import { asyncHandler } from "@/app/http/middlewares/async-handler.middleware";
 import { verifyProjectAccess } from "@/app/http/middlewares/project-access.middleware";
+import { webhookSchema } from "@/app/http/validators/slack-webhook.validator";
 import { slackWebhookRepository } from "@/app/repositories/slack-webhook.repository";
 import { slackWebhookService } from "@/app/services/slack-webhook.service";
-import { ok } from "@/utils/http-response";
-import type { Request, Response } from "express";
 import { NotFoundException } from "@/utils/app-error";
-import { webhookSchema } from "@/app/http/validators/slack-webhook.validator";
+import { ok } from "@/utils/http-response";
 
 export const slackWebhookController = {
   getWebhooks: asyncHandler(async (req: Request, res: Response) => {

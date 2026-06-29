@@ -117,7 +117,7 @@ export const projectRepository = {
     });
   },
 
-  updateProject(projectId: string, data: any) {
+  updateProject(projectId: string, data: Record<string, unknown>) {
     return prisma.project.update({
       where: { id: projectId },
       data,
@@ -240,7 +240,7 @@ export const projectRepository = {
     });
   },
 
-  updateVaultItem(itemId: string, data: any) {
+  updateVaultItem(itemId: string, data: Record<string, unknown>) {
     return prisma.vaultItem.update({
       where: { id: itemId },
       data,

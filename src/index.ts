@@ -1,14 +1,14 @@
 import "dotenv/config"; // Reload watch with new prisma client
 import fs from "fs";
-import https from "https";
 import http from "http";
+import https from "https";
 
 import app from "@/app";
 import "@/app/workers/index";
 import "@/monitoring/tracing";
-import { config } from "@/utils/config";
-import { logger } from "@/lib/logger";
 import { webSocketManager } from "@/core/notification";
+import { logger } from "@/lib/logger";
+import { config } from "@/utils/config";
 
 process.on("unhandledRejection", (reason) => {
   logger.error({ reason }, "Unhandled Rejection");

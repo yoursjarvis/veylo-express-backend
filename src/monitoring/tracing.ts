@@ -1,9 +1,10 @@
-import { config } from "@/utils/config";
 import { getNodeAutoInstrumentations } from "@opentelemetry/auto-instrumentations-node";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-grpc";
 import { resourceFromAttributes } from "@opentelemetry/resources";
 import { NodeSDK } from "@opentelemetry/sdk-node";
 import { SemanticResourceAttributes } from "@opentelemetry/semantic-conventions";
+
+import { config } from "@/utils/config";
 
 const traceExporter = new OTLPTraceExporter({
   url: config("otel.collector.url") || "http://otel-collector:4317",

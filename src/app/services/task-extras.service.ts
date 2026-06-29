@@ -35,7 +35,7 @@ export const taskExtrasService = {
     return taskExtrasRepository.findStatusesByProjectId(projectId);
   },
 
-  async updateStatus(statusId: string, validatedData: Record<string, any>) {
+  async updateStatus(statusId: string, validatedData: Record<string, unknown>) {
     return taskExtrasRepository.updateStatus(statusId, validatedData);
   },
 
@@ -101,7 +101,7 @@ export const taskExtrasService = {
       title: string;
       organizationId: string;
     },
-    validatedData: Record<string, any>,
+    validatedData: Record<string, unknown>,
     userId: string
   ) {
     const updated = await taskExtrasRepository.updateSubtask(subtask.id, validatedData);

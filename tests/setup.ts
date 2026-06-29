@@ -1,4 +1,5 @@
 import { vi } from "vitest";
+
 import { prismaMock } from "./helpers/db";
 
 vi.mock("@/lib/prisma", () => ({

@@ -1,9 +1,10 @@
+import { logger } from "@/lib/logger";
+
 import { NotificationDriver } from "./contracts/notification-driver";
+import { BroadcastDriver } from "./drivers/broadcast.driver";
 import { DatabaseDriver } from "./drivers/database.driver";
 import { MailDriver } from "./drivers/mail.driver";
-import { BroadcastDriver } from "./drivers/broadcast.driver";
 import { Notifiable, Notification } from "./notification.types";
-import { logger } from "@/lib/logger";
 
 export class NotificationService {
   private drivers: Map<string, NotificationDriver> = new Map();

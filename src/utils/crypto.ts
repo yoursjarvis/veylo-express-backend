@@ -1,4 +1,5 @@
 import crypto from "crypto";
+
 import { config } from "./config";
 
 const ENCRYPTION_KEY = crypto

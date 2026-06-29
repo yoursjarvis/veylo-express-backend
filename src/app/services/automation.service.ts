@@ -1,5 +1,7 @@
 import prisma from "@/lib/prisma";
 
+import type { AutomationRule, Task } from "../../../generated/prisma/client.js";
+
 export const automationService = {
   /**
    * Run automation rules for a project when a task is created
@@ -30,7 +32,7 @@ export const automationService = {
   /**
    * Run automation rules for a project when a task status changes
    */
-  async handleTaskStatusChanged(taskId: string, userId: string, fromStatusName: string, toStatusName: string) {
+  async handleTaskStatusChanged(taskId: string, userId: string, _fromStatusName: string, _toStatusName: string) {
     try {
       const task = await prisma.task.findUnique({
         where: { id: taskId },
@@ -142,7 +144,7 @@ export const automationService = {
   /**
    * Execute automation action
    */
-  async executeAction(rule: any, task: any, userId: string) {
+  async executeAction(rule: AutomationRule, task: Task, userId: string) {
     try {
       console.log(`Executing automation rule "${rule.name}" for task ${task.id} (${task.title})`);
       const { taskService } = await import("./task.service");
@@ -182,7 +184,7 @@ export const automationService = {
         const priorityVal = (rule.actionVal || "medium").toLowerCase();
         if (["low", "medium", "high", "urgent"].includes(priorityVal) && task.priority !== priorityVal) {
           await taskService.updateTask(task.id, userId, {
-            priority: priorityVal as any,
+            priority: priorityVal as "low" | "medium" | "high" | "urgent",
           });
         }
       } else if (rule.action === "add_comment") {

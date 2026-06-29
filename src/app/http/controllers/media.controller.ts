@@ -1,9 +1,10 @@
+import type { Request, Response } from "express";
+
 import { asyncHandler } from "@/app/http/middlewares/async-handler.middleware";
 import { mediaService } from "@/app/services/media.service";
-import { ok } from "@/utils/http-response";
-import type { Request, Response } from "express";
 import { auth } from "@/lib/auth/auth";
 import { betterAuthHeaders } from "@/lib/auth/node-headers";
+import { ok } from "@/utils/http-response";
 
 export const mediaController = {
   uploadAvatar: asyncHandler(async (req: Request, res: Response) => {
@@ -123,7 +124,7 @@ export const mediaController = {
   }),
 
   uploadVersion: asyncHandler(async (req: Request, res: Response) => {
-    const { parentMediaId } = req.params;
+    const parentMediaId = req.params.parentMediaId as string;
     if (!req.file) {
       throw new Error("No file uploaded");
     }
@@ -133,7 +134,7 @@ export const mediaController = {
   }),
 
   createAnnotation: asyncHandler(async (req: Request, res: Response) => {
-    const { mediaId } = req.params;
+    const mediaId = req.params.mediaId as string;
     const { x, y, content } = req.body;
     const user = req.auth?.user;
     if (!user) {
@@ -156,13 +157,13 @@ export const mediaController = {
   }),
 
   getAnnotations: asyncHandler(async (req: Request, res: Response) => {
-    const { mediaId } = req.params;
+    const mediaId = req.params.mediaId as string;
     const annotations = await mediaService.getAnnotations(mediaId);
     return ok(res, "Annotations fetched successfully", annotations);
   }),
 
   deleteAnnotation: asyncHandler(async (req: Request, res: Response) => {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const user = req.auth?.user;
     if (!user) {
       throw new Error("Unauthorized");

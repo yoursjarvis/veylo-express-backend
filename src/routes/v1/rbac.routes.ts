@@ -1,4 +1,5 @@
 import { Router } from "express";
+
 import { rbacController } from "@/app/http/controllers/rbac.controller";
 
 const rbacRoutes = Router();

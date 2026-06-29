@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+
 import { parseUserAgent } from "../../src/utils/user-agent";
 
 describe("user-agent parsing utility", () => {

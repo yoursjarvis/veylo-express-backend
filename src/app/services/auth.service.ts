@@ -1,6 +1,8 @@
+import { isAPIError } from "@better-auth/core/utils/is-api-error";
+import type { Request, Response } from "express";
+
 import { authRepository } from "@/app/repositories/auth.repository";
 import { mailService } from "@/core/mail";
-
 import { auth } from "@/lib/auth/auth";
 import { betterAuthHeaders } from "@/lib/auth/node-headers";
 import { forwardSetCookie } from "@/lib/auth/set-cookie";
@@ -9,8 +11,6 @@ import prisma from "@/lib/prisma";
 import { ForbiddenException, UnauthorizedException } from "@/utils/app-error";
 import { config } from "@/utils/config";
 import { parseUserAgent } from "@/utils/user-agent";
-import { isAPIError } from "@better-auth/core/utils/is-api-error";
-import type { Request, Response } from "express";
 
 function getIpAddress(req: Request): string | undefined {
   // `trust proxy` is enabled in `src/app.ts` so `req.ip` respects X-Forwarded-For.
@@ -26,7 +26,21 @@ export const authService = {
     const headers = betterAuthHeaders(req);
     const callbackURL = config("auth.betterAuth.emailVerificationRedirectURL");
 
-    const result = await (auth.api.signUpEmail as any)({
+    const result = await (auth.api.signUpEmail as unknown as (options: {
+      headers: HeadersInit;
+      returnHeaders: boolean;
+      body: Record<string, unknown>;
+    }) => Promise<{
+      response: {
+        user?: {
+          id: string;
+          email: string;
+          name: string;
+          emailVerified: boolean;
+        } | null;
+      } | null;
+      headers: Headers;
+    }>)({
       headers,
       returnHeaders: true,
       body: {
@@ -76,7 +90,7 @@ export const authService = {
       }
     }
 
-    let result: any;
+    let result: { response: { token?: string } & Record<string, unknown>; headers: Headers };
     try {
       result = await auth.api.signInEmail({
         headers,
@@ -174,7 +188,7 @@ export const authService = {
           providerId: "credential",
         },
       });
-      (result.response.user as any).hasPassword = !!account;
+      (result.response.user as Record<string, unknown>).hasPassword = !!account;
     }
 
     return result.response;
@@ -220,7 +234,7 @@ export const authService = {
     });
     forwardSetCookie(res, result.headers);
 
-    if (verification && (result.response as any)?.status !== false) {
+    if (verification && (result.response as Record<string, unknown> | null)?.status !== false) {
       const user = await prisma.user.findUnique({
         where: { email: verification.identifier },
       });
@@ -228,7 +242,7 @@ export const authService = {
         try {
           void mailService
             .to(user.email, user.name || undefined)
-            .view("welcome", { firstName: (user as any).firstName })
+            .view("welcome", { firstName: (user as Record<string, unknown>).firstName as string })
             .queue();
         } catch (error) {
           logger.error({ error, userId: user.id }, "[AUTH][welcome] enqueue failed after verification");
@@ -334,7 +348,7 @@ export const authService = {
     try {
       void mailService
         .to(session.user.email, session.user.name ?? undefined)
-        .view("two-factor-otp", { otp, firstName: (session.user as any).firstName })
+        .view("two-factor-otp", { otp, firstName: (session.user as Record<string, unknown>).firstName as string })
         .queue();
     } catch (error) {
       logger.error({ error }, "[AUTH][two-factor-otp] enqueue failed");
@@ -364,7 +378,11 @@ export const authService = {
     await prisma.verification.delete({ where: { id: verification.id } });
 
     // Enable 2FA.
-    const result = await (auth.api.enableTwoFactor as any)({
+    const enableTwoFactor = (auth.api as Record<string, unknown>).enableTwoFactor as (options: {
+      headers: HeadersInit;
+      body: Record<string, unknown>;
+    }) => Promise<{ data?: unknown; [key: string]: unknown }>;
+    const result = await enableTwoFactor({
       headers,
       body: {
         password: "", // Passing empty string as allowPasswordless expects it if body is validated

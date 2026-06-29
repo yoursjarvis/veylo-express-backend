@@ -1,5 +1,7 @@
 import prisma from "@/lib/prisma";
 
+import { Prisma } from "../../../generated/prisma/client.js";
+
 export const orgMembersRepository = {
   async findCallerMember(organizationId: string, userId: string) {
     return prisma.member.findFirst({
@@ -72,7 +74,20 @@ export const orgMembersRepository = {
     role?: string;
     status?: string;
   }) {
-    const where: any = {
+    const userWhere: Prisma.UserWhereInput = {};
+    if (params.search) {
+      userWhere.OR = [
+        { name: { contains: params.search, mode: "insensitive" } },
+        { email: { contains: params.search, mode: "insensitive" } },
+      ];
+    }
+    if (params.status === "banned") {
+      userWhere.banned = true;
+    } else if (params.status === "active") {
+      userWhere.banned = false;
+    }
+
+    const where: Prisma.MemberWhereInput = {
       organizationId: params.activeOrgId,
     };
 
@@ -81,18 +96,7 @@ export const orgMembersRepository = {
     }
 
     if (params.search || params.status) {
-      where.user = {};
-      if (params.search) {
-        where.user.OR = [
-          { name: { contains: params.search, mode: "insensitive" } },
-          { email: { contains: params.search, mode: "insensitive" } },
-        ];
-      }
-      if (params.status === "banned") {
-        where.user.banned = true;
-      } else if (params.status === "active") {
-        where.user.banned = false;
-      }
+      where.user = userWhere;
     }
 
     return prisma.member.findMany({

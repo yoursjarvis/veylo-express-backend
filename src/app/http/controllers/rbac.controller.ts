@@ -1,7 +1,8 @@
-import { asyncHandler } from "@/app/http/middlewares/async-handler.middleware";
-import { rbacService } from "@/app/services/rbac.service";
-import { createRoleSchema, updateRoleSchema, assignRoleSchema } from "@/app/http/validators/rbac.validator";
 import type { Request, Response } from "express";
+
+import { asyncHandler } from "@/app/http/middlewares/async-handler.middleware";
+import { createRoleSchema, updateRoleSchema, assignRoleSchema } from "@/app/http/validators/rbac.validator";
+import { rbacService } from "@/app/services/rbac.service";
 
 export const rbacController = {
   getPermissions: asyncHandler(async (req: Request, res: Response) => {

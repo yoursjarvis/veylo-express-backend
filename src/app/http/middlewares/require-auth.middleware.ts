@@ -1,9 +1,11 @@
+import type { NextFunction, Request, Response } from "express";
+
+import { authRepository } from "@/app/repositories/auth.repository";
 import { auth } from "@/lib/auth/auth";
 import { betterAuthHeaders } from "@/lib/auth/node-headers";
 import { forwardSetCookie } from "@/lib/auth/set-cookie";
-import { authRepository } from "@/app/repositories/auth.repository";
 import { UnauthorizedException } from "@/utils/app-error";
-import type { NextFunction, Request, Response } from "express";
+
 
 export async function requireAuth(
   req: Request,

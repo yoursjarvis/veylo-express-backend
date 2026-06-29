@@ -1,6 +1,7 @@
+import { Router } from "express";
+
 import { workspaceController } from "@/app/http/controllers/workspace.controller";
 import { requireAuth } from "@/app/http/middlewares/require-auth.middleware";
-import { Router } from "express";
 
 export const workspaceRoutes = Router();
 

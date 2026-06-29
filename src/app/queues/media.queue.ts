@@ -1,7 +1,8 @@
 
-import { config } from "@/utils/config";
 import { Queue } from "bullmq";
 import { BullMQOtel } from "bullmq-otel";
+
+import { config } from "@/utils/config";
 
 export type MediaQueuePayload = {
   mediaId: string;

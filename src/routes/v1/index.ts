@@ -1,11 +1,12 @@
 import { Router } from "express";
+
 import { authRoutes } from "@/routes/v1/auth.routes";
 import { mediaRoutes } from "@/routes/v1/media.routes";
 import { orgRoutes } from "@/routes/v1/org.routes";
-import { workspaceRoutes } from "@/routes/v1/workspace.routes";
 import { projectRoutes } from "@/routes/v1/project.routes";
-import { taskRoutes } from "@/routes/v1/task.routes";
 import { rbacRoutes } from "@/routes/v1/rbac.routes";
+import { taskRoutes } from "@/routes/v1/task.routes";
+import { workspaceRoutes } from "@/routes/v1/workspace.routes";
 
 export const apiV1Routes = Router();
 

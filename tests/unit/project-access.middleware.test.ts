@@ -1,10 +1,17 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
+
+import {
+  resolveSession,
+  verifyWorkspaceAdmin,
+  verifyProjectAccess,
+  verifyProjectAdmin,
+} from "@/app/http/middlewares/project-access.middleware";
 import {
   UnauthorizedException,
   ForbiddenException,
   BadRequestException,
   NotFoundException,
-} from "../../src/utils/app-error";
+} from "@/utils/app-error";
 
 const { getSessionMock, prismaMock, betterAuthHeadersMock } = vi.hoisted(() => ({
   getSessionMock: vi.fn(),
@@ -41,13 +48,6 @@ vi.mock("../../src/lib/prisma", () => ({
 vi.mock("../../src/lib/auth/node-headers", () => ({
   betterAuthHeaders: betterAuthHeadersMock,
 }));
-
-import {
-  resolveSession,
-  verifyWorkspaceAdmin,
-  verifyProjectAccess,
-  verifyProjectAdmin,
-} from "../../src/app/http/middlewares/project-access.middleware";
 
 describe("project-access middleware utilities", () => {
   beforeEach(() => {

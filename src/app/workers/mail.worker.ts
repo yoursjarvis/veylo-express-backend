@@ -1,12 +1,13 @@
 import "dotenv/config";
 
+import { Worker } from "bullmq";
+import { BullMQOtel } from "bullmq-otel";
+
 import type { MailQueuePayload } from "@/app/queues/mail.queue";
 import { sendMailMessage } from "@/core/mail";
 import { logger } from "@/lib/logger";
 import "@/monitoring/tracing";
 import { config } from "@/utils/config";
-import { Worker } from "bullmq";
-import { BullMQOtel } from "bullmq-otel";
 
 const worker = new Worker<MailQueuePayload>(
   config("mail.queue.name"),

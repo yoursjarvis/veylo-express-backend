@@ -51,7 +51,7 @@ export const sprintService = {
     userId: string
   ) {
     const sprintId = existingSprint.id;
-    const updateData: Record<string, any> = {};
+    const updateData: Record<string, string | Date | null | undefined> = {};
     if (validatedData.name !== undefined) updateData.name = validatedData.name;
     if (validatedData.goal !== undefined) updateData.goal = validatedData.goal;
     if (validatedData.startDate !== undefined) {

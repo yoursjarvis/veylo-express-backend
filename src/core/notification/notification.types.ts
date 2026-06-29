@@ -3,7 +3,7 @@ import type { EmailTemplateName, EmailTemplateData } from "@/templates/emails";
 export interface Notifiable {
   id: string;
   email?: string | null;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface DatabaseNotificationPayload {
@@ -17,7 +17,7 @@ export interface DatabaseNotificationPayload {
 
 export interface BroadcastNotificationPayload {
   event: string;
-  data: Record<string, any>;
+  data: Record<string, unknown>;
 }
 
 export type MailNotificationPayload =
@@ -25,7 +25,7 @@ export type MailNotificationPayload =
       to?: string;
       subject?: string;
       template: EmailTemplateName;
-      data: EmailTemplateData<any>;
+      data: EmailTemplateData<EmailTemplateName>;
     }
   | {
       to?: string;

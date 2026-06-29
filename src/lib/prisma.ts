@@ -1,5 +1,7 @@
-import { config } from "@/utils/config";
 import { PrismaPg } from "@prisma/adapter-pg";
+
+import { config } from "@/utils/config";
+
 import { PrismaClient, Prisma } from "../../generated/prisma/client.js";
 
 const adapter = new PrismaPg({
@@ -19,15 +21,16 @@ const basePrisma =
 const prisma = basePrisma.$extends({
   model: {
     $allModels: {
-      async delete<T, A>(
+      async delete<T>(
         this: T,
         args: Prisma.Args<T, "delete">
-      ): Promise<any> {
+      ): Promise<unknown> {
         const context = Prisma.getExtensionContext(this);
-        const modelName = (context as any).name;
-        const fieldEnum = (Prisma as any)[`${modelName}ScalarFieldEnum`];
+        const modelName = (context as Record<string, unknown>).name as string;
+        const fieldEnum = (Prisma as unknown as Record<string, Record<string, string> | undefined>)[`${modelName}ScalarFieldEnum`];
 
         if (fieldEnum && "deletedAt" in fieldEnum) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma $extends context methods are dynamically resolved and untyped
           return (context as any).update({
             ...args,
             data: { deletedAt: new Date() },
@@ -35,17 +38,19 @@ const prisma = basePrisma.$extends({
         }
 
         const modelKey = modelName.charAt(0).toLowerCase() + modelName.slice(1);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Dynamic Prisma model access requires runtime dispatch
         return (basePrisma as any)[modelKey].delete(args);
       },
-      async deleteMany<T, A>(
+      async deleteMany<T>(
         this: T,
         args: Prisma.Args<T, "deleteMany">
-      ): Promise<any> {
+      ): Promise<unknown> {
         const context = Prisma.getExtensionContext(this);
-        const modelName = (context as any).name;
-        const fieldEnum = (Prisma as any)[`${modelName}ScalarFieldEnum`];
+        const modelName = (context as Record<string, unknown>).name as string;
+        const fieldEnum = (Prisma as unknown as Record<string, Record<string, string> | undefined>)[`${modelName}ScalarFieldEnum`];
 
         if (fieldEnum && "deletedAt" in fieldEnum) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma $extends context methods are dynamically resolved and untyped
           return (context as any).updateMany({
             ...args,
             data: { deletedAt: new Date() },
@@ -53,6 +58,7 @@ const prisma = basePrisma.$extends({
         }
 
         const modelKey = modelName.charAt(0).toLowerCase() + modelName.slice(1);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Dynamic Prisma model access requires runtime dispatch
         return (basePrisma as any)[modelKey].deleteMany(args);
       },
     },
@@ -72,9 +78,10 @@ const prisma = basePrisma.$extends({
             "groupBy",
           ].includes(operation)
         ) {
-          const fieldEnum = (Prisma as any)[`${model}ScalarFieldEnum`];
+          const fieldEnum = (Prisma as unknown as Record<string, Record<string, string> | undefined>)[`${model}ScalarFieldEnum`];
           if (fieldEnum && "deletedAt" in fieldEnum) {
-            (args as any).where = { ...(args as any).where, deletedAt: null };
+            const currentWhere = (args as Record<string, unknown>).where as Record<string, unknown> | undefined;
+            (args as Record<string, unknown>).where = { ...currentWhere, deletedAt: null };
           }
         }
         return query(args);

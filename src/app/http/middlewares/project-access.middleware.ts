@@ -1,7 +1,8 @@
-import prisma from "@/lib/prisma";
+import type { Request } from "express";
+
 import { auth } from "@/lib/auth/auth";
 import { betterAuthHeaders } from "@/lib/auth/node-headers";
-import type { Request } from "express";
+import prisma from "@/lib/prisma";
 import {
   UnauthorizedException,
   ForbiddenException,
@@ -47,7 +48,7 @@ export async function resolveSession(
     throw new UnauthorizedException();
   }
 
-  const activeOrgId = session.session.activeOrganizationId;
+  const activeOrgId = (session.session as Record<string, unknown>).activeOrganizationId as string | undefined;
   if (!activeOrgId) {
     throw new BadRequestException("No active organization found");
   }

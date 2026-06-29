@@ -1,11 +1,13 @@
-import { mediaQueue } from "@/app/queues/media.queue";
-import prisma from "@/lib/prisma";
-import { logger } from "@/lib/logger";
-import { config } from "@/utils/config";
-import type { MediaCollection, UploadedFile } from "./media.types";
-import path from "path";
-import fs from "fs/promises";
 import crypto from "crypto";
+import fs from "fs/promises";
+import path from "path";
+
+import { mediaQueue } from "@/app/queues/media.queue";
+import { logger } from "@/lib/logger";
+import prisma from "@/lib/prisma";
+import { config } from "@/utils/config";
+
+import type { MediaCollection, UploadedFile } from "./media.types";
 
 export class MediaService {
   async addMedia(
@@ -93,13 +95,13 @@ export class MediaService {
       }
 
       // Delete conversions
-      const conversions = (media.generatedConversions as Record<string, any>) || {};
+      const conversions = (media.generatedConversions as Record<string, { fileName?: string }>) || {};
       for (const conversion of Object.values(conversions)) {
         if (conversion.fileName) {
           const conversionPath = path.join(process.cwd(), root, media.modelType, media.collectionName, "conversions", conversion.fileName);
           try {
             await fs.unlink(conversionPath);
-          } catch (error) {
+          } catch {
             // Ignore if conversion doesn't exist
           }
         }

@@ -1,3 +1,11 @@
+import path from "path";
+
+import { toNodeHandler } from "better-auth/node";
+import cors from "cors";
+import express, { type Request, type Response } from "express";
+import helmet from "helmet";
+import pinoHttp from "pino-http";
+
 import { healthController } from "@/app/http/controllers/health.controller";
 import { metricsMiddleware } from "@/app/http/middlewares/metrics.middleware";
 import { requestIdMiddleware } from "@/app/http/middlewares/request-id.middleware";
@@ -6,12 +14,7 @@ import { logger } from "@/lib/logger";
 import { register } from "@/monitoring/metrics";
 import { routes } from "@/routes";
 import { config } from "@/utils/config";
-import { toNodeHandler } from "better-auth/node";
-import cors from "cors";
-import express, { type Request, type Response } from "express";
-import path from "path";
-import helmet from "helmet";
-import pinoHttp from "pino-http";
+
 import { errorMiddleware } from "./app/http/middlewares/error-handler.middlware";
 import { bullBoardAdapter } from "./lib/bull-board";
 
@@ -57,7 +60,7 @@ app.use(
             return callback(null, true);
           }
         }
-      } catch (e) {
+      } catch (_e) {
         // Ignore invalid URLs
       }
 

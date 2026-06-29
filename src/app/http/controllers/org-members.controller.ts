@@ -1,11 +1,12 @@
+import type { Request, Response } from "express";
+
 import { asyncHandler } from "@/app/http/middlewares/async-handler.middleware";
 import { orgMembersService } from "@/app/services/org-members.service";
-import { ok } from "@/utils/http-response";
-import type { Request, Response } from "express";
 import { auth } from "@/lib/auth/auth";
 import { betterAuthHeaders } from "@/lib/auth/node-headers";
 import { logger } from "@/lib/logger";
 import { UnauthorizedException, BadRequestException, NotFoundException } from "@/utils/app-error";
+import { ok } from "@/utils/http-response";
 
 async function getActiveOrgAndSession(req: Request) {
   const session = await auth.api.getSession({
@@ -128,14 +129,15 @@ export const orgMembersController = {
       );
 
       return ok(res, "Invitation sent successfully", result);
-    } catch (error: any) {
-      logger.error({ error, email }, "[ORG_MEMBERS] inviteMember failed");
+    } catch (error) {
+      const err = error as Error & { status?: number | string; code?: string };
+      logger.error({ error: err, email }, "[ORG_MEMBERS] inviteMember failed");
       let statusCode = 500;
-      if (error.status) {
-        if (typeof error.status === "number") {
-          statusCode = error.status;
-        } else if (typeof error.status === "string") {
-          const parsed = parseInt(error.status, 10);
+      if (err.status) {
+        if (typeof err.status === "number") {
+          statusCode = err.status;
+        } else if (typeof err.status === "string") {
+          const parsed = parseInt(err.status, 10);
           if (!isNaN(parsed)) {
             statusCode = parsed;
           } else {
@@ -148,15 +150,15 @@ export const orgMembersController = {
               UNPROCESSABLE_ENTITY: 422,
               INTERNAL_SERVER_ERROR: 500,
             };
-            if (error.status in statusMap) {
-              statusCode = statusMap[error.status];
+            if (err.status in statusMap) {
+              statusCode = statusMap[err.status];
             }
           }
         }
       }
       return res.status(statusCode).json({
-        message: error.message || "Failed to send invitation",
-        code: error.code,
+        message: err.message || "Failed to send invitation",
+        code: err.code,
       });
     }
   }),
@@ -187,7 +189,7 @@ export const orgMembersController = {
     try {
       const invitation = await orgMembersService.getInvitationPublic(id);
       return ok(res, "Invitation found", invitation);
-    } catch (error: any) {
+    } catch (error) {
       if (error instanceof NotFoundException) {
         return res.status(404).json({ message: "Invitation not found" });
       }
@@ -219,14 +221,15 @@ export const orgMembersController = {
       );
 
       return ok(res, "Invitation revoked successfully", result);
-    } catch (error: any) {
-      logger.error({ error, id }, "[ORG_MEMBERS] revokeInvitation failed");
+    } catch (error) {
+      const err = error as Error & { status?: number | string; code?: string };
+      logger.error({ error: err, id }, "[ORG_MEMBERS] revokeInvitation failed");
       let statusCode = 500;
-      if (error.status) {
-        if (typeof error.status === "number") {
-          statusCode = error.status;
-        } else if (typeof error.status === "string") {
-          const parsed = parseInt(error.status, 10);
+      if (err.status) {
+        if (typeof err.status === "number") {
+          statusCode = err.status;
+        } else if (typeof err.status === "string") {
+          const parsed = parseInt(err.status, 10);
           if (!isNaN(parsed)) {
             statusCode = parsed;
           } else {
@@ -239,15 +242,15 @@ export const orgMembersController = {
               UNPROCESSABLE_ENTITY: 422,
               INTERNAL_SERVER_ERROR: 500,
             };
-            if (error.status in statusMap) {
-              statusCode = statusMap[error.status];
+            if (err.status in statusMap) {
+              statusCode = statusMap[err.status];
             }
           }
         }
       }
       return res.status(statusCode).json({
-        message: error.message || "Failed to revoke invitation",
-        code: error.code,
+        message: err.message || "Failed to revoke invitation",
+        code: err.code,
       });
     }
   }),

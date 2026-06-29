@@ -1,11 +1,12 @@
+import type { Request, Response } from "express";
+
 import { asyncHandler } from "@/app/http/middlewares/async-handler.middleware";
+import { workspaceSchema } from "@/app/http/validators/workspace.validator";
 import { workspaceService } from "@/app/services/workspace.service";
 import { auth } from "@/lib/auth/auth";
 import { betterAuthHeaders } from "@/lib/auth/node-headers";
-import { ok } from "@/utils/http-response";
 import { UnauthorizedException } from "@/utils/app-error";
-import type { Request, Response } from "express";
-import { workspaceSchema } from "@/app/http/validators/workspace.validator";
+import { ok } from "@/utils/http-response";
 
 export const workspaceController = {
   getWorkspaces: asyncHandler(async (req: Request, res: Response) => {

@@ -1,11 +1,12 @@
+import type { Request, Response } from "express";
+
 import { asyncHandler } from "@/app/http/middlewares/async-handler.middleware";
 import { verifyProjectAccess } from "@/app/http/middlewares/project-access.middleware";
+import { labelCreateSchema } from "@/app/http/validators/label.validator";
 import { labelRepository } from "@/app/repositories/label.repository";
 import { labelService } from "@/app/services/label.service";
-import { ok } from "@/utils/http-response";
-import type { Request, Response } from "express";
 import { NotFoundException } from "@/utils/app-error";
-import { labelCreateSchema } from "@/app/http/validators/label.validator";
+import { ok } from "@/utils/http-response";
 
 export const labelController = {
   createLabel: asyncHandler(async (req: Request, res: Response) => {

@@ -1,6 +1,7 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
 import request from "supertest";
-import app from "../../src/app";
+import { describe, expect, it, vi, beforeEach } from "vitest";
+
+import app from "@/app";
 
 // 1. Register Global Mocks with dynamic imports to avoid hoisting ReferenceError
 vi.mock("../../src/lib/auth/auth", async () => {

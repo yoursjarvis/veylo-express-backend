@@ -33,7 +33,7 @@ export const milestoneService = {
       dueDate?: string | null;
     }
   ) {
-    const updateData: Record<string, any> = {};
+    const updateData: Record<string, unknown> = {};
     if (validatedData.title !== undefined) updateData.title = validatedData.title;
     if (validatedData.description !== undefined) updateData.description = validatedData.description;
     if (validatedData.isCompleted !== undefined) updateData.isCompleted = validatedData.isCompleted;

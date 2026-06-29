@@ -1,7 +1,8 @@
+import { logger } from "@/lib/logger";
+import prisma from "@/lib/prisma";
+
 import { NotificationDriver } from "../contracts/notification-driver";
 import { Notifiable, Notification } from "../notification.types";
-import prisma from "@/lib/prisma";
-import { logger } from "@/lib/logger";
 
 export class DatabaseDriver implements NotificationDriver {
   async send(notifiable: Notifiable, notification: Notification): Promise<void> {

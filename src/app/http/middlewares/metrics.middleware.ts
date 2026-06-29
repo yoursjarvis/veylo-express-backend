@@ -1,8 +1,9 @@
+import { type NextFunction, type Request, type Response } from "express";
+
 import {
   httpRequestDuration,
   httpRequestsTotal,
 } from "@/monitoring/metrics";
-import { type NextFunction, type Request, type Response } from "express";
 
 export const metricsMiddleware = (
   req: Request,

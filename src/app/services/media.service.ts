@@ -1,7 +1,7 @@
 import { mediaRepository } from "@/app/repositories/media.repository";
 import { mediaService as coreMediaService } from "@/core/media";
-import { ForbiddenException, NotFoundException } from "@/utils/app-error";
 import prisma from "@/lib/prisma";
+import { ForbiddenException, NotFoundException } from "@/utils/app-error";
 
 export const mediaService = {
   async uploadAvatar(

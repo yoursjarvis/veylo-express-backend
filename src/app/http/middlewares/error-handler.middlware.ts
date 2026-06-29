@@ -1,9 +1,10 @@
+import { NextFunction, Request, Response } from "express";
+import { ZodError, type ZodIssue } from "zod";
+
 import { logger } from "@/lib/logger";
 import { AppError, ValidationException } from "@/utils/app-error";
 import { config } from "@/utils/config";
 import { parseStack } from "@/utils/parse-stack";
-import { NextFunction, Request, Response } from "express";
-import { ZodError, type ZodIssue } from "zod";
 
 export const errorMiddleware = (
   err: unknown,
@@ -38,7 +39,7 @@ export const errorMiddleware = (
     stack: err instanceof Error ? err.stack : undefined,
   });
 
-  const response: any = {
+  const response: Record<string, unknown> = {
     success: false,
     message: error.expose
       ? error.message

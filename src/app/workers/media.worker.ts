@@ -1,13 +1,16 @@
-import { type MediaQueuePayload } from "@/app/queues/media.queue";
-import prisma from "@/lib/prisma";
-import { logger } from "@/lib/logger";
-import { config } from "@/utils/config";
-import { Worker } from "bullmq";
-import { BullMQOtel } from "bullmq-otel";
+import fs from "fs/promises";
 import path from "path";
 
-import fs from "fs/promises";
+import { Worker } from "bullmq";
+import { BullMQOtel } from "bullmq-otel";
 import sharp from "sharp";
+
+import { type MediaQueuePayload } from "@/app/queues/media.queue";
+import { logger } from "@/lib/logger";
+import prisma from "@/lib/prisma";
+import { config } from "@/utils/config";
+
+
 
 export const mediaWorker = new Worker<MediaQueuePayload>(
   "media",
@@ -35,7 +38,7 @@ export const mediaWorker = new Worker<MediaQueuePayload>(
         .resize(200, 200, { fit: "inside", withoutEnlargement: true })
         .toFile(thumbFullPath);
 
-      const generatedConversions = (media.generatedConversions as Record<string, any>) || {};
+      const generatedConversions = (media.generatedConversions as Record<string, { fileName: string; size: number }>) || {};
       generatedConversions.thumb = {
         fileName: thumbFileName,
         size: (await fs.stat(thumbFullPath)).size,

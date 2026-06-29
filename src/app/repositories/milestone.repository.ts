@@ -32,7 +32,7 @@ export const milestoneRepository = {
     });
   },
 
-  async update(id: string, data: Record<string, any>) {
+  async update(id: string, data: Record<string, unknown>) {
     return prisma.milestone.update({
       where: { id },
       data,

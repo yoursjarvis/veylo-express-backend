@@ -48,7 +48,7 @@ export const epicRepository = {
     });
   },
 
-  async update(id: string, data: Record<string, any>) {
+  async update(id: string, data: Record<string, unknown>) {
     return prisma.epic.update({
       where: { id },
       data,

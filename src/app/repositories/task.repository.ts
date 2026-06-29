@@ -1,5 +1,7 @@
 import prisma from "@/lib/prisma";
 
+import { Prisma } from "../../../generated/prisma/client.js";
+
 export const taskRepository = {
   async findTaskById(taskId: string) {
     return prisma.task.findUnique({
@@ -111,7 +113,7 @@ export const taskRepository = {
     });
   },
 
-  createTask(data: any) {
+  createTask(data: Prisma.TaskUncheckedCreateInput) {
     return prisma.task.create({
       data,
       include: {
@@ -133,7 +135,7 @@ export const taskRepository = {
     });
   },
 
-  getTasks(whereClause: any) {
+  getTasks(whereClause: Prisma.TaskWhereInput) {
     return prisma.task.findMany({
       where: whereClause,
       include: {
@@ -193,7 +195,7 @@ export const taskRepository = {
     });
   },
 
-  updateTask(taskId: string, updateData: any) {
+  updateTask(taskId: string, updateData: Prisma.TaskUncheckedUpdateInput) {
     return prisma.task.update({
       where: { id: taskId },
       data: updateData,

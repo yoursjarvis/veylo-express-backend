@@ -1,16 +1,17 @@
 import { Router } from "express";
-import { requireAuth } from "@/app/http/middlewares/require-auth.middleware";
-import { taskController } from "@/app/http/controllers/task.controller";
-import { sprintController } from "@/app/http/controllers/sprint.controller";
-import { taskExtrasController } from "@/app/http/controllers/task-extras.controller";
-import { notificationController } from "@/app/http/controllers/notification.controller";
-import { slackWebhookController } from "@/app/http/controllers/slack-webhook.controller";
+
+import { checklistTemplateController } from "@/app/http/controllers/checklist-template.controller";
 import { dependencyController } from "@/app/http/controllers/dependency.controller";
 import { epicController } from "@/app/http/controllers/epic.controller";
 import { labelController } from "@/app/http/controllers/label.controller";
 import { milestoneController } from "@/app/http/controllers/milestone.controller";
+import { notificationController } from "@/app/http/controllers/notification.controller";
+import { slackWebhookController } from "@/app/http/controllers/slack-webhook.controller";
+import { sprintController } from "@/app/http/controllers/sprint.controller";
+import { taskExtrasController } from "@/app/http/controllers/task-extras.controller";
+import { taskController } from "@/app/http/controllers/task.controller";
 import { workLogController } from "@/app/http/controllers/worklog.controller";
-import { checklistTemplateController } from "@/app/http/controllers/checklist-template.controller";
+import { requireAuth } from "@/app/http/middlewares/require-auth.middleware";
 import { upload } from "@/app/http/middlewares/upload.middleware";
 
 export const taskRoutes = Router();

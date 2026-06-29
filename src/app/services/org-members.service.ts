@@ -1,8 +1,11 @@
-import { orgMembersRepository } from "@/app/repositories/org-members.repository";
-import { auth } from "@/lib/auth/auth";
+import crypto from "crypto";
+
 import { parse } from "csv-parse/sync";
 import * as xlsx from "xlsx";
-import crypto from "crypto";
+
+import { orgMembersRepository } from "@/app/repositories/org-members.repository";
+import { auth } from "@/lib/auth/auth";
+import prisma from "@/lib/prisma";
 import {
   ForbiddenException,
   NotFoundException,
@@ -55,18 +58,22 @@ export const orgMembersService = {
     activeOrgId: string,
     sessionUserId: string,
     targetUserId: string,
-    headers: any
+    headers: HeadersInit
   ) {
     const callerMember = await this.verifyAdminAccess(activeOrgId, sessionUserId, targetUserId);
 
     try {
       // Create impersonated session using Better Auth API
-      const result = await auth.api.impersonateUser({
+      const impersonateUser = (auth.api as Record<string, unknown>).impersonateUser as (options: {
+        body: { userId: string };
+        headers: HeadersInit;
+      }) => Promise<unknown>;
+      const result = await impersonateUser({
         body: { userId: targetUserId },
         headers,
       });
       return { success: true, result };
-    } catch (e) {
+    } catch {
       // Fallback manual impersonation session
       const token = crypto.randomBytes(32).toString("hex");
       const newSession = await orgMembersRepository.createSession({
@@ -138,8 +145,12 @@ export const orgMembersService = {
     return orgMembersRepository.findPendingInvitations(activeOrgId);
   },
 
-  async inviteMember(activeOrgId: string, email: string, role: any, projectIds: string[] | undefined, headers: any) {
-    const invitation = await auth.api.createInvitation({
+  async inviteMember(activeOrgId: string, email: string, role: string, projectIds: string[] | undefined, headers: HeadersInit) {
+    const createInvitation = (auth.api as Record<string, unknown>).createInvitation as (options: {
+      body: { email: string; role: string; organizationId: string; resend: boolean };
+      headers: HeadersInit;
+    }) => Promise<{ id: string; [key: string]: unknown } | null>;
+    const invitation = await createInvitation({
       body: {
         email,
         role: role || "member",
@@ -162,19 +173,19 @@ export const orgMembersService = {
   async bulkInvite(
     activeOrgId: string,
     file: { buffer: Buffer; mimetype: string; originalname: string },
-    headers: any
+    headers: HeadersInit
   ) {
-    let records: any[] = [];
+    let records: Record<string, unknown>[] = [];
 
     if (file.mimetype === "text/csv" || file.originalname.endsWith(".csv")) {
       records = parse(file.buffer, {
         columns: true,
         skip_empty_lines: true,
-      });
+      }) as Record<string, unknown>[];
     } else if (file.originalname.endsWith(".xlsx") || file.originalname.endsWith(".xls")) {
       const workbook = xlsx.read(file.buffer, { type: "buffer" });
       const sheetName = workbook.SheetNames[0];
-      records = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName]);
+      records = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName]) as Record<string, unknown>[];
     } else {
       throw new BadRequestException("Unsupported file type. Please upload CSV or Excel.");
     }
@@ -185,9 +196,14 @@ export const orgMembersService = {
       errors: [] as string[],
     };
 
+    const createInvitation = (auth.api as Record<string, unknown>).createInvitation as (options: {
+      body: { email: string; role: string; organizationId: string; resend: boolean };
+      headers: HeadersInit;
+    }) => Promise<unknown>;
+
     for (const record of records) {
-      const email = record.email || record.Email;
-      const role = (record.role || record.Role || "member").toLowerCase();
+      const email = (record.email as string | undefined) || (record.Email as string | undefined);
+      const role = String(record.role || record.Role || "member").toLowerCase();
 
       if (!email) {
         results.failed++;
@@ -196,7 +212,7 @@ export const orgMembersService = {
       }
 
       try {
-        await auth.api.createInvitation({
+        await createInvitation({
           body: {
             email,
             role,
@@ -207,16 +223,17 @@ export const orgMembersService = {
         });
 
         results.successful++;
-      } catch (error: any) {
+      } catch (error) {
+        const err = error as Error;
         results.failed++;
-        results.errors.push(`Failed to invite ${email}: ${error?.message || "Unknown error"}`);
+        results.errors.push(`Failed to invite ${email}: ${err.message || "Unknown error"}`);
       }
     }
 
     return results;
   },
 
-  async revokeInvitation(activeOrgId: string, sessionUserId: string, id: string, headers: any) {
+  async revokeInvitation(activeOrgId: string, sessionUserId: string, id: string, headers: HeadersInit) {
     await this.verifyAdminAccess(activeOrgId, sessionUserId);
 
     const invitation = await orgMembersRepository.findInvitationInOrg(id, activeOrgId);
@@ -224,7 +241,11 @@ export const orgMembersService = {
       throw new NotFoundException("Invitation not found in this organization");
     }
 
-    return auth.api.cancelInvitation({
+    const cancelInvitation = (auth.api as Record<string, unknown>).cancelInvitation as (options: {
+      body: { invitationId: string };
+      headers: HeadersInit;
+    }) => Promise<unknown>;
+    return cancelInvitation({
       body: {
         invitationId: id,
       },

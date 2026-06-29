@@ -1,10 +1,11 @@
+import path from "path";
+
 import { projectRepository } from "@/app/repositories/project.repository";
+import { notificationService } from "@/app/services/notification.service";
 import { mediaService } from "@/core/media";
+import prisma from "@/lib/prisma";
 import { BadRequestException, NotFoundException } from "@/utils/app-error";
 import { decrypt, encrypt } from "@/utils/crypto";
-import path from "path";
-import { notificationService } from "@/app/services/notification.service";
-import prisma from "@/lib/prisma";
 
 // Malicious files filtering constants
 const DISALLOWED_EXTENSIONS = [
@@ -78,10 +79,16 @@ export const projectService = {
     let resolvedTeamMode = data.teamMode || "general";
 
     if (dbTemplate) {
-      const config = dbTemplate.config as any;
-      if (config.statuses) resolvedStatuses = config.statuses;
-      if (config.customFields) resolvedCustomFields = config.customFields;
-      if (config.teamMode) resolvedTeamMode = data.teamMode || config.teamMode;
+      const templateConfig = dbTemplate.config as {
+        statuses?: { name: string; category: string; order: number }[];
+        customFields?: { name: string; type: string }[];
+        teamMode?: string;
+      } | null;
+      if (templateConfig) {
+        if (templateConfig.statuses) resolvedStatuses = templateConfig.statuses;
+        if (templateConfig.customFields) resolvedCustomFields = templateConfig.customFields;
+        if (templateConfig.teamMode) resolvedTeamMode = data.teamMode || templateConfig.teamMode;
+      }
     } else {
       // Fallback for custom or legacy templates
       resolvedStatuses = DEFAULT_STATUSES[templateSlug] || DEFAULT_STATUSES["simple"];
@@ -131,7 +138,7 @@ export const projectService = {
     return projectDetails;
   },
 
-  updateProject(projectId: string, data: any) {
+  updateProject(projectId: string, data: Record<string, unknown>) {
     return projectRepository.updateProject(projectId, data);
   },
 
@@ -338,14 +345,19 @@ export const projectService = {
     return projectRepository.findAutomationRules(projectId);
   },
 
-  createAutomationRule(projectId: string, data: any) {
+  createAutomationRule(projectId: string, data: { name?: string; trigger?: string; action?: string; [key: string]: unknown }) {
     if (!data.name || !data.trigger || !data.action) {
       throw new BadRequestException("Name, trigger, and action are required");
     }
-    return projectRepository.createAutomationRule(projectId, data);
+    return projectRepository.createAutomationRule(projectId, {
+      ...data,
+      name: data.name!,
+      trigger: data.trigger!,
+      action: data.action!,
+    });
   },
 
-  async updateAutomationRule(ruleId: string, data: any) {
+  async updateAutomationRule(ruleId: string, data: Record<string, unknown>) {
     const existing = await projectRepository.findAutomationRuleById(ruleId);
     if (!existing) {
       throw new NotFoundException("Automation rule not found");

@@ -1,9 +1,10 @@
-import type { MailDriver } from "@/core/mail/contracts/mail-driver";
-import type { MailMessage, MailSendResult } from "@/core/mail/mail.types";
-import { logger } from "@/lib/logger";
-import { config } from "@/utils/config";
 import nodemailer from "nodemailer";
 import type SMTPTransport from "nodemailer/lib/smtp-transport";
+
+import type { MailDriver } from "@/core/mail/contracts/mail-driver";
+import type { MailAddress, MailMessage, MailSendResult } from "@/core/mail/mail.types";
+import { logger } from "@/lib/logger";
+import { config } from "@/utils/config";
 
 function resolveSecure(): boolean {
   const encryption = config("mail.mailers.smtp.encryption");
@@ -39,7 +40,7 @@ export class SmtpDriver implements MailDriver {
     try {
       logger.info(
         {
-          to: message.to.map((t: any) => t.address),
+          to: message.to.map((t: MailAddress) => t.address),
           subject: message.subject,
         },
         "[MAIL][smtp] sending email",

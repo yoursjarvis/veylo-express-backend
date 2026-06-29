@@ -1,11 +1,12 @@
+import type { Request, Response } from "express";
+
 import { asyncHandler } from "@/app/http/middlewares/async-handler.middleware";
 import { verifyProjectAccess } from "@/app/http/middlewares/project-access.middleware";
+import { epicCreateSchema, epicUpdateSchema } from "@/app/http/validators/epic.validator";
 import { epicRepository } from "@/app/repositories/epic.repository";
 import { epicService } from "@/app/services/epic.service";
-import { ok } from "@/utils/http-response";
-import type { Request, Response } from "express";
 import { NotFoundException } from "@/utils/app-error";
-import { epicCreateSchema, epicUpdateSchema } from "@/app/http/validators/epic.validator";
+import { ok } from "@/utils/http-response";
 
 export const epicController = {
   createEpic: asyncHandler(async (req: Request, res: Response) => {

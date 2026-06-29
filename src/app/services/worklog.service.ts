@@ -110,7 +110,7 @@ export const workLogService = {
       throw new BadRequestException("Hours logged must be greater than zero");
     }
 
-    const updateData: any = {};
+    const updateData: Record<string, number | Date | string | null> = {};
     if (data.hoursLogged !== undefined) updateData.hoursLogged = data.hoursLogged;
     if (data.loggedAt !== undefined) updateData.loggedAt = new Date(data.loggedAt);
     if (data.description !== undefined) updateData.description = data.description;

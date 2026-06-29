@@ -1,8 +1,9 @@
+import { Request, Response } from "express";
+import Redis from "ioredis";
+
 import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { config } from "@/utils/config";
-import { Request, Response } from "express";
-import Redis from "ioredis";
 
 const redisClient = new Redis({
   host: config("database.redis.host"),

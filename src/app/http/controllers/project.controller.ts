@@ -1,3 +1,5 @@
+import type { Request, Response } from "express";
+
 import { asyncHandler } from "@/app/http/middlewares/async-handler.middleware";
 import {
   verifyProjectAccess,
@@ -5,10 +7,6 @@ import {
   verifyWorkspaceAdmin,
   resolveSession,
 } from "@/app/http/middlewares/project-access.middleware";
-import { projectService } from "@/app/services/project.service";
-import { ok } from "@/utils/http-response";
-import { BadRequestException } from "@/utils/app-error";
-import type { Request, Response } from "express";
 import {
   projectCreateSchema,
   projectUpdateSchema,
@@ -16,6 +14,9 @@ import {
   vaultItemSchema,
   updateVaultItemSchema,
 } from "@/app/http/validators/project.validator";
+import { projectService } from "@/app/services/project.service";
+import { BadRequestException } from "@/utils/app-error";
+import { ok } from "@/utils/http-response";
 
 export const projectController = {
   createProject: asyncHandler(async (req: Request, res: Response) => {

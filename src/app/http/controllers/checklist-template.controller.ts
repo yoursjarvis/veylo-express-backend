@@ -1,11 +1,12 @@
 import { Request, Response } from "express";
+
 import { asyncHandler } from "@/app/http/middlewares/async-handler.middleware";
-import { checklistTemplateService } from "@/app/services/checklist-template.service";
+import { resolveSession } from "@/app/http/middlewares/project-access.middleware";
 import {
   checklistTemplateCreateSchema,
   checklistTemplateUpdateSchema,
 } from "@/app/http/validators/checklist-template.validator";
-import { resolveSession } from "@/app/http/middlewares/project-access.middleware";
+import { checklistTemplateService } from "@/app/services/checklist-template.service";
 
 export const checklistTemplateController = {
   getTemplates: asyncHandler(async (req: Request, res: Response) => {
@@ -28,7 +29,7 @@ export const checklistTemplateController = {
   }),
 
   updateTemplate: asyncHandler(async (req: Request, res: Response) => {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const validated = checklistTemplateUpdateSchema.parse(req.body);
     const template = await checklistTemplateService.updateTemplate(id, validated);
     return res.status(200).json({
@@ -39,7 +40,7 @@ export const checklistTemplateController = {
   }),
 
   deleteTemplate: asyncHandler(async (req: Request, res: Response) => {
-    const { id } = req.params;
+    const id = req.params.id as string;
     await checklistTemplateService.deleteTemplate(id);
     return res.status(200).json({
       success: true,
@@ -48,8 +49,8 @@ export const checklistTemplateController = {
   }),
 
   applyTemplate: asyncHandler(async (req: Request, res: Response) => {
-    const { taskId } = req.params;
-    const { templateId } = req.body;
+    const taskId = req.params.taskId as string;
+    const templateId = req.body.templateId as string;
     if (!templateId) {
       return res.status(400).json({ success: false, message: "templateId is required" });
     }

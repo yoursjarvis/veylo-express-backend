@@ -1,9 +1,11 @@
-import { workflowService } from "@/app/services/workflow.service";
 import { taskRepository } from "@/app/repositories/task.repository";
-import { notificationService } from "@/app/services/notification.service";
 import { automationService } from "@/app/services/automation.service";
+import { notificationService } from "@/app/services/notification.service";
+import { workflowService } from "@/app/services/workflow.service";
 import { mediaService } from "@/core/media";
 import { BadRequestException, NotFoundException, ForbiddenException } from "@/utils/app-error";
+
+import { Prisma } from "../../../generated/prisma/client.js";
 
 async function logActivity(
   taskId: string,
@@ -58,7 +60,7 @@ export const taskService = {
       reporterId?: string | null;
       parentTaskId?: string | null;
       position?: number;
-      customFields?: Record<string, any>;
+      customFields?: Record<string, unknown>;
       labelIds?: string[];
       isPrivate?: boolean;
     }
@@ -115,7 +117,7 @@ export const taskService = {
       reporterId: data.reporterId ?? null,
       parentTaskId: data.parentTaskId ?? null,
       position: data.position ?? 0,
-      customFields: data.customFields,
+      customFields: data.customFields as Prisma.InputJsonValue,
       isPrivate: data.isPrivate ?? false,
       labels:
         data.labelIds && data.labelIds.length > 0
@@ -139,7 +141,18 @@ export const taskService = {
     return task;
   },
 
-  async getTasks(projectId: string, query: any, userId?: string) {
+  async getTasks(projectId: string, query: {
+    sprintId?: string;
+    assigneeId?: string;
+    statusId?: string;
+    priority?: string;
+    type?: string;
+    search?: string;
+    epicId?: string;
+    milestoneId?: string;
+    labelId?: string;
+    filters?: string;
+  }, userId?: string) {
     const { sprintId, assigneeId, statusId, priority, type, search, epicId, milestoneId, labelId } = query;
 
     const project = await taskRepository.findProjectById(projectId);
@@ -152,7 +165,7 @@ export const taskService = {
       isAdmin = isOrgAdmin || isWorkspaceAdmin;
     }
 
-    const whereClause: any = {
+    const whereClause: { projectId: string; deletedAt: null; parentTaskId: null; AND?: Prisma.TaskWhereInput[]; [key: string]: unknown } = {
       projectId,
       deletedAt: null,
       parentTaskId: null,
@@ -226,7 +239,7 @@ export const taskService = {
     if (query.filters) {
       try {
         const filters = JSON.parse(query.filters as string);
-        const andConditions = [];
+        const andConditions: Prisma.TaskWhereInput[] = [];
         for (const filter of filters) {
           const { field, operator, values } = filter;
           if (!field || !operator) continue;
@@ -244,7 +257,7 @@ export const taskService = {
             continue;
           }
 
-          let condition: any = {};
+          let condition: Record<string, unknown> = {};
           
           if (field === 'labelId') {
             if (operator === 'empty') {
@@ -278,10 +291,10 @@ export const taskService = {
               condition[mappedField] = val === "null" ? { not: null } : { not: val };
               break;
             case 'is_any_of':
-              condition[mappedField] = { in: values.map((v: any) => v === "null" ? null : v) };
+              condition[mappedField] = { in: values.map((v: string) => v === "null" ? null : v) };
               break;
             case 'is_not_any_of':
-              condition[mappedField] = { notIn: values.map((v: any) => v === "null" ? null : v) };
+              condition[mappedField] = { notIn: values.map((v: string) => v === "null" ? null : v) };
               break;
             case 'empty':
               condition[mappedField] = null;
@@ -341,7 +354,7 @@ export const taskService = {
 
     const attachments = await mediaService.getMedia("Task", taskId, "task_attachments");
     const attachmentsWithUrls = await Promise.all(
-      attachments.map(async (a: any) => ({
+      attachments.map(async (a: { id: string; [key: string]: unknown }) => ({
         ...a,
         url: await mediaService.getUrl(a.id),
       }))
@@ -370,7 +383,7 @@ export const taskService = {
       assigneeId?: string | null;
       reporterId?: string | null;
       position?: number;
-      customFields?: Record<string, any>;
+      customFields?: Record<string, unknown>;
       labelIds?: string[];
       isPrivate?: boolean;
     }
@@ -388,7 +401,7 @@ export const taskService = {
       description: existingTask.description,
     };
 
-    const updateData: any = {};
+    const updateData: Record<string, unknown> = {};
 
     // Validate and audit status change
     if (data.statusId && data.statusId !== existingTask.statusId) {

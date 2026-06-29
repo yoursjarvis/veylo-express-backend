@@ -1,11 +1,12 @@
+import type { Request, Response } from "express";
+
 import { asyncHandler } from "@/app/http/middlewares/async-handler.middleware";
 import { verifyProjectAccess } from "@/app/http/middlewares/project-access.middleware";
+import { dependencyCreateSchema } from "@/app/http/validators/dependency.validator";
 import { dependencyRepository } from "@/app/repositories/dependency.repository";
 import { dependencyService } from "@/app/services/dependency.service";
-import { ok } from "@/utils/http-response";
-import type { Request, Response } from "express";
 import { BadRequestException, NotFoundException } from "@/utils/app-error";
-import { dependencyCreateSchema } from "@/app/http/validators/dependency.validator";
+import { ok } from "@/utils/http-response";
 
 export const dependencyController = {
   getDependencies: asyncHandler(async (req: Request, res: Response) => {

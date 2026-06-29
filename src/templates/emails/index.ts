@@ -1,11 +1,12 @@
 import { config } from "@/utils/config";
+
 import { forgotPasswordEmail, type ForgotPasswordEmailData } from "./forgot-password";
+import { inviteEmail, type InviteEmailData } from "./invite";
+import { notificationEmail, type NotificationEmailData } from "./notification";
 import { resetPasswordSuccessEmail, type ResetPasswordSuccessEmailData } from "./reset-password-success";
+import { twoFactorOtpEmail, type TwoFactorOtpData } from "./two-factor-otp";
 import { verifyEmailEmail, type VerifyEmailData } from "./verify-email";
 import { welcomeEmail, type WelcomeEmailData } from "./welcome";
-import { inviteEmail, type InviteEmailData } from "./invite";
-import { twoFactorOtpEmail, type TwoFactorOtpData } from "./two-factor-otp";
-import { notificationEmail, type NotificationEmailData } from "./notification";
 
 export type EmailTemplateMap = {
   welcome: WelcomeEmailData;

@@ -1,8 +1,10 @@
 import "dotenv/config";
 import readline from "readline";
-import prisma from "../lib/prisma";
-import { hashPassword } from "better-auth/crypto";
+
 import { faker } from "@faker-js/faker";
+import { hashPassword } from "better-auth/crypto";
+
+import prisma from "../lib/prisma";
 
 const PASSWORD = "123456789012";
 
@@ -265,11 +267,11 @@ async function main() {
   console.log(`Created ${projects.length} projects: ${projects.map(p => p.projectKey).join(", ")}`);
 
   // 7. Seed project metadata per project (statuses, epics, sprints, milestones, labels)
-  const allProjectStatuses: Record<string, any[]> = {};
-  const allProjectEpics: Record<string, any[]> = {};
-  const allProjectSprints: Record<string, any[]> = {};
-  const allProjectMilestones: Record<string, any[]> = {};
-  const allProjectLabels: Record<string, any[]> = {};
+  const allProjectStatuses: Record<string, { id: string }[]> = {};
+  const allProjectEpics: Record<string, { id: string }[]> = {};
+  const allProjectSprints: Record<string, { id: string }[]> = {};
+  const allProjectMilestones: Record<string, { id: string }[]> = {};
+  const allProjectLabels: Record<string, { id: string }[]> = {};
 
   for (const proj of projects) {
     // A. Task Statuses

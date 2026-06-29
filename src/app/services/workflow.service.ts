@@ -6,7 +6,7 @@ export const workflowService = {
     projectId: string,
     fromStatusId: string,
     toStatusId: string,
-    userId: string
+    _userId: string
   ) {
     // If no transition is defined for this project, we allow all transitions (default behavior)
     // Or you can implement a "strict mode" where no transitions are allowed unless defined.
@@ -31,7 +31,13 @@ export const workflowService = {
     return true;
   },
 
-  async createTransition(data: any) {
+  async createTransition(data: {
+    projectId: string;
+    organizationId: string;
+    fromStatusId: string;
+    toStatusId: string;
+    requiredRoleId?: string | null;
+  }) {
     return workflowRepository.createTransition(data);
   },
 

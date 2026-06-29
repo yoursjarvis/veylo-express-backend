@@ -1,8 +1,9 @@
+import { Resend } from "resend";
+
 import type { MailDriver } from "@/core/mail/contracts/mail-driver";
 import type { MailMessage, MailSendResult } from "@/core/mail/mail.types";
 import { logger } from "@/lib/logger";
 import { config } from "@/utils/config";
-import { Resend } from "resend";
 
 function resolveResendApiKey(): string | undefined {
   const apiKey = config("mail.mailers.resend.apiKey")?.trim();

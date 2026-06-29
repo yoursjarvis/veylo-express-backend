@@ -1,5 +1,6 @@
-import { config } from "@/utils/config";
 import type { NextFunction, Request, Response } from "express";
+
+import { config } from "@/utils/config";
 
 type RateLimitKey = string;
 

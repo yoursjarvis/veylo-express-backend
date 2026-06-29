@@ -13,6 +13,7 @@ import {
   type EmailTemplateName,
 } from "@/templates/emails";
 import { config } from "@/utils/config";
+
 import { ResendDriver } from "./drivers/resend.driver";
 import { SmtpDriver } from "./drivers/smtp.driver";
 
@@ -52,7 +53,7 @@ export async function sendMailMessage(
   return result;
 }
 
-class MailBuilder<N extends EmailTemplateName | undefined = undefined> {
+class MailBuilder<_N extends EmailTemplateName | undefined = undefined> {
   private toList: MailAddress[] = [];
   private fromAddress: MailAddress = resolveFrom();
   private subjectLine: string | undefined;
@@ -138,7 +139,7 @@ class MailBuilder<N extends EmailTemplateName | undefined = undefined> {
 
     try {
       const job = await mailQueue.add(
-        "send" as any,
+        "send",
         { message },
         {
           attempts: config("mail.queue.attempts"),

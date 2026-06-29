@@ -1,11 +1,12 @@
+import type { Request, Response } from "express";
+
 import { asyncHandler } from "@/app/http/middlewares/async-handler.middleware";
 import { verifyProjectAccess } from "@/app/http/middlewares/project-access.middleware";
+import { milestoneCreateSchema, milestoneUpdateSchema } from "@/app/http/validators/milestone.validator";
 import { milestoneRepository } from "@/app/repositories/milestone.repository";
 import { milestoneService } from "@/app/services/milestone.service";
-import { ok } from "@/utils/http-response";
-import type { Request, Response } from "express";
 import { NotFoundException } from "@/utils/app-error";
-import { milestoneCreateSchema, milestoneUpdateSchema } from "@/app/http/validators/milestone.validator";
+import { ok } from "@/utils/http-response";
 
 export const milestoneController = {
   createMilestone: asyncHandler(async (req: Request, res: Response) => {

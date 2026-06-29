@@ -1,7 +1,8 @@
-import type { MailMessage } from "@/core/mail/mail.types";
-import { config } from "@/utils/config";
 import { Queue } from "bullmq";
 import { BullMQOtel } from "bullmq-otel";
+
+import type { MailMessage } from "@/core/mail/mail.types";
+import { config } from "@/utils/config";
 
 export type MailQueuePayload = {
   message: MailMessage;

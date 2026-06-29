@@ -1,11 +1,12 @@
+import type { Request, Response } from "express";
+
 import { asyncHandler } from "@/app/http/middlewares/async-handler.middleware";
 import { verifyProjectAccess } from "@/app/http/middlewares/project-access.middleware";
+import { sprintCreateSchema, sprintUpdateSchema } from "@/app/http/validators/sprint.validator";
 import { sprintRepository } from "@/app/repositories/sprint.repository";
 import { sprintService } from "@/app/services/sprint.service";
-import { ok } from "@/utils/http-response";
-import type { Request, Response } from "express";
 import { NotFoundException } from "@/utils/app-error";
-import { sprintCreateSchema, sprintUpdateSchema } from "@/app/http/validators/sprint.validator";
+import { ok } from "@/utils/http-response";
 
 export const sprintController = {
   createSprint: asyncHandler(async (req: Request, res: Response) => {

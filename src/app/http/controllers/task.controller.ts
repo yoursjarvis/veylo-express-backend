@@ -1,11 +1,12 @@
+import type { Request, Response } from "express";
+
 import { asyncHandler } from "@/app/http/middlewares/async-handler.middleware";
 import { verifyProjectAccess, resolveSession } from "@/app/http/middlewares/project-access.middleware";
+import { taskCreateSchema, taskUpdateSchema } from "@/app/http/validators/task.validator";
 import { taskService } from "@/app/services/task.service";
 import { mediaService } from "@/core/media";
 import { BadRequestException } from "@/utils/app-error";
 import { ok } from "@/utils/http-response";
-import type { Request, Response } from "express";
-import { taskCreateSchema, taskUpdateSchema } from "@/app/http/validators/task.validator";
 
 export const taskController = {
   createTask: asyncHandler(async (req: Request, res: Response) => {

@@ -7,6 +7,7 @@ import {
   PutObjectCommandInput,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+
 import { StorageDriver } from "../contracts/storage-driver";
 import { PutOptions, StorageVisibility } from "../storage.types";
 
@@ -70,7 +71,7 @@ export class S3Driver implements StorageDriver {
       if (!response.Body) return null;
       const bytes = await response.Body.transformToByteArray();
       return Buffer.from(bytes);
-    } catch (error) {
+    } catch (_error) {
       return null;
     }
   }
@@ -84,7 +85,7 @@ export class S3Driver implements StorageDriver {
         }),
       );
       return true;
-    } catch (error) {
+    } catch (_error) {
       return false;
     }
   }
@@ -109,7 +110,7 @@ export class S3Driver implements StorageDriver {
     return `https://${this.bucket}.s3.${this.client.config.region}.amazonaws.com/${path}`;
   }
 
-  path(path: string): string {
+  path(_path: string): string {
     throw new Error("This driver does not support retrieving paths.");
   }
 
@@ -127,8 +128,8 @@ export class S3Driver implements StorageDriver {
   }
 
   async setVisibility(
-    path: string,
-    visibility: StorageVisibility,
+    _path: string,
+    _visibility: StorageVisibility,
   ): Promise<void> {
     if (!this.supportsAcl) return;
     // For S3, we would typically use PutObjectAclCommand.

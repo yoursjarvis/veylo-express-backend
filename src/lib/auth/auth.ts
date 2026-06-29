@@ -1,12 +1,14 @@
+import { betterAuth, type SecondaryStorage } from "better-auth";
+import { prismaAdapter } from "better-auth/adapters/prisma";
+import { admin, lastLoginMethod, organization, twoFactor } from "better-auth/plugins";
+
 import { mailService } from "@/core/mail";
+import { logger } from "@/lib/logger";
 import prisma, { basePrisma } from "@/lib/prisma";
 import { redis } from "@/lib/redis";
 import { config } from "@/utils/config";
 
-import { logger } from "@/lib/logger";
-import { betterAuth, type SecondaryStorage } from "better-auth";
-import { prismaAdapter } from "better-auth/adapters/prisma";
-import { lastLoginMethod, organization, twoFactor, admin } from "better-auth/plugins";
+
 import { ac, roles } from "./permissions";
 
 function resolveTrustedOrigins(): string[] {
@@ -194,11 +196,17 @@ export const auth = betterAuth({
     google: {
       clientId: config("auth.social.google.clientId"),
       clientSecret: config("auth.social.google.clientSecret"),
-      mapProfileToUser: (profile: any) => {
+      mapProfileToUser: (profile: {
+        name?: string | null;
+        email?: string | null;
+        picture?: string | null;
+        given_name?: string | null;
+        family_name?: string | null;
+      }) => {
         return {
-          name: profile.name,
-          email: profile.email,
-          image: profile.picture,
+          name: profile.name || undefined,
+          email: profile.email || undefined,
+          image: profile.picture || undefined,
           firstName: profile.given_name || profile.name?.split(" ")[0] || "User",
           lastName: profile.family_name || profile.name?.split(" ").slice(1).join(" ") || "Name",
         };
@@ -207,12 +215,17 @@ export const auth = betterAuth({
     github: {
       clientId: config("auth.social.github.clientId"),
       clientSecret: config("auth.social.github.clientSecret"),
-      mapProfileToUser: (profile: any) => {
+      mapProfileToUser: (profile: {
+        name?: string | null;
+        login?: string | null;
+        email?: string | null;
+        avatar_url?: string | null;
+      }) => {
         const parts = (profile.name || profile.login || "").split(" ");
         return {
-          name: profile.name || profile.login,
-          email: profile.email,
-          image: profile.avatar_url,
+          name: profile.name || profile.login || undefined,
+          email: profile.email || undefined,
+          image: profile.avatar_url || undefined,
           firstName: parts[0] || "User",
           lastName: parts.slice(1).join(" ") || "Name",
         };

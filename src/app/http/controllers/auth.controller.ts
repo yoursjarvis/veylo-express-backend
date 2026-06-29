@@ -1,3 +1,5 @@
+import type { Request, Response } from "express";
+
 import { asyncHandler } from "@/app/http/middlewares/async-handler.middleware";
 import {
   changePasswordSchema,
@@ -10,7 +12,6 @@ import {
 import { authService } from "@/app/services/auth.service";
 import { config } from "@/utils/config";
 import { ok } from "@/utils/http-response";
-import type { Request, Response } from "express";
 
 export const authController = {
   signup: asyncHandler(async (req: Request, res: Response) => {

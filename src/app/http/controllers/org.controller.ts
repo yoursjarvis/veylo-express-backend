@@ -1,9 +1,10 @@
+import type { Request, Response } from "express";
+
 import { asyncHandler } from "@/app/http/middlewares/async-handler.middleware";
+import { setupOrgSchema } from "@/app/http/validators/org.validator";
 import { orgService } from "@/app/services/org.service";
 import { auth } from "@/lib/auth/auth";
 import { betterAuthHeaders } from "@/lib/auth/node-headers";
-import type { Request, Response } from "express";
-import { setupOrgSchema } from "@/app/http/validators/org.validator";
 
 export const orgController = {
   setupOrganization: asyncHandler(async (req: Request, res: Response) => {

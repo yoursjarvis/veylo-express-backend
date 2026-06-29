@@ -97,7 +97,7 @@ export const workspaceRepository = {
     });
   },
 
-  updateWorkspace(id: string, data: any) {
+  updateWorkspace(id: string, data: Record<string, unknown>) {
     return prisma.workspace.update({
       where: { id },
       data,

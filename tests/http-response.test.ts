@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+
 import { fail } from "../src/utils/http-response";
 
 describe("http-response", () => {

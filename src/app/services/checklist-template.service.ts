@@ -1,7 +1,7 @@
-import prisma from "@/lib/prisma";
-import { NotFoundException } from "@/utils/app-error";
 import { taskExtrasRepository } from "@/app/repositories/task-extras.repository";
 import { taskRepository } from "@/app/repositories/task.repository";
+import prisma from "@/lib/prisma";
+import { NotFoundException } from "@/utils/app-error";
 
 export const checklistTemplateService = {
   async getTemplates(workspaceId: string) {
@@ -47,7 +47,7 @@ export const checklistTemplateService = {
       items?: string[];
     }
   ) {
-    const template = await this.getTemplate(id);
+    await this.getTemplate(id);
     return prisma.checklistTemplate.update({
       where: { id },
       data,

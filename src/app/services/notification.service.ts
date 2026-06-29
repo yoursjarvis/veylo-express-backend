@@ -1,6 +1,6 @@
 import { notificationRepository } from "@/app/repositories/notification.repository";
-import { NotFoundException } from "@/utils/app-error";
 import prisma from "@/lib/prisma";
+import { NotFoundException } from "@/utils/app-error";
 
 export const notificationService = {
   // Controller service methods

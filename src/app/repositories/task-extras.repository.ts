@@ -39,7 +39,7 @@ export const taskExtrasRepository = {
     });
   },
 
-  async updateStatus(id: string, data: Record<string, any>) {
+  async updateStatus(id: string, data: Record<string, unknown>) {
     return prisma.taskStatus.update({
       where: { id },
       data,
@@ -91,7 +91,7 @@ export const taskExtrasRepository = {
     });
   },
 
-  async updateSubtask(id: string, data: Record<string, any>) {
+  async updateSubtask(id: string, data: Record<string, unknown>) {
     return prisma.task.update({
       where: { id },
       data,

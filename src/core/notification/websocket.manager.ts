@@ -1,10 +1,13 @@
-import { WebSocketServer, WebSocket } from "ws";
 import type { Server } from "http";
-import { auth } from "@/lib/auth/auth";
+
 import { fromNodeHeaders } from "better-auth/node";
+import Redis from "ioredis";
+import { WebSocketServer, WebSocket } from "ws";
+
+import { auth } from "@/lib/auth/auth";
 import { logger } from "@/lib/logger";
 import { config } from "@/utils/config";
-import Redis from "ioredis";
+
 
 export class WebSocketManager {
   private static instance: WebSocketManager;
@@ -168,7 +171,7 @@ export class WebSocketManager {
   /**
    * Send a message locally to all connected sockets of a user.
    */
-  private sendLocalToUser(userId: string, event: string, data: any): void {
+  private sendLocalToUser(userId: string, event: string, data: unknown): void {
     const userSockets = this.clients.get(userId);
     if (!userSockets || userSockets.size === 0) {
       return;
@@ -185,7 +188,7 @@ export class WebSocketManager {
   /**
    * Send a message locally to all connected sockets.
    */
-  private sendLocalToAll(event: string, data: any): void {
+  private sendLocalToAll(event: string, data: unknown): void {
     const payload = JSON.stringify({ event, data });
     this.clients.forEach((userSockets) => {
       for (const ws of userSockets) {
@@ -199,7 +202,7 @@ export class WebSocketManager {
   /**
    * Broadcast a message to a specific user.
    */
-  public broadcastToUser(userId: string, event: string, data: any): void {
+  public broadcastToUser(userId: string, event: string, data: unknown): void {
     const broadcastDriver = config("notification.broadcast.driver");
 
     if (broadcastDriver === "redis" && this.pubRedis) {
@@ -214,7 +217,7 @@ export class WebSocketManager {
   /**
    * Broadcast a message to all users.
    */
-  public broadcastToAll(event: string, data: any): void {
+  public broadcastToAll(event: string, data: unknown): void {
     const broadcastDriver = config("notification.broadcast.driver");
 
     if (broadcastDriver === "redis" && this.pubRedis) {
