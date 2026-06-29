@@ -10,8 +10,6 @@ import { logger } from "@/lib/logger";
 import prisma from "@/lib/prisma";
 import { config } from "@/utils/config";
 
-
-
 export const mediaWorker = new Worker<MediaQueuePayload>(
   "media",
   async (job) => {
@@ -23,13 +21,22 @@ export const mediaWorker = new Worker<MediaQueuePayload>(
     }
 
     const root = config("storage.disks.local.root");
-    const relativePath = path.join(media.modelType, media.collectionName, media.fileName);
+    const relativePath = path.join(
+      media.modelType,
+      media.collectionName,
+      media.fileName,
+    );
     const fullPath = path.join(process.cwd(), root, relativePath);
 
     try {
       const buffer = await fs.readFile(fullPath);
       const thumbFileName = `thumb-${media.fileName}`;
-      const thumbRelativePath = path.join(media.modelType, media.collectionName, "conversions", thumbFileName);
+      const thumbRelativePath = path.join(
+        media.modelType,
+        media.collectionName,
+        "conversions",
+        thumbFileName,
+      );
       const thumbFullPath = path.join(process.cwd(), root, thumbRelativePath);
 
       await fs.mkdir(path.dirname(thumbFullPath), { recursive: true });
@@ -38,7 +45,11 @@ export const mediaWorker = new Worker<MediaQueuePayload>(
         .resize(200, 200, { fit: "inside", withoutEnlargement: true })
         .toFile(thumbFullPath);
 
-      const generatedConversions = (media.generatedConversions as Record<string, { fileName: string; size: number }>) || {};
+      const generatedConversions =
+        (media.generatedConversions as Record<
+          string,
+          { fileName: string; size: number }
+        >) || {};
       generatedConversions.thumb = {
         fileName: thumbFileName,
         size: (await fs.stat(thumbFullPath)).size,
@@ -51,7 +62,10 @@ export const mediaWorker = new Worker<MediaQueuePayload>(
         },
       });
 
-      logger.info({ mediaId, conversion: "thumb" }, "[MEDIA] Conversion generated");
+      logger.info(
+        { mediaId, conversion: "thumb" },
+        "[MEDIA] Conversion generated",
+      );
     } catch (error) {
       logger.error({ error, mediaId }, "[MEDIA] Conversion failed");
       throw error;
@@ -67,6 +81,5 @@ export const mediaWorker = new Worker<MediaQueuePayload>(
     },
     concurrency: 5,
     telemetry: new BullMQOtel(),
-  }
+  },
 );
-

@@ -3,7 +3,7 @@ type EnumValues<T extends readonly string[]> = T[number];
 class EnvBuilder {
   constructor(
     private key: string,
-    private value: string | undefined
+    private value: string | undefined,
   ) {}
 
   private fail(message: string): never {
@@ -80,7 +80,7 @@ class EnvBuilder {
 
   enum<const T extends readonly string[]>(
     values: T,
-    defaultValue?: EnumValues<T>
+    defaultValue?: EnumValues<T>,
   ): EnumValues<T> {
     const val = this.value ?? defaultValue;
 

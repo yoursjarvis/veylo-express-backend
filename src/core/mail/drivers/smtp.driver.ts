@@ -2,7 +2,11 @@ import nodemailer from "nodemailer";
 import type SMTPTransport from "nodemailer/lib/smtp-transport";
 
 import type { MailDriver } from "@/core/mail/contracts/mail-driver";
-import type { MailAddress, MailMessage, MailSendResult } from "@/core/mail/mail.types";
+import type {
+  MailAddress,
+  MailMessage,
+  MailSendResult,
+} from "@/core/mail/mail.types";
 import { logger } from "@/lib/logger";
 import { config } from "@/utils/config";
 

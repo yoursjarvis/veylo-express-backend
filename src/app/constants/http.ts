@@ -90,8 +90,7 @@ export const HTTP_STATUS = {
 /**
  * Union type of all valid HTTP status numbers
  */
-export type HttpStatusCodeType =
-  (typeof HTTP_STATUS)[keyof typeof HTTP_STATUS];
+export type HttpStatusCodeType = (typeof HTTP_STATUS)[keyof typeof HTTP_STATUS];
 
 /**
  * Helpful status groups
@@ -116,33 +115,26 @@ export const HTTP_STATUS_GROUP = {
 /**
  * Helpers
  */
-export const isInformational = (code: number) =>
-  code >= 100 && code <= 199;
+export const isInformational = (code: number) => code >= 100 && code <= 199;
 
-export const isSuccess = (code: number) =>
-  code >= 200 && code <= 299;
+export const isSuccess = (code: number) => code >= 200 && code <= 299;
 
-export const isRedirect = (code: number) =>
-  code >= 300 && code <= 399;
+export const isRedirect = (code: number) => code >= 300 && code <= 399;
 
-export const isClientError = (code: number) =>
-  code >= 400 && code <= 499;
+export const isClientError = (code: number) => code >= 400 && code <= 499;
 
-export const isServerError = (code: number) =>
-  code >= 500 && code <= 599;
+export const isServerError = (code: number) => code >= 500 && code <= 599;
 
-export const isErrorStatus = (code: number) =>
-  code >= 400 && code <= 599;
+export const isErrorStatus = (code: number) => code >= 400 && code <= 599;
 
 /**
  * Reverse lookup utility
  * Example: getHttpStatusName(404) => "NOT_FOUND"
  */
 export const getHttpStatusName = (
-  code: number
+  code: number,
 ): keyof typeof HTTP_STATUS | undefined => {
   return Object.keys(HTTP_STATUS).find(
-    (key) =>
-      HTTP_STATUS[key as keyof typeof HTTP_STATUS] === code
+    (key) => HTTP_STATUS[key as keyof typeof HTTP_STATUS] === code,
   ) as keyof typeof HTTP_STATUS | undefined;
 };

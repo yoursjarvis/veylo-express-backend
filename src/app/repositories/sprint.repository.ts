@@ -86,7 +86,7 @@ export const sprintRepository = {
       action: string;
       oldValue?: string;
       newValue?: string;
-    }[]
+    }[],
   ) {
     return prisma.taskActivity.createMany({
       data: logPayloads,

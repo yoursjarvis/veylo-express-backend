@@ -1,7 +1,11 @@
 import prisma from "@/lib/prisma";
 
 export const workflowRepository = {
-  async findTransition(projectId: string, fromStatusId: string, toStatusId: string) {
+  async findTransition(
+    projectId: string,
+    fromStatusId: string,
+    toStatusId: string,
+  ) {
     return prisma.workflowTransition.findUnique({
       where: {
         projectId_fromStatusId_toStatusId: {

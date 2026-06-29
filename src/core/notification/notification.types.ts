@@ -43,15 +43,21 @@ export abstract class Notification {
   /**
    * Get the mail representation of the notification.
    */
-  toMail?(notifiable: Notifiable): MailNotificationPayload | Promise<MailNotificationPayload>;
+  toMail?(
+    notifiable: Notifiable,
+  ): MailNotificationPayload | Promise<MailNotificationPayload>;
 
   /**
    * Get the database representation of the notification.
    */
-  toDatabase?(notifiable: Notifiable): DatabaseNotificationPayload | Promise<DatabaseNotificationPayload>;
+  toDatabase?(
+    notifiable: Notifiable,
+  ): DatabaseNotificationPayload | Promise<DatabaseNotificationPayload>;
 
   /**
    * Get the broadcast representation of the notification.
    */
-  toBroadcast?(notifiable: Notifiable): BroadcastNotificationPayload | Promise<BroadcastNotificationPayload>;
+  toBroadcast?(
+    notifiable: Notifiable,
+  ): BroadcastNotificationPayload | Promise<BroadcastNotificationPayload>;
 }

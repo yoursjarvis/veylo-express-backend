@@ -47,8 +47,13 @@ vi.mock("../src/lib/auth/node-headers", () => ({
   betterAuthHeaders: vi.fn(),
 }));
 
-vi.mock("@/lib/prisma", () => ({ default: prismaMock, basePrisma: prismaMock }));
-vi.mock("../src/core/media/media.service", () => ({ mediaService: mockMediaService }));
+vi.mock("@/lib/prisma", () => ({
+  default: prismaMock,
+  basePrisma: prismaMock,
+}));
+vi.mock("../src/core/media/media.service", () => ({
+  mediaService: mockMediaService,
+}));
 vi.mock("../src/lib/redis", () => ({
   redis: {
     del: vi.fn().mockResolvedValue(1),
@@ -73,7 +78,9 @@ describe("orgController", () => {
     it("returns 401 Unauthorized if no active user session is found", async () => {
       mockGetSession.mockResolvedValueOnce(null);
 
-      const req: any = { body: { name: "Org Name", slug: "slug1", workspaceName: "ws1" } };
+      const req: any = {
+        body: { name: "Org Name", slug: "slug1", workspaceName: "ws1" },
+      };
       const res = createRes();
 
       await (orgController.setupOrganization as any)(req, res);
@@ -83,57 +90,86 @@ describe("orgController", () => {
     });
 
     it("returns 401 Unauthorized if session is stale in DB", async () => {
-      mockGetSession.mockResolvedValueOnce({ user: { id: "u1" }, session: { id: "s1" } });
+      mockGetSession.mockResolvedValueOnce({
+        user: { id: "u1" },
+        session: { id: "s1" },
+      });
       prismaMock.user.findUnique.mockResolvedValueOnce(null);
       prismaMock.session.findUnique.mockResolvedValueOnce(null);
-
-      const req: any = { body: { name: "Org Name", slug: "slug1", workspaceName: "ws1" } };
-      const res = createRes();
-
-      await expect((orgController.setupOrganization as any)(req, res)).rejects.toThrow(
-        "Unauthorized: Session is stale or invalid in the database. Please log out and log in again."
-      );
-    });
-
-    it("returns 400 Bad Request if user already owns an org", async () => {
-      mockGetSession.mockResolvedValueOnce({ user: { id: "u1" }, session: { id: "s1" } });
-      prismaMock.user.findUnique.mockResolvedValueOnce({ id: "u1" });
-      prismaMock.session.findUnique.mockResolvedValueOnce({ id: "s1" });
-      prismaMock.member.findFirst.mockResolvedValueOnce({ id: "mem1", role: "owner" });
-
-      const req: any = { body: { name: "Org Name", slug: "slug1", workspaceName: "ws1" } };
-      const res = createRes();
-
-      await expect((orgController.setupOrganization as any)(req, res)).rejects.toThrow(
-        "You have already created an organization."
-      );
-    });
-
-    it("returns 400 Bad Request if slug is already taken", async () => {
-      mockGetSession.mockResolvedValueOnce({ user: { id: "u1" }, session: { id: "s1" } });
-      prismaMock.user.findUnique.mockResolvedValueOnce({ id: "u1" });
-      prismaMock.session.findUnique.mockResolvedValueOnce({ id: "s1" });
-      prismaMock.member.findFirst.mockResolvedValueOnce(null);
-      prismaMock.organization.findUnique.mockResolvedValueOnce({ id: "org1", slug: "slug1" });
 
       const req: any = {
         body: { name: "Org Name", slug: "slug1", workspaceName: "ws1" },
       };
       const res = createRes();
 
-      await expect((orgController.setupOrganization as any)(req, res)).rejects.toThrow(
-        "This URL slug is already taken."
+      await expect(
+        (orgController.setupOrganization as any)(req, res),
+      ).rejects.toThrow(
+        "Unauthorized: Session is stale or invalid in the database. Please log out and log in again.",
       );
     });
 
+    it("returns 400 Bad Request if user already owns an org", async () => {
+      mockGetSession.mockResolvedValueOnce({
+        user: { id: "u1" },
+        session: { id: "s1" },
+      });
+      prismaMock.user.findUnique.mockResolvedValueOnce({ id: "u1" });
+      prismaMock.session.findUnique.mockResolvedValueOnce({ id: "s1" });
+      prismaMock.member.findFirst.mockResolvedValueOnce({
+        id: "mem1",
+        role: "owner",
+      });
+
+      const req: any = {
+        body: { name: "Org Name", slug: "slug1", workspaceName: "ws1" },
+      };
+      const res = createRes();
+
+      await expect(
+        (orgController.setupOrganization as any)(req, res),
+      ).rejects.toThrow("You have already created an organization.");
+    });
+
+    it("returns 400 Bad Request if slug is already taken", async () => {
+      mockGetSession.mockResolvedValueOnce({
+        user: { id: "u1" },
+        session: { id: "s1" },
+      });
+      prismaMock.user.findUnique.mockResolvedValueOnce({ id: "u1" });
+      prismaMock.session.findUnique.mockResolvedValueOnce({ id: "s1" });
+      prismaMock.member.findFirst.mockResolvedValueOnce(null);
+      prismaMock.organization.findUnique.mockResolvedValueOnce({
+        id: "org1",
+        slug: "slug1",
+      });
+
+      const req: any = {
+        body: { name: "Org Name", slug: "slug1", workspaceName: "ws1" },
+      };
+      const res = createRes();
+
+      await expect(
+        (orgController.setupOrganization as any)(req, res),
+      ).rejects.toThrow("This URL slug is already taken.");
+    });
+
     it("successfully creates organization, workspace, and owner member", async () => {
-      mockGetSession.mockResolvedValueOnce({ user: { id: "u1" }, session: { id: "s1", token: "tok1" } });
+      mockGetSession.mockResolvedValueOnce({
+        user: { id: "u1" },
+        session: { id: "s1", token: "tok1" },
+      });
       prismaMock.user.findUnique.mockResolvedValueOnce({ id: "u1" });
       prismaMock.session.findUnique.mockResolvedValueOnce({ id: "s1" });
       prismaMock.member.findFirst.mockResolvedValueOnce(null);
       prismaMock.organization.findUnique.mockResolvedValueOnce(null);
 
-      const createdOrg = { id: "org-new", name: "New Org", slug: "new-org", logo: null };
+      const createdOrg = {
+        id: "org-new",
+        name: "New Org",
+        slug: "new-org",
+        logo: null,
+      };
       const createdWorkspace = { id: "ws-new", name: "New Ws", slug: "new-ws" };
 
       prismaMock.organization.create.mockResolvedValueOnce(createdOrg);
@@ -165,13 +201,21 @@ describe("orgController", () => {
     });
 
     it("handles logo uploading if req.file is present", async () => {
-      mockGetSession.mockResolvedValueOnce({ user: { id: "u1" }, session: { id: "s1", token: "tok1" } });
+      mockGetSession.mockResolvedValueOnce({
+        user: { id: "u1" },
+        session: { id: "s1", token: "tok1" },
+      });
       prismaMock.user.findUnique.mockResolvedValueOnce({ id: "u1" });
       prismaMock.session.findUnique.mockResolvedValueOnce({ id: "s1" });
       prismaMock.member.findFirst.mockResolvedValueOnce(null);
       prismaMock.organization.findUnique.mockResolvedValueOnce(null);
 
-      const createdOrg = { id: "org-new", name: "New Org", slug: "new-org", logo: null };
+      const createdOrg = {
+        id: "org-new",
+        name: "New Org",
+        slug: "new-org",
+        logo: null,
+      };
       const createdWorkspace = { id: "ws-new", name: "New Ws", slug: "new-ws" };
 
       prismaMock.organization.create.mockResolvedValueOnce(createdOrg);
@@ -185,7 +229,12 @@ describe("orgController", () => {
 
       const req: any = {
         body: { name: "New Org", slug: "new-org", workspaceName: "New Ws" },
-        file: { originalname: "logo.png", mimetype: "image/png", buffer: Buffer.from(""), size: 10 },
+        file: {
+          originalname: "logo.png",
+          mimetype: "image/png",
+          buffer: Buffer.from(""),
+          size: 10,
+        },
       };
       const res = createRes();
 

@@ -5,16 +5,18 @@
     "description": "Email/password auth endpoints for Express + Better Auth + Prisma.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
-  "variable": [
-    { "key": "baseUrl", "value": "http://localhost:4000" }
-  ],
+  "variable": [{ "key": "baseUrl", "value": "http://localhost:4000" }],
   "item": [
     {
       "name": "Auth - Signup",
       "request": {
         "method": "POST",
         "header": [{ "key": "Content-Type", "value": "application/json" }],
-        "url": { "raw": "{{baseUrl}}/api/v1/auth/signup", "host": ["{{baseUrl}}"], "path": ["api", "v1", "auth", "signup"] },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/auth/signup",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "auth", "signup"]
+        },
         "body": {
           "mode": "raw",
           "raw": "{\n  \"first_name\": \"John\",\n  \"last_name\": \"Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"ChangeMe123!ChangeMe123!\"\n}"
@@ -38,7 +40,11 @@
       "request": {
         "method": "POST",
         "header": [{ "key": "Content-Type", "value": "application/json" }],
-        "url": { "raw": "{{baseUrl}}/api/v1/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "v1", "auth", "login"] },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/auth/login",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "auth", "login"]
+        },
         "body": {
           "mode": "raw",
           "raw": "{\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"ChangeMe123!ChangeMe123!\"\n}"
@@ -49,28 +55,44 @@
       "name": "Auth - Me",
       "request": {
         "method": "GET",
-        "url": { "raw": "{{baseUrl}}/api/v1/auth/me", "host": ["{{baseUrl}}"], "path": ["api", "v1", "auth", "me"] }
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/auth/me",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "auth", "me"]
+        }
       }
     },
     {
       "name": "Auth - Refresh",
       "request": {
         "method": "POST",
-        "url": { "raw": "{{baseUrl}}/api/v1/auth/refresh", "host": ["{{baseUrl}}"], "path": ["api", "v1", "auth", "refresh"] }
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/auth/refresh",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "auth", "refresh"]
+        }
       }
     },
     {
       "name": "Auth - Logout",
       "request": {
         "method": "POST",
-        "url": { "raw": "{{baseUrl}}/api/v1/auth/logout", "host": ["{{baseUrl}}"], "path": ["api", "v1", "auth", "logout"] }
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/auth/logout",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "auth", "logout"]
+        }
       }
     },
     {
       "name": "Auth - Logout All",
       "request": {
         "method": "POST",
-        "url": { "raw": "{{baseUrl}}/api/v1/auth/logout-all", "host": ["{{baseUrl}}"], "path": ["api", "v1", "auth", "logout-all"] }
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/auth/logout-all",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "auth", "logout-all"]
+        }
       }
     },
     {
@@ -78,7 +100,11 @@
       "request": {
         "method": "POST",
         "header": [{ "key": "Content-Type", "value": "application/json" }],
-        "url": { "raw": "{{baseUrl}}/api/v1/auth/forgot-password", "host": ["{{baseUrl}}"], "path": ["api", "v1", "auth", "forgot-password"] },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/auth/forgot-password",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "auth", "forgot-password"]
+        },
         "body": {
           "mode": "raw",
           "raw": "{\n  \"email\": \"john.doe@example.com\",\n  \"redirect_to\": \"http://localhost:3000/reset-password\"\n}"
@@ -90,7 +116,11 @@
       "request": {
         "method": "POST",
         "header": [{ "key": "Content-Type", "value": "application/json" }],
-        "url": { "raw": "{{baseUrl}}/api/v1/auth/reset-password", "host": ["{{baseUrl}}"], "path": ["api", "v1", "auth", "reset-password"] },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/auth/reset-password",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "auth", "reset-password"]
+        },
         "body": {
           "mode": "raw",
           "raw": "{\n  \"token\": \"{{token}}\",\n  \"new_password\": \"ChangeMe456!ChangeMe456!\"\n}"
@@ -102,7 +132,11 @@
       "request": {
         "method": "POST",
         "header": [{ "key": "Content-Type", "value": "application/json" }],
-        "url": { "raw": "{{baseUrl}}/api/v1/auth/change-password", "host": ["{{baseUrl}}"], "path": ["api", "v1", "auth", "change-password"] },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/auth/change-password",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "auth", "change-password"]
+        },
         "body": {
           "mode": "raw",
           "raw": "{\n  \"current_password\": \"ChangeMe123!ChangeMe123!\",\n  \"new_password\": \"ChangeMe456!ChangeMe456!\"\n}"
@@ -113,7 +147,11 @@
       "name": "Auth - Sessions",
       "request": {
         "method": "GET",
-        "url": { "raw": "{{baseUrl}}/api/v1/auth/sessions", "host": ["{{baseUrl}}"], "path": ["api", "v1", "auth", "sessions"] }
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/auth/sessions",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "auth", "sessions"]
+        }
       }
     },
     {
@@ -129,4 +167,3 @@
     }
   ]
 }
-

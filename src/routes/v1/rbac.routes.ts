@@ -8,7 +8,10 @@ const rbacRoutes = Router();
 rbacRoutes.get("/permissions", rbacController.getPermissions);
 
 // Roles management (Org level)
-rbacRoutes.get("/organizations/:orgId/roles", rbacController.getOrganizationRoles);
+rbacRoutes.get(
+  "/organizations/:orgId/roles",
+  rbacController.getOrganizationRoles,
+);
 rbacRoutes.post("/roles", rbacController.createRole);
 rbacRoutes.put("/roles/:roleId", rbacController.updateRolePermissions);
 rbacRoutes.delete("/roles/:roleId", rbacController.deleteRole);

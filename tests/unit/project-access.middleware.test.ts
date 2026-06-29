@@ -13,25 +13,27 @@ import {
   NotFoundException,
 } from "@/utils/app-error";
 
-const { getSessionMock, prismaMock, betterAuthHeadersMock } = vi.hoisted(() => ({
-  getSessionMock: vi.fn(),
-  prismaMock: {
-    member: {
-      findFirst: vi.fn(),
-      findMany: vi.fn(),
+const { getSessionMock, prismaMock, betterAuthHeadersMock } = vi.hoisted(
+  () => ({
+    getSessionMock: vi.fn(),
+    prismaMock: {
+      member: {
+        findFirst: vi.fn(),
+        findMany: vi.fn(),
+      },
+      workspaceMember: {
+        findFirst: vi.fn(),
+      },
+      project: {
+        findUnique: vi.fn(),
+      },
+      projectMember: {
+        findUnique: vi.fn(),
+      },
     },
-    workspaceMember: {
-      findFirst: vi.fn(),
-    },
-    project: {
-      findUnique: vi.fn(),
-    },
-    projectMember: {
-      findUnique: vi.fn(),
-    },
-  },
-  betterAuthHeadersMock: vi.fn().mockReturnValue(new Headers()),
-}));
+    betterAuthHeadersMock: vi.fn().mockReturnValue(new Headers()),
+  }),
+);
 
 vi.mock("../../src/lib/auth/auth", () => ({
   auth: {
@@ -58,7 +60,7 @@ describe("project-access middleware utilities", () => {
     it("UT-PA-01: throws UnauthorizedException when no user is present in session", async () => {
       getSessionMock.mockResolvedValueOnce(null);
       const req: any = {};
-      
+
       await expect(resolveSession(req)).rejects.toThrow(UnauthorizedException);
     });
 
@@ -68,7 +70,7 @@ describe("project-access middleware utilities", () => {
         session: { activeOrganizationId: null },
       });
       const req: any = {};
-      
+
       await expect(resolveSession(req)).rejects.toThrow(BadRequestException);
     });
 
@@ -78,7 +80,7 @@ describe("project-access middleware utilities", () => {
         session: { activeOrganizationId: "org-1" },
       });
       const req: any = {};
-      
+
       const result = await resolveSession(req);
       expect(result).toEqual({ activeOrgId: "org-1", userId: "user-1" });
     });
@@ -90,7 +92,10 @@ describe("project-access middleware utilities", () => {
         user: { id: "user-1" },
         session: { activeOrganizationId: "org-1" },
       });
-      prismaMock.member.findFirst.mockResolvedValueOnce({ id: "mem-1", role: "admin" });
+      prismaMock.member.findFirst.mockResolvedValueOnce({
+        id: "mem-1",
+        role: "admin",
+      });
 
       const req: any = {};
       const ctx = await verifyWorkspaceAdmin(req, "ws-1");
@@ -98,8 +103,12 @@ describe("project-access middleware utilities", () => {
       expect(ctx).toEqual({ activeOrgId: "org-1", userId: "user-1" });
       expect(prismaMock.member.findFirst).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: { organizationId: "org-1", userId: "user-1", role: { in: ["owner", "admin"] } },
-        })
+          where: {
+            organizationId: "org-1",
+            userId: "user-1",
+            role: { in: ["owner", "admin"] },
+          },
+        }),
       );
     });
 
@@ -109,7 +118,10 @@ describe("project-access middleware utilities", () => {
         session: { activeOrganizationId: "org-1" },
       });
       prismaMock.member.findFirst.mockResolvedValueOnce(null); // not org admin
-      prismaMock.workspaceMember.findFirst.mockResolvedValueOnce({ id: "ws-mem-1", role: "admin" });
+      prismaMock.workspaceMember.findFirst.mockResolvedValueOnce({
+        id: "ws-mem-1",
+        role: "admin",
+      });
 
       const req: any = {};
       const ctx = await verifyWorkspaceAdmin(req, "ws-1");
@@ -117,8 +129,13 @@ describe("project-access middleware utilities", () => {
       expect(ctx).toEqual({ activeOrgId: "org-1", userId: "user-1" });
       expect(prismaMock.workspaceMember.findFirst).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: { workspaceId: "ws-1", userId: "user-1", role: "admin", workspace: { organizationId: "org-1" } },
-        })
+          where: {
+            workspaceId: "ws-1",
+            userId: "user-1",
+            role: "admin",
+            workspace: { organizationId: "org-1" },
+          },
+        }),
       );
     });
 
@@ -131,7 +148,9 @@ describe("project-access middleware utilities", () => {
       prismaMock.workspaceMember.findFirst.mockResolvedValueOnce(null);
 
       const req: any = {};
-      await expect(verifyWorkspaceAdmin(req, "ws-1")).rejects.toThrow(ForbiddenException);
+      await expect(verifyWorkspaceAdmin(req, "ws-1")).rejects.toThrow(
+        ForbiddenException,
+      );
     });
   });
 
@@ -144,7 +163,9 @@ describe("project-access middleware utilities", () => {
       prismaMock.project.findUnique.mockResolvedValueOnce(null);
 
       const req: any = {};
-      await expect(verifyProjectAccess(req, "proj-1")).rejects.toThrow(NotFoundException);
+      await expect(verifyProjectAccess(req, "proj-1")).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it("UT-PA-05: returns context if project exists and user is Org Owner/Admin", async () => {
@@ -154,7 +175,10 @@ describe("project-access middleware utilities", () => {
       });
       const project = { id: "proj-1", workspaceId: "ws-1" };
       prismaMock.project.findUnique.mockResolvedValueOnce(project);
-      prismaMock.member.findFirst.mockResolvedValueOnce({ id: "mem-1", role: "owner" });
+      prismaMock.member.findFirst.mockResolvedValueOnce({
+        id: "mem-1",
+        role: "owner",
+      });
 
       const req: any = {};
       const ctx = await verifyProjectAccess(req, "proj-1");
@@ -170,7 +194,10 @@ describe("project-access middleware utilities", () => {
       const project = { id: "proj-1", workspaceId: "ws-1" };
       prismaMock.project.findUnique.mockResolvedValueOnce(project);
       prismaMock.member.findFirst.mockResolvedValueOnce(null);
-      prismaMock.workspaceMember.findFirst.mockResolvedValueOnce({ id: "ws-mem-1", role: "admin" });
+      prismaMock.workspaceMember.findFirst.mockResolvedValueOnce({
+        id: "ws-mem-1",
+        role: "admin",
+      });
 
       const req: any = {};
       const ctx = await verifyProjectAccess(req, "proj-1");
@@ -187,7 +214,10 @@ describe("project-access middleware utilities", () => {
       prismaMock.project.findUnique.mockResolvedValueOnce(project);
       prismaMock.member.findFirst.mockResolvedValueOnce(null);
       prismaMock.workspaceMember.findFirst.mockResolvedValueOnce(null);
-      prismaMock.projectMember.findUnique.mockResolvedValueOnce({ projectId: "proj-1", userId: "user-1" });
+      prismaMock.projectMember.findUnique.mockResolvedValueOnce({
+        projectId: "proj-1",
+        userId: "user-1",
+      });
 
       const req: any = {};
       const ctx = await verifyProjectAccess(req, "proj-1");
@@ -207,7 +237,9 @@ describe("project-access middleware utilities", () => {
       prismaMock.projectMember.findUnique.mockResolvedValueOnce(null);
 
       const req: any = {};
-      await expect(verifyProjectAccess(req, "proj-1")).rejects.toThrow(ForbiddenException);
+      await expect(verifyProjectAccess(req, "proj-1")).rejects.toThrow(
+        ForbiddenException,
+      );
     });
   });
 
@@ -215,7 +247,9 @@ describe("project-access middleware utilities", () => {
     it("UT-PA-09: throws NotFoundException if project is missing", async () => {
       prismaMock.project.findUnique.mockResolvedValueOnce(null);
       const req: any = {};
-      await expect(verifyProjectAdmin(req, "proj-missing")).rejects.toThrow(NotFoundException);
+      await expect(verifyProjectAdmin(req, "proj-missing")).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it("UT-PA-10: verifies project admin permissions using workspace admin utility", async () => {
@@ -225,7 +259,10 @@ describe("project-access middleware utilities", () => {
       });
       const project = { id: "proj-1", workspaceId: "ws-1" };
       prismaMock.project.findUnique.mockResolvedValueOnce(project);
-      prismaMock.member.findFirst.mockResolvedValueOnce({ id: "mem-1", role: "admin" });
+      prismaMock.member.findFirst.mockResolvedValueOnce({
+        id: "mem-1",
+        role: "admin",
+      });
 
       const req: any = {};
       const ctx = await verifyProjectAdmin(req, "proj-1");

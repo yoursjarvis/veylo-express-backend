@@ -16,12 +16,12 @@ const IV_LENGTH = 12;
 export function encrypt(text: string): string {
   const iv = crypto.randomBytes(IV_LENGTH);
   const cipher = crypto.createCipheriv(ALGORITHM, ENCRYPTION_KEY, iv);
-  
+
   let encrypted = cipher.update(text, "utf8", "hex");
   encrypted += cipher.final("hex");
-  
+
   const tag = cipher.getAuthTag().toString("hex");
-  
+
   // Format: iv:encrypted_content:auth_tag
   return `${iv.toString("hex")}:${encrypted}:${tag}`;
 }

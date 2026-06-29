@@ -3,7 +3,11 @@ import { automationService } from "@/app/services/automation.service";
 import { notificationService } from "@/app/services/notification.service";
 import { workflowService } from "@/app/services/workflow.service";
 import { mediaService } from "@/core/media";
-import { BadRequestException, NotFoundException, ForbiddenException } from "@/utils/app-error";
+import {
+  BadRequestException,
+  NotFoundException,
+  ForbiddenException,
+} from "@/utils/app-error";
 
 import { Prisma } from "../../../generated/prisma/client.js";
 
@@ -13,14 +17,15 @@ async function logActivity(
   organizationIdOrAction: string,
   actionOrOldValue?: string | null,
   oldValueOrNewValue?: string | null,
-  newValue?: string | null
+  newValue?: string | null,
 ) {
   let organizationId = organizationIdOrAction;
   let action = actionOrOldValue as string;
   let oldValue = oldValueOrNewValue;
   let valNew = newValue;
 
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const uuidRegex =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   if (!uuidRegex.test(organizationId)) {
     action = organizationIdOrAction;
     oldValue = actionOrOldValue;
@@ -63,19 +68,29 @@ export const taskService = {
       customFields?: Record<string, unknown>;
       labelIds?: string[];
       isPrivate?: boolean;
-    }
+    },
   ) {
     // Verify status belongs to project
-    const status = await taskRepository.findTaskStatusById(data.statusId, projectId);
+    const status = await taskRepository.findTaskStatusById(
+      data.statusId,
+      projectId,
+    );
     if (!status) {
-      throw new BadRequestException("Selected status does not belong to this project");
+      throw new BadRequestException(
+        "Selected status does not belong to this project",
+      );
     }
 
     // Verify sprint belongs to project
     if (data.sprintId) {
-      const sprint = await taskRepository.findSprintById(data.sprintId, projectId);
+      const sprint = await taskRepository.findSprintById(
+        data.sprintId,
+        projectId,
+      );
       if (!sprint) {
-        throw new BadRequestException("Selected sprint does not belong to this project");
+        throw new BadRequestException(
+          "Selected sprint does not belong to this project",
+        );
       }
     }
 
@@ -83,15 +98,22 @@ export const taskService = {
     if (data.epicId) {
       const epic = await taskRepository.findEpicById(data.epicId, projectId);
       if (!epic) {
-        throw new BadRequestException("Selected epic does not belong to this project");
+        throw new BadRequestException(
+          "Selected epic does not belong to this project",
+        );
       }
     }
 
     // Verify milestone belongs to project
     if (data.milestoneId) {
-      const milestone = await taskRepository.findMilestoneById(data.milestoneId, projectId);
+      const milestone = await taskRepository.findMilestoneById(
+        data.milestoneId,
+        projectId,
+      );
       if (!milestone) {
-        throw new BadRequestException("Selected milestone does not belong to this project");
+        throw new BadRequestException(
+          "Selected milestone does not belong to this project",
+        );
       }
     }
 
@@ -128,7 +150,14 @@ export const taskService = {
     });
 
     // Log creation
-    await logActivity(task.id, userId, organizationId, "created", null, task.title);
+    await logActivity(
+      task.id,
+      userId,
+      organizationId,
+      "created",
+      null,
+      task.title,
+    );
 
     // Trigger notification in background
     notificationService.handleTaskCreated(task.id, userId);
@@ -136,36 +165,64 @@ export const taskService = {
     // Trigger automation rules in background
     automationService
       .handleTaskCreated(task.id, userId)
-      .catch((err) => console.error("Error running task_created automation:", err));
+      .catch((err) =>
+        console.error("Error running task_created automation:", err),
+      );
 
     return task;
   },
 
-  async getTasks(projectId: string, query: {
-    sprintId?: string;
-    assigneeId?: string;
-    statusId?: string;
-    priority?: string;
-    type?: string;
-    search?: string;
-    epicId?: string;
-    milestoneId?: string;
-    labelId?: string;
-    filters?: string;
-  }, userId?: string) {
-    const { sprintId, assigneeId, statusId, priority, type, search, epicId, milestoneId, labelId } = query;
+  async getTasks(
+    projectId: string,
+    query: {
+      sprintId?: string;
+      assigneeId?: string;
+      statusId?: string;
+      priority?: string;
+      type?: string;
+      search?: string;
+      epicId?: string;
+      milestoneId?: string;
+      labelId?: string;
+      filters?: string;
+    },
+    userId?: string,
+  ) {
+    const {
+      sprintId,
+      assigneeId,
+      statusId,
+      priority,
+      type,
+      search,
+      epicId,
+      milestoneId,
+      labelId,
+    } = query;
 
     const project = await taskRepository.findProjectById(projectId);
     if (!project) throw new NotFoundException("Project not found");
 
     let isAdmin = false;
     if (userId) {
-      const isOrgAdmin = !!(await taskRepository.findMember(project.organizationId, userId));
-      const isWorkspaceAdmin = !!(await taskRepository.findWorkspaceMember(project.workspaceId, userId));
+      const isOrgAdmin = !!(await taskRepository.findMember(
+        project.organizationId,
+        userId,
+      ));
+      const isWorkspaceAdmin = !!(await taskRepository.findWorkspaceMember(
+        project.workspaceId,
+        userId,
+      ));
       isAdmin = isOrgAdmin || isWorkspaceAdmin;
     }
 
-    const whereClause: { projectId: string; deletedAt: null; parentTaskId: null; AND?: Prisma.TaskWhereInput[]; [key: string]: unknown } = {
+    const whereClause: {
+      projectId: string;
+      deletedAt: null;
+      parentTaskId: null;
+      AND?: Prisma.TaskWhereInput[];
+      [key: string]: unknown;
+    } = {
       projectId,
       deletedAt: null,
       parentTaskId: null,
@@ -179,8 +236,8 @@ export const taskService = {
             { creatorId: userId },
             { assigneeId: userId },
             { reporterId: userId },
-          ]
-        }
+          ],
+        },
       ];
     }
 
@@ -244,32 +301,46 @@ export const taskService = {
           const { field, operator, values } = filter;
           if (!field || !operator) continue;
 
-          if (field === 'search') {
+          if (field === "search") {
             const val = values[0];
             if (val) {
               andConditions.push({
                 OR: [
                   { title: { contains: val, mode: "insensitive" } },
                   { description: { contains: val, mode: "insensitive" } },
-                ]
+                ],
               });
             }
             continue;
           }
 
           let condition: Record<string, unknown> = {};
-          
-          if (field === 'labelId') {
-            if (operator === 'empty') {
+
+          if (field === "labelId") {
+            if (operator === "empty") {
               andConditions.push({ labels: { none: {} } });
-            } else if (operator === 'not_empty') {
+            } else if (operator === "not_empty") {
               andConditions.push({ labels: { some: {} } });
             } else if (values && values.length > 0) {
-              if (operator === 'is' || operator === 'is_any_of' || operator === 'includes_any_of' || operator === 'includes') {
-                andConditions.push({ labels: { some: { labelId: { in: values } } } });
-              } else if (operator === 'is_not' || operator === 'is_not_any_of' || operator === 'excludes_all' || operator === 'excludes') {
-                andConditions.push({ labels: { none: { labelId: { in: values } } } });
-              } else if (operator === 'includes_all') {
+              if (
+                operator === "is" ||
+                operator === "is_any_of" ||
+                operator === "includes_any_of" ||
+                operator === "includes"
+              ) {
+                andConditions.push({
+                  labels: { some: { labelId: { in: values } } },
+                });
+              } else if (
+                operator === "is_not" ||
+                operator === "is_not_any_of" ||
+                operator === "excludes_all" ||
+                operator === "excludes"
+              ) {
+                andConditions.push({
+                  labels: { none: { labelId: { in: values } } },
+                });
+              } else if (operator === "includes_all") {
                 for (const val of values) {
                   andConditions.push({ labels: { some: { labelId: val } } });
                 }
@@ -282,31 +353,40 @@ export const taskService = {
           const mappedField = field === "assignee" ? "assigneeId" : field;
 
           switch (operator) {
-            case 'is':
-            case 'equals':
+            case "is":
+            case "equals":
               condition[mappedField] = val === "null" ? null : val;
               break;
-            case 'is_not':
-            case 'not_equals':
-              condition[mappedField] = val === "null" ? { not: null } : { not: val };
+            case "is_not":
+            case "not_equals":
+              condition[mappedField] =
+                val === "null" ? { not: null } : { not: val };
               break;
-            case 'is_any_of':
-              condition[mappedField] = { in: values.map((v: string) => v === "null" ? null : v) };
+            case "is_any_of":
+              condition[mappedField] = {
+                in: values.map((v: string) => (v === "null" ? null : v)),
+              };
               break;
-            case 'is_not_any_of':
-              condition[mappedField] = { notIn: values.map((v: string) => v === "null" ? null : v) };
+            case "is_not_any_of":
+              condition[mappedField] = {
+                notIn: values.map((v: string) => (v === "null" ? null : v)),
+              };
               break;
-            case 'empty':
+            case "empty":
               condition[mappedField] = null;
               break;
-            case 'not_empty':
+            case "not_empty":
               condition[mappedField] = { not: null };
               break;
-            case 'contains':
-              if (val) condition[mappedField] = { contains: val, mode: 'insensitive' };
+            case "contains":
+              if (val)
+                condition[mappedField] = { contains: val, mode: "insensitive" };
               break;
-            case 'not_contains':
-              if (val) condition[mappedField] = { not: { contains: val, mode: 'insensitive' } };
+            case "not_contains":
+              if (val)
+                condition[mappedField] = {
+                  not: { contains: val, mode: "insensitive" },
+                };
               break;
           }
 
@@ -314,7 +394,7 @@ export const taskService = {
             andConditions.push(condition);
           }
         }
-        
+
         if (andConditions.length > 0) {
           if (!whereClause.AND) whereClause.AND = [];
           whereClause.AND.push(...andConditions);
@@ -336,8 +416,16 @@ export const taskService = {
     if (task.isPrivate && userId) {
       const project = await taskRepository.findProjectById(task.projectId);
 
-      const isOrgAdmin = !!(await taskRepository.findMember(task.organizationId, userId));
-      const isWorkspaceAdmin = project ? !!(await taskRepository.findWorkspaceMember(project.workspaceId, userId)) : false;
+      const isOrgAdmin = !!(await taskRepository.findMember(
+        task.organizationId,
+        userId,
+      ));
+      const isWorkspaceAdmin = project
+        ? !!(await taskRepository.findWorkspaceMember(
+            project.workspaceId,
+            userId,
+          ))
+        : false;
 
       const isAdmin = isOrgAdmin || isWorkspaceAdmin;
 
@@ -352,11 +440,17 @@ export const taskService = {
       }
     }
 
-    const attachments = await mediaService.getMedia("Task", taskId, "task_attachments");
-    const attachmentsWithUrls = attachments.map((a: { id: string; [key: string]: unknown }) => ({
-      ...a,
-      url: mediaService.generateUrl(a),
-    }));
+    const attachments = await mediaService.getMedia(
+      "Task",
+      taskId,
+      "task_attachments",
+    );
+    const attachmentsWithUrls = attachments.map(
+      (a: { id: string; [key: string]: unknown }) => ({
+        ...a,
+        url: mediaService.generateUrl(a),
+      }),
+    );
 
     return {
       ...task,
@@ -384,7 +478,7 @@ export const taskService = {
       customFields?: Record<string, unknown>;
       labelIds?: string[];
       isPrivate?: boolean;
-    }
+    },
   ) {
     const existingTask = await taskRepository.findTaskWithRelations(taskId);
     if (!existingTask) {
@@ -403,9 +497,14 @@ export const taskService = {
 
     // Validate and audit status change
     if (data.statusId && data.statusId !== existingTask.statusId) {
-      const newStatus = await taskRepository.findTaskStatusById(data.statusId, existingTask.projectId);
+      const newStatus = await taskRepository.findTaskStatusById(
+        data.statusId,
+        existingTask.projectId,
+      );
       if (!newStatus) {
-        throw new BadRequestException("Selected status does not belong to this project");
+        throw new BadRequestException(
+          "Selected status does not belong to this project",
+        );
       }
 
       // Workflow transition validation
@@ -413,25 +512,42 @@ export const taskService = {
         existingTask.projectId,
         existingTask.statusId,
         data.statusId,
-        userId
+        userId,
       );
 
       // Advanced transition validation: Auto-complete subtasks when transitioning to Done
       if (newStatus.category === "done") {
-        await taskRepository.completeAllSubtasks(taskId, existingTask.projectId);
+        await taskRepository.completeAllSubtasks(
+          taskId,
+          existingTask.projectId,
+        );
       }
 
       updateData.statusId = data.statusId;
-      await logActivity(taskId, userId, "status_changed", existingTask.status.name, newStatus.name);
+      await logActivity(
+        taskId,
+        userId,
+        "status_changed",
+        existingTask.status.name,
+        newStatus.name,
+      );
     }
 
     // Validate and audit sprint change
-    if (data.sprintId !== undefined && data.sprintId !== existingTask.sprintId) {
+    if (
+      data.sprintId !== undefined &&
+      data.sprintId !== existingTask.sprintId
+    ) {
       let sprintName = "Backlog";
       if (data.sprintId) {
-        const sprint = await taskRepository.findSprintById(data.sprintId, existingTask.projectId);
+        const sprint = await taskRepository.findSprintById(
+          data.sprintId,
+          existingTask.projectId,
+        );
         if (!sprint) {
-          throw new BadRequestException("Selected sprint does not belong to this project");
+          throw new BadRequestException(
+            "Selected sprint does not belong to this project",
+          );
         }
         updateData.sprintId = data.sprintId;
         sprintName = sprint.name;
@@ -443,12 +559,15 @@ export const taskService = {
         userId,
         "sprint_changed",
         existingTask.sprint?.name || "Backlog",
-        sprintName
+        sprintName,
       );
     }
 
     // Validate and audit assignee change
-    if (data.assigneeId !== undefined && data.assigneeId !== existingTask.assigneeId) {
+    if (
+      data.assigneeId !== undefined &&
+      data.assigneeId !== existingTask.assigneeId
+    ) {
       let assigneeName = "Unassigned";
       if (data.assigneeId) {
         const newAssignee = await taskRepository.findUserById(data.assigneeId);
@@ -465,12 +584,15 @@ export const taskService = {
         userId,
         "assignee_changed",
         existingTask.assignee?.name || "Unassigned",
-        assigneeName
+        assigneeName,
       );
     }
 
     // Validate and audit reporter change
-    if (data.reporterId !== undefined && data.reporterId !== existingTask.reporterId) {
+    if (
+      data.reporterId !== undefined &&
+      data.reporterId !== existingTask.reporterId
+    ) {
       let reporterName = "Unassigned";
       if (data.reporterId) {
         const newReporter = await taskRepository.findUserById(data.reporterId);
@@ -487,25 +609,34 @@ export const taskService = {
         userId,
         "reporter_changed",
         existingTask.reporter?.name || "Unassigned",
-        reporterName
+        reporterName,
       );
     }
 
     // Audit priority change
     if (data.priority && data.priority !== existingTask.priority) {
       updateData.priority = data.priority;
-      await logActivity(taskId, userId, "priority_changed", existingTask.priority, data.priority);
+      await logActivity(
+        taskId,
+        userId,
+        "priority_changed",
+        existingTask.priority,
+        data.priority,
+      );
     }
 
     // Audit estimate change
-    if (data.estimate !== undefined && data.estimate !== existingTask.estimate) {
+    if (
+      data.estimate !== undefined &&
+      data.estimate !== existingTask.estimate
+    ) {
       updateData.estimate = data.estimate;
       await logActivity(
         taskId,
         userId,
         "estimate_changed",
         existingTask.estimate?.toString() || "No Estimate",
-        data.estimate?.toString() || "No Estimate"
+        data.estimate?.toString() || "No Estimate",
       );
     }
 
@@ -513,9 +644,14 @@ export const taskService = {
     if (data.epicId !== undefined && data.epicId !== existingTask.epicId) {
       let epicName = "None";
       if (data.epicId) {
-        const epic = await taskRepository.findEpicById(data.epicId, existingTask.projectId);
+        const epic = await taskRepository.findEpicById(
+          data.epicId,
+          existingTask.projectId,
+        );
         if (!epic) {
-          throw new BadRequestException("Selected epic does not belong to this project");
+          throw new BadRequestException(
+            "Selected epic does not belong to this project",
+          );
         }
         updateData.epicId = data.epicId;
         epicName = epic.title;
@@ -527,17 +663,25 @@ export const taskService = {
         userId,
         "epic_changed",
         existingTask.epic?.title || "None",
-        epicName
+        epicName,
       );
     }
 
     // Validate and audit milestone change
-    if (data.milestoneId !== undefined && data.milestoneId !== existingTask.milestoneId) {
+    if (
+      data.milestoneId !== undefined &&
+      data.milestoneId !== existingTask.milestoneId
+    ) {
       let milestoneName = "None";
       if (data.milestoneId) {
-        const milestone = await taskRepository.findMilestoneById(data.milestoneId, existingTask.projectId);
+        const milestone = await taskRepository.findMilestoneById(
+          data.milestoneId,
+          existingTask.projectId,
+        );
         if (!milestone) {
-          throw new BadRequestException("Selected milestone does not belong to this project");
+          throw new BadRequestException(
+            "Selected milestone does not belong to this project",
+          );
         }
         updateData.milestoneId = data.milestoneId;
         milestoneName = milestone.title;
@@ -549,7 +693,7 @@ export const taskService = {
         userId,
         "milestone_changed",
         existingTask.milestone?.title || "None",
-        milestoneName
+        milestoneName,
       );
     }
 
@@ -563,12 +707,14 @@ export const taskService = {
 
     // Rest of fields
     if (data.title !== undefined) updateData.title = data.title;
-    if (data.description !== undefined) updateData.description = data.description;
+    if (data.description !== undefined)
+      updateData.description = data.description;
     if (data.type !== undefined) updateData.type = data.type;
     if (data.dueDate !== undefined) {
       updateData.dueDate = data.dueDate ? new Date(data.dueDate) : null;
     }
-    if (data.customFields !== undefined) updateData.customFields = data.customFields;
+    if (data.customFields !== undefined)
+      updateData.customFields = data.customFields;
     if (data.position !== undefined) updateData.position = data.position;
     if (data.isPrivate !== undefined) {
       updateData.isPrivate = data.isPrivate;
@@ -577,7 +723,7 @@ export const taskService = {
         userId,
         "privacy_changed",
         existingTask.isPrivate ? "Private" : "Public",
-        data.isPrivate ? "Private" : "Public"
+        data.isPrivate ? "Private" : "Public",
       );
     }
 
@@ -588,19 +734,36 @@ export const taskService = {
 
     // Trigger automation rules in background if status changed
     if (data.statusId && data.statusId !== existingTask.statusId) {
-      const newStatus = await taskRepository.findTaskStatusById(data.statusId, existingTask.projectId);
+      const newStatus = await taskRepository.findTaskStatusById(
+        data.statusId,
+        existingTask.projectId,
+      );
       if (newStatus) {
         automationService
-          .handleTaskStatusChanged(taskId, userId, existingTask.status.name, newStatus.name)
-          .catch((err) => console.error("Error running automation rules:", err));
+          .handleTaskStatusChanged(
+            taskId,
+            userId,
+            existingTask.status.name,
+            newStatus.name,
+          )
+          .catch((err) =>
+            console.error("Error running automation rules:", err),
+          );
       }
     }
 
     // Trigger automation rules in background if priority changed
     if (data.priority && data.priority !== existingTask.priority) {
       automationService
-        .handlePriorityChanged(taskId, userId, existingTask.priority, data.priority)
-        .catch((err) => console.error("Error running priority changed automation:", err));
+        .handlePriorityChanged(
+          taskId,
+          userId,
+          existingTask.priority,
+          data.priority,
+        )
+        .catch((err) =>
+          console.error("Error running priority changed automation:", err),
+        );
     }
 
     return updatedTask;

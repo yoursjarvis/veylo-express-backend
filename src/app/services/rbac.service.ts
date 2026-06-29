@@ -10,10 +10,22 @@ export const rbacService = {
     return rbacRepository.getRolesByOrganization(organizationId);
   },
 
-  async createRole(data: { name: string; organizationId: string; permissionIds: string[] }) {
-    const existingRoles = await rbacRepository.getRolesByOrganization(data.organizationId);
-    if (existingRoles.some(r => r.name.toLowerCase() === data.name.toLowerCase())) {
-      throw new BadRequestException("A role with this name already exists in the organization.");
+  async createRole(data: {
+    name: string;
+    organizationId: string;
+    permissionIds: string[];
+  }) {
+    const existingRoles = await rbacRepository.getRolesByOrganization(
+      data.organizationId,
+    );
+    if (
+      existingRoles.some(
+        (r) => r.name.toLowerCase() === data.name.toLowerCase(),
+      )
+    ) {
+      throw new BadRequestException(
+        "A role with this name already exists in the organization.",
+      );
     }
 
     const role = await rbacRepository.createRole({
@@ -44,16 +56,35 @@ export const rbacService = {
     return rbacRepository.deleteRole(roleId);
   },
 
-  async assignRole(data: { userId: string; roleId: string; scopeType: "ORGANIZATION" | "PROJECT"; scopeId: string }) {
+  async assignRole(data: {
+    userId: string;
+    roleId: string;
+    scopeType: "ORGANIZATION" | "PROJECT";
+    scopeId: string;
+  }) {
     return rbacRepository.assignRoleToUser(data);
   },
 
-  async removeRole(data: { userId: string; roleId: string; scopeType: "ORGANIZATION" | "PROJECT"; scopeId: string }) {
+  async removeRole(data: {
+    userId: string;
+    roleId: string;
+    scopeType: "ORGANIZATION" | "PROJECT";
+    scopeId: string;
+  }) {
     return rbacRepository.removeRoleFromUser(data);
   },
 
-  async checkPermission(userId: string, scopeType: string, scopeId: string, requiredPermission: string): Promise<boolean> {
-    const permissions = await rbacRepository.getUserPermissionsInScope(userId, scopeType, scopeId);
+  async checkPermission(
+    userId: string,
+    scopeType: string,
+    scopeId: string,
+    requiredPermission: string,
+  ): Promise<boolean> {
+    const permissions = await rbacRepository.getUserPermissionsInScope(
+      userId,
+      scopeType,
+      scopeId,
+    );
     return permissions.includes(requiredPermission);
-  }
+  },
 };

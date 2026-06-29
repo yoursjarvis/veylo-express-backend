@@ -12,7 +12,7 @@ export const slackWebhookService = {
       url: string;
       channel?: string | null;
       isActive: boolean;
-    }
+    },
   ) {
     return slackWebhookRepository.create({
       projectId,

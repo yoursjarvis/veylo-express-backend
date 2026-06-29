@@ -5,4 +5,3 @@ export default {
     url: env("OTEL_COLLECTOR_URL").string("http://otel-collector:4317"),
   },
 };
-

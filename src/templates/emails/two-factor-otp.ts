@@ -1,42 +1,35 @@
-import { emailLayout } from "./_layout";
+import { emailLayout, escapeHtml } from "./_layout";
 
 export type TwoFactorOtpData = {
   firstName?: string;
   otp: string;
 };
 
-export function twoFactorOtpEmail(data: TwoFactorOtpData & { appName: string }) {
+export function twoFactorOtpEmail(
+  data: TwoFactorOtpData & { appName: string },
+) {
   const name = (data.firstName ?? "").trim();
   const greeting = name ? `Hi ${escapeHtml(name)},` : "Hi,";
-
   const subject = `[${data.appName}] Verify your identity`;
+
   const html = emailLayout({
     title: subject,
     preheader: "Your verification code for two-factor authentication.",
     bodyHtml: `
-      <p style="margin:0 0 12px 0;">${greeting}</p>
-      <p style="margin:0 0 16px 0;">
-        You are initiating two-factor authentication enablement. Please use the following code to verify your identity:
+      <p style="margin:0 0 16px 0;">${greeting}</p>
+      <p style="margin:0 0 24px 0;">
+        Please use the verification code below to complete two-factor authentication setup or verification:
       </p>
-      <div style="margin: 32px 0; text-align: center; background: #f9fafb; padding: 24px; border-radius: 8px;">
-        <span style="font-size: 32px; font-weight: 700; letter-spacing: 4px; color: #111827;">${data.otp}</span>
+      <div class="email-code-box" style="margin:24px 0;text-align:center;background-color:#f5f5f5;border:1px solid #e5e5e5;padding:24px;border-radius:8px;">
+        <span style="font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:32px;font-weight:700;letter-spacing:6px;color:#171717;">${escapeHtml(data.otp)}</span>
       </div>
-      <p style="margin:16px 0 0 0; font-size: 13px; color: #6b7280;">
-        This code will expire in 10 minutes. If you did not request this, please ignore this email.
+      <p style="margin:0;font-size:13px;color:#737373;line-height:1.5;" class="email-footer">
+        This code is valid for 10 minutes. If you did not request this code, please secure your account credentials.
       </p>
     `,
   });
 
-  const text = `${greeting}\n\nYour verification code for 2FA is: ${data.otp}\n\nThis code will expire in 10 minutes.`;
+  const text = `${name ? `Hi ${name},` : "Hi,"}\n\nYour verification code is: ${data.otp}\n\nThis code will expire in 10 minutes.`;
 
   return { subject, html, text };
-}
-
-function escapeHtml(str: string): string {
-  return String(str)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
 }

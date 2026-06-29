@@ -8,7 +8,10 @@ export const taskCreateSchema = z.object({
   epicId: z.uuid().optional().nullable(),
   milestoneId: z.uuid().optional().nullable(),
   type: z.enum(["task", "bug", "feature", "subtask"]).default("task"),
-  priority: z.enum(["low", "medium", "high", "urgent"]).optional().default("medium"),
+  priority: z
+    .enum(["low", "medium", "high", "urgent"])
+    .optional()
+    .default("medium"),
   estimate: z.number().optional().nullable(),
   dueDate: z.string().datetime().optional().nullable(),
   assigneeId: z.uuid().optional().nullable(),

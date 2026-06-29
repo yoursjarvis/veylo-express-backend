@@ -5,11 +5,14 @@ import { NotificationDriver } from "../contracts/notification-driver";
 import { Notifiable, Notification } from "../notification.types";
 
 export class DatabaseDriver implements NotificationDriver {
-  async send(notifiable: Notifiable, notification: Notification): Promise<void> {
+  async send(
+    notifiable: Notifiable,
+    notification: Notification,
+  ): Promise<void> {
     if (typeof notification.toDatabase !== "function") {
       logger.warn(
         { notification: notification.constructor.name },
-        "[NOTIFICATION][database] toDatabase method not found on notification"
+        "[NOTIFICATION][database] toDatabase method not found on notification",
       );
       return;
     }
@@ -22,7 +25,7 @@ export class DatabaseDriver implements NotificationDriver {
           recipientId: notifiable.id,
           type: payload.type,
         },
-        "[NOTIFICATION][database] Storing notification in database"
+        "[NOTIFICATION][database] Storing notification in database",
       );
 
       await prisma.notification.create({
@@ -38,8 +41,12 @@ export class DatabaseDriver implements NotificationDriver {
       });
     } catch (error) {
       logger.error(
-        { error, recipientId: notifiable.id, notification: notification.constructor.name },
-        "[NOTIFICATION][database] Failed to save notification to database"
+        {
+          error,
+          recipientId: notifiable.id,
+          notification: notification.constructor.name,
+        },
+        "[NOTIFICATION][database] Failed to save notification to database",
       );
     }
   }

@@ -50,12 +50,14 @@ vi.mock("../../src/app/services/auth.service", () => ({
 }));
 
 vi.mock("../../src/utils/config", async (importOriginal) => {
-  const original = await importOriginal<typeof import("../../src/utils/config")>();
+  const original =
+    await importOriginal<typeof import("../../src/utils/config")>();
   return {
     ...original,
     config: vi.fn((key: string) => {
       if (key === "app.origins") return ["http://localhost"];
-      if (key === "app.vaultEncryptionKey") return "dummy-vault-key-min-32-chars-long-here";
+      if (key === "app.vaultEncryptionKey")
+        return "dummy-vault-key-min-32-chars-long-here";
       return original.config(key as any);
     }),
   };
@@ -74,14 +76,12 @@ describe("Auth API Endpoint Integration Tests (/api/v1/auth)", () => {
     it("signs up a user successfully", async () => {
       mockAuthService.signUp.mockResolvedValueOnce(undefined);
 
-      const res = await request(app)
-        .post("/api/v1/auth/signup")
-        .send({
-          first_name: "Jane",
-          last_name: "Doe",
-          email: "jane@example.com",
-          password: "secure-password",
-        });
+      const res = await request(app).post("/api/v1/auth/signup").send({
+        first_name: "Jane",
+        last_name: "Doe",
+        email: "jane@example.com",
+        password: "secure-password",
+      });
 
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);

@@ -26,7 +26,7 @@ export const authController = {
 
     return ok(
       res,
-      "If the email is valid, you will receive verification instructions shortly."
+      "If the email is valid, you will receive verification instructions shortly.",
     );
   }),
 
@@ -83,7 +83,7 @@ export const authController = {
 
     return ok(
       res,
-      "If the email is valid, you will receive password reset instructions shortly."
+      "If the email is valid, you will receive password reset instructions shortly.",
     );
   }),
 
@@ -147,4 +147,3 @@ export const authController = {
     return ok(res, "2FA initiated successfully", data);
   }),
 };
-

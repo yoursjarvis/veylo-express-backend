@@ -5,14 +5,16 @@ export const labelService = {
   async createLabel(
     projectId: string,
     organizationId: string,
-    validatedData: { name: string; color: string }
+    validatedData: { name: string; color: string },
   ) {
     const existingLabel = await labelRepository.findByNameAndProjectId(
       validatedData.name,
-      projectId
+      projectId,
     );
     if (existingLabel) {
-      throw new BadRequestException("Label with this name already exists in the project");
+      throw new BadRequestException(
+        "Label with this name already exists in the project",
+      );
     }
 
     return labelRepository.create({
@@ -29,16 +31,18 @@ export const labelService = {
 
   async updateLabel(
     label: { id: string; projectId: string },
-    validatedData: { name?: string; color?: string }
+    validatedData: { name?: string; color?: string },
   ) {
     if (validatedData.name) {
       const existingLabel = await labelRepository.findDuplicateName(
         label.projectId,
         validatedData.name,
-        label.id
+        label.id,
       );
       if (existingLabel) {
-        throw new BadRequestException("Label with this name already exists in the project");
+        throw new BadRequestException(
+          "Label with this name already exists in the project",
+        );
       }
     }
 

@@ -16,7 +16,11 @@ export const labelController = {
 
     const validatedData = labelCreateSchema.parse(req.body);
 
-    const label = await labelService.createLabel(projectId, organizationId, validatedData);
+    const label = await labelService.createLabel(
+      projectId,
+      organizationId,
+      validatedData,
+    );
 
     return ok(res, "Label created successfully", label);
   }),

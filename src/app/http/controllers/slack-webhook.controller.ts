@@ -24,7 +24,10 @@ export const slackWebhookController = {
 
     const validatedData = webhookSchema.parse(req.body);
 
-    const webhook = await slackWebhookService.createWebhook(projectId, validatedData);
+    const webhook = await slackWebhookService.createWebhook(
+      projectId,
+      validatedData,
+    );
 
     return ok(res, "Slack webhook registered successfully", webhook);
   }),

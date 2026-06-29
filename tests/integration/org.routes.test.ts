@@ -39,14 +39,23 @@ describe("Org API Endpoint Integration Tests (/api/v1/org)", () => {
   describe("POST /api/v1/org/setup", () => {
     it("successfully sets up org", async () => {
       prismaMock.user.findUnique.mockResolvedValueOnce({ id: "user-123" });
-      prismaMock.session.findUnique.mockResolvedValueOnce({ id: "session-123" });
+      prismaMock.session.findUnique.mockResolvedValueOnce({
+        id: "session-123",
+      });
       prismaMock.member.findFirst.mockResolvedValueOnce(null);
       prismaMock.organization.findUnique.mockResolvedValueOnce(null);
 
-      const createdOrg = createOrganization({ id: "org-new", name: "Acme", slug: "acme" });
+      const createdOrg = createOrganization({
+        id: "org-new",
+        name: "Acme",
+        slug: "acme",
+      });
       prismaMock.organization.create.mockResolvedValueOnce(createdOrg);
       prismaMock.member.create.mockResolvedValueOnce({ id: "mem-new" });
-      prismaMock.workspace.create.mockResolvedValueOnce({ id: "ws-new", name: "Acme Ws" });
+      prismaMock.workspace.create.mockResolvedValueOnce({
+        id: "ws-new",
+        name: "Acme Ws",
+      });
       prismaMock.session.update.mockResolvedValueOnce({ id: "session-123" });
 
       const res = await request(app)
@@ -78,7 +87,10 @@ describe("Org API Endpoint Integration Tests (/api/v1/org)", () => {
 
   describe("POST /api/v1/org/members/invite", () => {
     it("returns 400 if email is missing", async () => {
-      prismaMock.member.findFirst.mockResolvedValueOnce({ id: "caller", role: "owner" });
+      prismaMock.member.findFirst.mockResolvedValueOnce({
+        id: "caller",
+        role: "owner",
+      });
 
       const res = await request(app)
         .post("/api/v1/org/members/invite")

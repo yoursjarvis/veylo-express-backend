@@ -32,7 +32,12 @@ export const automationService = {
   /**
    * Run automation rules for a project when a task status changes
    */
-  async handleTaskStatusChanged(taskId: string, userId: string, _fromStatusName: string, _toStatusName: string) {
+  async handleTaskStatusChanged(
+    taskId: string,
+    userId: string,
+    _fromStatusName: string,
+    _toStatusName: string,
+  ) {
     try {
       const task = await prisma.task.findUnique({
         where: { id: taskId },
@@ -73,7 +78,12 @@ export const automationService = {
   /**
    * Run automation rules for a project when a task priority changes
    */
-  async handlePriorityChanged(taskId: string, userId: string, fromPriority: string, toPriority: string) {
+  async handlePriorityChanged(
+    taskId: string,
+    userId: string,
+    fromPriority: string,
+    toPriority: string,
+  ) {
     try {
       const task = await prisma.task.findUnique({
         where: { id: taskId },
@@ -121,7 +131,9 @@ export const automationService = {
       if (!parentTask || parentTask.subtasks.length === 0) return;
 
       // Check if all subtasks are in the "done" category
-      const allDone = parentTask.subtasks.every((sub) => sub.status.category.toLowerCase() === "done");
+      const allDone = parentTask.subtasks.every(
+        (sub) => sub.status.category.toLowerCase() === "done",
+      );
 
       if (allDone) {
         const rules = await prisma.automationRule.findMany({
@@ -146,21 +158,30 @@ export const automationService = {
    */
   async executeAction(rule: AutomationRule, task: Task, userId: string) {
     try {
-      console.log(`Executing automation rule "${rule.name}" for task ${task.id} (${task.title})`);
+      console.log(
+        `Executing automation rule "${rule.name}" for task ${task.id} (${task.title})`,
+      );
       const { taskService } = await import("./task.service");
 
       if (rule.action === "close_parent" || rule.action === "update_status") {
         // Find a status in the project matching the actionVal (e.g. "Done" or "done")
         const targetStatusNameOrCategory = rule.actionVal || "Done";
-        
+
         // Find task status for the project
         const statuses = await prisma.taskStatus.findMany({
           where: { projectId: task.projectId },
         });
 
         const targetStatus =
-          statuses.find((s) => s.name.toLowerCase() === targetStatusNameOrCategory.toLowerCase()) ||
-          statuses.find((s) => s.category.toLowerCase() === targetStatusNameOrCategory.toLowerCase()) ||
+          statuses.find(
+            (s) =>
+              s.name.toLowerCase() === targetStatusNameOrCategory.toLowerCase(),
+          ) ||
+          statuses.find(
+            (s) =>
+              s.category.toLowerCase() ===
+              targetStatusNameOrCategory.toLowerCase(),
+          ) ||
           statuses.find((s) => s.category.toLowerCase() === "done");
 
         if (targetStatus && task.statusId !== targetStatus.id) {
@@ -182,7 +203,10 @@ export const automationService = {
         }
       } else if (rule.action === "set_priority") {
         const priorityVal = (rule.actionVal || "medium").toLowerCase();
-        if (["low", "medium", "high", "urgent"].includes(priorityVal) && task.priority !== priorityVal) {
+        if (
+          ["low", "medium", "high", "urgent"].includes(priorityVal) &&
+          task.priority !== priorityVal
+        ) {
           await taskService.updateTask(task.id, userId, {
             priority: priorityVal as "low" | "medium" | "high" | "urgent",
           });

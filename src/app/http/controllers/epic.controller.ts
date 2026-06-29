@@ -2,7 +2,10 @@ import type { Request, Response } from "express";
 
 import { asyncHandler } from "@/app/http/middlewares/async-handler.middleware";
 import { verifyProjectAccess } from "@/app/http/middlewares/project-access.middleware";
-import { epicCreateSchema, epicUpdateSchema } from "@/app/http/validators/epic.validator";
+import {
+  epicCreateSchema,
+  epicUpdateSchema,
+} from "@/app/http/validators/epic.validator";
 import { epicRepository } from "@/app/repositories/epic.repository";
 import { epicService } from "@/app/services/epic.service";
 import { NotFoundException } from "@/utils/app-error";
@@ -16,7 +19,11 @@ export const epicController = {
 
     const validatedData = epicCreateSchema.parse(req.body);
 
-    const epic = await epicService.createEpic(projectId, organizationId, validatedData);
+    const epic = await epicService.createEpic(
+      projectId,
+      organizationId,
+      validatedData,
+    );
 
     return ok(res, "Epic created successfully", epic);
   }),

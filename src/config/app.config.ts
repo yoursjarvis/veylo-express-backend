@@ -4,7 +4,7 @@ export default {
   name: env("APP_NAME").string("Veylo API"),
   env: env("NODE_ENV").enum(
     ["development", "production", "test"] as const,
-    "development"
+    "development",
   ),
   debug: env("APP_DEBUG").boolean(false),
   port: env("PORT").int(4000),

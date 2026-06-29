@@ -10,14 +10,16 @@ export const sprintService = {
       goal?: string | null;
       startDate?: string | null;
       endDate?: string | null;
-    }
+    },
   ) {
     return sprintRepository.create({
       name: validatedData.name,
       goal: validatedData.goal,
       projectId,
       organizationId,
-      startDate: validatedData.startDate ? new Date(validatedData.startDate) : null,
+      startDate: validatedData.startDate
+        ? new Date(validatedData.startDate)
+        : null,
       endDate: validatedData.endDate ? new Date(validatedData.endDate) : null,
       status: "planned",
     });
@@ -48,27 +50,34 @@ export const sprintService = {
       status?: "planned" | "active" | "completed";
       uncompletedTasksDestination?: string | null;
     },
-    userId: string
+    userId: string,
   ) {
     const sprintId = existingSprint.id;
     const updateData: Record<string, string | Date | null | undefined> = {};
     if (validatedData.name !== undefined) updateData.name = validatedData.name;
     if (validatedData.goal !== undefined) updateData.goal = validatedData.goal;
     if (validatedData.startDate !== undefined) {
-      updateData.startDate = validatedData.startDate ? new Date(validatedData.startDate) : null;
+      updateData.startDate = validatedData.startDate
+        ? new Date(validatedData.startDate)
+        : null;
     }
     if (validatedData.endDate !== undefined) {
-      updateData.endDate = validatedData.endDate ? new Date(validatedData.endDate) : null;
+      updateData.endDate = validatedData.endDate
+        ? new Date(validatedData.endDate)
+        : null;
     }
 
-    if (validatedData.status && validatedData.status !== existingSprint.status) {
+    if (
+      validatedData.status &&
+      validatedData.status !== existingSprint.status
+    ) {
       if (validatedData.status === "active") {
         const activeSprint = await sprintRepository.findFirstActiveByProjectId(
-          existingSprint.projectId
+          existingSprint.projectId,
         );
         if (activeSprint) {
           throw new BadRequestException(
-            "An active sprint already exists. Close it before starting a new one."
+            "An active sprint already exists. Close it before starting a new one.",
           );
         }
         updateData.status = "active";
@@ -84,16 +93,17 @@ export const sprintService = {
         if (destSprintId) {
           const destSprint = await sprintRepository.findSprintInProject(
             destSprintId,
-            existingSprint.projectId
+            existingSprint.projectId,
           );
           if (!destSprint) {
             throw new BadRequestException(
-              "Selected destination sprint does not belong to this project"
+              "Selected destination sprint does not belong to this project",
             );
           }
         }
 
-        const uncompletedTasks = await sprintRepository.findUncompletedTasksInSprint(sprintId);
+        const uncompletedTasks =
+          await sprintRepository.findUncompletedTasksInSprint(sprintId);
 
         if (uncompletedTasks.length > 0) {
           const taskIds = uncompletedTasks.map((t) => t.id);

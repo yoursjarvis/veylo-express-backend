@@ -6,14 +6,19 @@ import { ForbiddenException, NotFoundException } from "@/utils/app-error";
 export const mediaService = {
   async uploadAvatar(
     userId: string,
-    file: { buffer: Buffer; originalname: string; mimetype: string; size: number }
+    file: {
+      buffer: Buffer;
+      originalname: string;
+      mimetype: string;
+      size: number;
+    },
   ) {
     const media = await coreMediaService.addMedia(
       "User",
       userId,
       file,
       "avatars",
-      true // Replace existing avatars
+      true, // Replace existing avatars
     );
 
     const url = await coreMediaService.getUrl(media.id);
@@ -29,11 +34,18 @@ export const mediaService = {
   async uploadOrgLogo(
     userId: string,
     activeOrgId: string,
-    file: { buffer: Buffer; originalname: string; mimetype: string; size: number }
+    file: {
+      buffer: Buffer;
+      originalname: string;
+      mimetype: string;
+      size: number;
+    },
   ) {
     const member = await mediaRepository.findOrgMember(activeOrgId, userId);
     if (!member) {
-      throw new ForbiddenException("You do not have permission to upload logos for this organization");
+      throw new ForbiddenException(
+        "You do not have permission to upload logos for this organization",
+      );
     }
 
     const media = await coreMediaService.addMedia(
@@ -41,7 +53,7 @@ export const mediaService = {
       activeOrgId,
       file,
       "logos",
-      true // Replace existing logos
+      true, // Replace existing logos
     );
 
     const url = await coreMediaService.getUrl(media.id);
@@ -52,13 +64,24 @@ export const mediaService = {
     workspaceId: string,
     userId: string,
     activeOrgId: string,
-    file: { buffer: Buffer; originalname: string; mimetype: string; size: number }
+    file: {
+      buffer: Buffer;
+      originalname: string;
+      mimetype: string;
+      size: number;
+    },
   ) {
-    const workspaceMember = await mediaRepository.findWorkspaceMember(workspaceId, userId, activeOrgId);
+    const workspaceMember = await mediaRepository.findWorkspaceMember(
+      workspaceId,
+      userId,
+      activeOrgId,
+    );
     const orgAdmin = await mediaRepository.findOrgMember(activeOrgId, userId);
 
     if (!workspaceMember && !orgAdmin) {
-      throw new ForbiddenException("You do not have permission to upload icons for this workspace");
+      throw new ForbiddenException(
+        "You do not have permission to upload icons for this workspace",
+      );
     }
 
     const media = await coreMediaService.addMedia(
@@ -66,7 +89,7 @@ export const mediaService = {
       workspaceId,
       file,
       "icons",
-      true // Replace existing icon
+      true, // Replace existing icon
     );
 
     const url = await coreMediaService.getUrl(media.id);
@@ -83,7 +106,12 @@ export const mediaService = {
     projectId: string,
     userId: string,
     activeOrgId: string,
-    file: { buffer: Buffer; originalname: string; mimetype: string; size: number }
+    file: {
+      buffer: Buffer;
+      originalname: string;
+      mimetype: string;
+      size: number;
+    },
   ) {
     const project = await mediaRepository.findProjectById(projectId);
     if (!project) {
@@ -93,12 +121,14 @@ export const mediaService = {
     const workspaceMember = await mediaRepository.findWorkspaceMember(
       project.workspaceId,
       userId,
-      activeOrgId
+      activeOrgId,
     );
     const orgAdmin = await mediaRepository.findOrgMember(activeOrgId, userId);
 
     if (!workspaceMember && !orgAdmin) {
-      throw new ForbiddenException("You do not have permission to upload icons for this project");
+      throw new ForbiddenException(
+        "You do not have permission to upload icons for this project",
+      );
     }
 
     const media = await coreMediaService.addMedia(
@@ -106,7 +136,7 @@ export const mediaService = {
       projectId,
       file,
       "icons",
-      true // Replace existing icon
+      true, // Replace existing icon
     );
 
     const url = await coreMediaService.getUrl(media.id);
@@ -121,9 +151,20 @@ export const mediaService = {
 
   async uploadFile(
     userId: string,
-    file: { buffer: Buffer; originalname: string; mimetype: string; size: number }
+    file: {
+      buffer: Buffer;
+      originalname: string;
+      mimetype: string;
+      size: number;
+    },
   ) {
-    const media = await coreMediaService.addMedia("User", userId, file, "attachments", false);
+    const media = await coreMediaService.addMedia(
+      "User",
+      userId,
+      file,
+      "attachments",
+      false,
+    );
 
     const url = await coreMediaService.getUrl(media.id);
     return { media_id: media.id, url };
@@ -131,7 +172,12 @@ export const mediaService = {
 
   async uploadVersion(
     parentMediaId: string,
-    file: { buffer: Buffer; originalname: string; mimetype: string; size: number }
+    file: {
+      buffer: Buffer;
+      originalname: string;
+      mimetype: string;
+      size: number;
+    },
   ) {
     const parent = await prisma.media.findUnique({
       where: { id: parentMediaId },
@@ -153,7 +199,7 @@ export const mediaService = {
       parent.modelId,
       file,
       parent.collectionName,
-      false
+      false,
     );
 
     const updatedMedia = await prisma.media.update({
@@ -232,4 +278,3 @@ export const mediaService = {
     });
   },
 };
-

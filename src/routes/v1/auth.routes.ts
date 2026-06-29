@@ -15,7 +15,7 @@ authRoutes.post(
     key: (req) => `${req.ip}:${String(req.body?.email ?? "")}`.toLowerCase(),
     message: "Too many signup attempts",
   }),
-  authController.signup
+  authController.signup,
 );
 
 authRoutes.post(
@@ -27,7 +27,7 @@ authRoutes.post(
     key: (req) => `${req.ip}:${String(req.body?.email ?? "")}`.toLowerCase(),
     message: "Too many login attempts",
   }),
-  authController.login
+  authController.login,
 );
 
 authRoutes.post("/logout", requireAuth, authController.logout);
@@ -44,7 +44,7 @@ authRoutes.post(
     key: (req) => `${req.ip}:${String(req.body?.email ?? "")}`.toLowerCase(),
     message: "Too many requests",
   }),
-  authController.forgotPassword
+  authController.forgotPassword,
 );
 
 authRoutes.post(
@@ -56,7 +56,7 @@ authRoutes.post(
     key: (req) => `${req.ip}:${String(req.body?.token ?? "")}`,
     message: "Too many requests",
   }),
-  authController.resetPassword
+  authController.resetPassword,
 );
 authRoutes.post("/change-password", requireAuth, authController.changePassword);
 
@@ -67,6 +67,13 @@ authRoutes.post("/update-user", requireAuth, authController.updateUser);
 
 authRoutes.get("/verify-email", authController.verifyEmail);
 
-authRoutes.post("/two-factor/send-otp", requireAuth, authController.sendTwoFactorOtp);
-authRoutes.post("/two-factor/enable-social", requireAuth, authController.enableTwoFactorSocial);
-
+authRoutes.post(
+  "/two-factor/send-otp",
+  requireAuth,
+  authController.sendTwoFactorOtp,
+);
+authRoutes.post(
+  "/two-factor/enable-social",
+  requireAuth,
+  authController.enableTwoFactorSocial,
+);

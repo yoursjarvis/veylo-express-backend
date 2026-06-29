@@ -9,21 +9,27 @@ export function parseUserAgent(userAgent?: string): ParsedUserAgent {
 
   const ua = userAgent.toLowerCase();
 
-  const os =
-    ua.includes("windows") ? "Windows" :
-    ua.includes("iphone") || ua.includes("ipad") ? "iOS" :
-    ua.includes("mac os x") ? "macOS" :
-    ua.includes("android") ? "Android" :
-    ua.includes("linux") ? "Linux" :
-    undefined;
+  const os = ua.includes("windows")
+    ? "Windows"
+    : ua.includes("iphone") || ua.includes("ipad")
+      ? "iOS"
+      : ua.includes("mac os x")
+        ? "macOS"
+        : ua.includes("android")
+          ? "Android"
+          : ua.includes("linux")
+            ? "Linux"
+            : undefined;
 
-  const browser =
-    ua.includes("edg/") ? "Edge" :
-    ua.includes("chrome/") && !ua.includes("chromium") ? "Chrome" :
-    ua.includes("safari/") && !ua.includes("chrome/") ? "Safari" :
-    ua.includes("firefox/") ? "Firefox" :
-    undefined;
+  const browser = ua.includes("edg/")
+    ? "Edge"
+    : ua.includes("chrome/") && !ua.includes("chromium")
+      ? "Chrome"
+      : ua.includes("safari/") && !ua.includes("chrome/")
+        ? "Safari"
+        : ua.includes("firefox/")
+          ? "Firefox"
+          : undefined;
 
   return { browser, os };
 }
-

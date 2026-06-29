@@ -45,7 +45,7 @@ export const checklistTemplateService = {
       name?: string;
       description?: string | null;
       items?: string[];
-    }
+    },
   ) {
     await this.getTemplate(id);
     return prisma.checklistTemplate.update({
@@ -61,15 +61,22 @@ export const checklistTemplateService = {
     });
   },
 
-  async applyTemplateToTask(taskId: string, templateId: string, userId: string) {
+  async applyTemplateToTask(
+    taskId: string,
+    templateId: string,
+    userId: string,
+  ) {
     const template = await this.getTemplate(templateId);
     const parentTask = await taskExtrasRepository.findTaskById(taskId);
     if (!parentTask) {
       throw new NotFoundException("Parent task not found");
     }
 
-    const statuses = await taskExtrasRepository.findStatusesByProjectId(parentTask.projectId);
-    const todoStatus = statuses.find((s) => s.category === "todo") || statuses[0];
+    const statuses = await taskExtrasRepository.findStatusesByProjectId(
+      parentTask.projectId,
+    );
+    const todoStatus =
+      statuses.find((s) => s.category === "todo") || statuses[0];
     if (!todoStatus) {
       throw new NotFoundException("No status found for project");
     }
@@ -78,7 +85,9 @@ export const checklistTemplateService = {
     const createdSubtasks = [];
 
     for (const itemTitle of items) {
-      const projectData = await taskRepository.incrementTaskSequence(parentTask.projectId);
+      const projectData = await taskRepository.incrementTaskSequence(
+        parentTask.projectId,
+      );
       const taskKey = `${projectData.projectKey}-${projectData.taskSequence}`;
 
       const subtask = await taskExtrasRepository.createSubtask({

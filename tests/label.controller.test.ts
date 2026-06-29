@@ -7,7 +7,7 @@ vi.mock("../src/app/http/middlewares/async-handler.middleware", () => ({
 
 const { mockVerifyProjectAccess, prismaMock } = vi.hoisted(() => ({
   mockVerifyProjectAccess: vi.fn().mockResolvedValue({
-    project: { organizationId: "org-123" }
+    project: { organizationId: "org-123" },
   }),
   prismaMock: {
     label: {
@@ -25,7 +25,10 @@ vi.mock("../src/app/http/middlewares/project-access.middleware", () => ({
   verifyProjectAccess: mockVerifyProjectAccess,
 }));
 
-vi.mock("@/lib/prisma", () => ({ default: prismaMock, basePrisma: prismaMock }));
+vi.mock("@/lib/prisma", () => ({
+  default: prismaMock,
+  basePrisma: prismaMock,
+}));
 
 import { labelController } from "../src/app/http/controllers/label.controller";
 
@@ -44,12 +47,18 @@ describe("labelController", () => {
   describe("createLabel", () => {
     it("creates label successfully", async () => {
       prismaMock.label.findUnique.mockResolvedValueOnce(null);
-      const label = { id: "l1", name: "Bug", color: "#FF0000", projectId: "p1", organizationId: "org-123" };
+      const label = {
+        id: "l1",
+        name: "Bug",
+        color: "#FF0000",
+        projectId: "p1",
+        organizationId: "org-123",
+      };
       prismaMock.label.create.mockResolvedValueOnce(label);
 
       const req: any = {
         params: { projectId: "p1" },
-        body: { name: "Bug", color: "#FF0000" }
+        body: { name: "Bug", color: "#FF0000" },
       };
       const res = createRes();
 
@@ -62,7 +71,7 @@ describe("labelController", () => {
           color: "#FF0000",
           projectId: "p1",
           organizationId: "org-123",
-        }
+        },
       });
       expect(res.json).toHaveBeenCalledWith({
         success: true,
@@ -76,13 +85,13 @@ describe("labelController", () => {
 
       const req: any = {
         params: { projectId: "p1" },
-        body: { name: "Bug", color: "#FF0000" }
+        body: { name: "Bug", color: "#FF0000" },
       };
       const res = createRes();
 
-      await expect((labelController.createLabel as any)(req, res)).rejects.toThrow(
-        "Label with this name already exists in the project"
-      );
+      await expect(
+        (labelController.createLabel as any)(req, res),
+      ).rejects.toThrow("Label with this name already exists in the project");
     });
   });
 
@@ -115,7 +124,7 @@ describe("labelController", () => {
 
       const req: any = {
         params: { id: "l1" },
-        body: { name: "NewBug" }
+        body: { name: "NewBug" },
       };
       const res = createRes();
 
@@ -139,7 +148,9 @@ describe("labelController", () => {
       const req: any = { params: { id: "l1" }, body: { name: "Bug" } };
       const res = createRes();
 
-      await expect((labelController.updateLabel as any)(req, res)).rejects.toThrow("Label not found");
+      await expect(
+        (labelController.updateLabel as any)(req, res),
+      ).rejects.toThrow("Label not found");
     });
 
     it("throws BadRequestException if name conflict exists", async () => {
@@ -150,9 +161,9 @@ describe("labelController", () => {
       const req: any = { params: { id: "l1" }, body: { name: "Bug" } };
       const res = createRes();
 
-      await expect((labelController.updateLabel as any)(req, res)).rejects.toThrow(
-        "Label with this name already exists in the project"
-      );
+      await expect(
+        (labelController.updateLabel as any)(req, res),
+      ).rejects.toThrow("Label with this name already exists in the project");
     });
   });
 
@@ -167,7 +178,9 @@ describe("labelController", () => {
       await (labelController.deleteLabel as any)(req, res);
 
       expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1");
-      expect(prismaMock.label.delete).toHaveBeenCalledWith({ where: { id: "l1" } });
+      expect(prismaMock.label.delete).toHaveBeenCalledWith({
+        where: { id: "l1" },
+      });
       expect(res.json).toHaveBeenCalledWith({
         success: true,
         message: "Label deleted successfully",
@@ -181,7 +194,9 @@ describe("labelController", () => {
       const req: any = { params: { id: "l1" } };
       const res = createRes();
 
-      await expect((labelController.deleteLabel as any)(req, res)).rejects.toThrow("Label not found");
+      await expect(
+        (labelController.deleteLabel as any)(req, res),
+      ).rejects.toThrow("Label not found");
     });
   });
 });

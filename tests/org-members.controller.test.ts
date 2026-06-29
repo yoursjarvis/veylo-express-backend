@@ -5,7 +5,13 @@ vi.mock("../src/app/http/middlewares/async-handler.middleware", () => ({
   asyncHandler: (fn: unknown) => fn,
 }));
 
-const { mockGetSession, mockImpersonate, mockCreateInvitation, mockCancelInvitation, prismaMock } = vi.hoisted(() => ({
+const {
+  mockGetSession,
+  mockImpersonate,
+  mockCreateInvitation,
+  mockCancelInvitation,
+  prismaMock,
+} = vi.hoisted(() => ({
   mockGetSession: vi.fn(),
   mockImpersonate: vi.fn(),
   mockCreateInvitation: vi.fn(),
@@ -46,7 +52,10 @@ vi.mock("../src/lib/auth/node-headers", () => ({
   betterAuthHeaders: vi.fn(),
 }));
 
-vi.mock("@/lib/prisma", () => ({ default: prismaMock, basePrisma: prismaMock }));
+vi.mock("@/lib/prisma", () => ({
+  default: prismaMock,
+  basePrisma: prismaMock,
+}));
 
 vi.mock("csv-parse/sync", () => ({
   parse: vi.fn(() => [{ email: "csv@example.com", role: "member" }]),
@@ -84,32 +93,45 @@ describe("orgMembersController", () => {
       const req: any = { params: { id: "target-user" }, body: {} };
       const res = createRes();
 
-      await expect((orgMembersController.banMember as any)(req, res)).rejects.toThrow("Unauthorized");
+      await expect(
+        (orgMembersController.banMember as any)(req, res),
+      ).rejects.toThrow("Unauthorized");
     });
 
     it("throws BadRequestException if no active organization", async () => {
-      mockGetSession.mockResolvedValueOnce({ user: { id: "u1" }, session: { activeOrganizationId: null } });
+      mockGetSession.mockResolvedValueOnce({
+        user: { id: "u1" },
+        session: { activeOrganizationId: null },
+      });
 
       const req: any = { params: { id: "target-user" }, body: {} };
       const res = createRes();
 
-      await expect((orgMembersController.banMember as any)(req, res)).rejects.toThrow("No active organization found");
+      await expect(
+        (orgMembersController.banMember as any)(req, res),
+      ).rejects.toThrow("No active organization found");
     });
 
     it("throws ForbiddenException if caller is not org owner/admin", async () => {
-      mockGetSession.mockResolvedValueOnce({ user: { id: "u1" }, session: { activeOrganizationId: "org1" } });
+      mockGetSession.mockResolvedValueOnce({
+        user: { id: "u1" },
+        session: { activeOrganizationId: "org1" },
+      });
       prismaMock.member.findFirst.mockResolvedValueOnce(null); // not admin/owner
 
       const req: any = { params: { id: "target-user" }, body: {} };
       const res = createRes();
 
-      await expect((orgMembersController.banMember as any)(req, res)).rejects.toThrow(
-        "Forbidden: You must be an organization admin"
-      );
+      await expect(
+        (orgMembersController.banMember as any)(req, res),
+      ).rejects.toThrow("Forbidden: You must be an organization admin");
     });
 
     it("throws NotFoundException if target is not a member of organization", async () => {
-      mockGetSession.mockResolvedValueOnce({ user: { id: "u1" }, session: { activeOrganizationId: "org1" } });
+      mockGetSession.mockResolvedValueOnce({
+        user: { id: "u1" },
+        session: { activeOrganizationId: "org1" },
+      });
       prismaMock.member.findFirst
         .mockResolvedValueOnce({ id: "caller-mem", role: "owner" }) // caller
         .mockResolvedValueOnce(null); // target
@@ -117,13 +139,16 @@ describe("orgMembersController", () => {
       const req: any = { params: { id: "target-user" }, body: {} };
       const res = createRes();
 
-      await expect((orgMembersController.banMember as any)(req, res)).rejects.toThrow(
-        "Not Found: User is not a member of this organization"
-      );
+      await expect(
+        (orgMembersController.banMember as any)(req, res),
+      ).rejects.toThrow("Not Found: User is not a member of this organization");
     });
 
     it("throws ForbiddenException if admin tries to modify other admin/owner", async () => {
-      mockGetSession.mockResolvedValueOnce({ user: { id: "u1" }, session: { activeOrganizationId: "org1" } });
+      mockGetSession.mockResolvedValueOnce({
+        user: { id: "u1" },
+        session: { activeOrganizationId: "org1" },
+      });
       prismaMock.member.findFirst
         .mockResolvedValueOnce({ id: "caller-mem", role: "admin" }) // caller is admin
         .mockResolvedValueOnce({ id: "target-mem", role: "admin" }); // target is admin
@@ -131,22 +156,30 @@ describe("orgMembersController", () => {
       const req: any = { params: { id: "target-user" }, body: {} };
       const res = createRes();
 
-      await expect((orgMembersController.banMember as any)(req, res)).rejects.toThrow(
-        "Forbidden: Admins cannot modify other admins or owners"
+      await expect(
+        (orgMembersController.banMember as any)(req, res),
+      ).rejects.toThrow(
+        "Forbidden: Admins cannot modify other admins or owners",
       );
     });
   });
 
   describe("banMember", () => {
     it("bans user and revokes sessions successfully", async () => {
-      mockGetSession.mockResolvedValueOnce({ user: { id: "u1" }, session: { activeOrganizationId: "org1" } });
+      mockGetSession.mockResolvedValueOnce({
+        user: { id: "u1" },
+        session: { activeOrganizationId: "org1" },
+      });
       prismaMock.member.findFirst
         .mockResolvedValueOnce({ id: "caller-mem", role: "owner" })
         .mockResolvedValueOnce({ id: "target-mem", role: "member" });
       prismaMock.user.update.mockResolvedValueOnce({});
       prismaMock.session.deleteMany.mockResolvedValueOnce({});
 
-      const req: any = { params: { id: "target-user" }, body: { reason: "test reason" } };
+      const req: any = {
+        params: { id: "target-user" },
+        body: { reason: "test reason" },
+      };
       const res = createRes();
 
       await (orgMembersController.banMember as any)(req, res);
@@ -168,7 +201,10 @@ describe("orgMembersController", () => {
 
   describe("unbanMember", () => {
     it("unbans member successfully", async () => {
-      mockGetSession.mockResolvedValueOnce({ user: { id: "u1" }, session: { activeOrganizationId: "org1" } });
+      mockGetSession.mockResolvedValueOnce({
+        user: { id: "u1" },
+        session: { activeOrganizationId: "org1" },
+      });
       prismaMock.member.findFirst
         .mockResolvedValueOnce({ id: "caller-mem", role: "owner" })
         .mockResolvedValueOnce({ id: "target-mem", role: "member" });
@@ -193,7 +229,10 @@ describe("orgMembersController", () => {
 
   describe("revokeSessions", () => {
     it("revokes sessions successfully", async () => {
-      mockGetSession.mockResolvedValueOnce({ user: { id: "u1" }, session: { activeOrganizationId: "org1" } });
+      mockGetSession.mockResolvedValueOnce({
+        user: { id: "u1" },
+        session: { activeOrganizationId: "org1" },
+      });
       prismaMock.member.findFirst
         .mockResolvedValueOnce({ id: "caller-mem", role: "owner" })
         .mockResolvedValueOnce({ id: "target-mem", role: "member" });
@@ -217,7 +256,10 @@ describe("orgMembersController", () => {
 
   describe("impersonateUser", () => {
     it("impersonates via API successfully", async () => {
-      mockGetSession.mockResolvedValueOnce({ user: { id: "u1" }, session: { activeOrganizationId: "org1" } });
+      mockGetSession.mockResolvedValueOnce({
+        user: { id: "u1" },
+        session: { activeOrganizationId: "org1" },
+      });
       prismaMock.member.findFirst
         .mockResolvedValueOnce({ id: "caller-mem", role: "owner" })
         .mockResolvedValueOnce({ id: "target-mem", role: "member" });
@@ -237,12 +279,18 @@ describe("orgMembersController", () => {
     });
 
     it("falls back to manual prisma impersonation session if API fails", async () => {
-      mockGetSession.mockResolvedValue({ user: { id: "u1" }, session: { activeOrganizationId: "org1" } });
+      mockGetSession.mockResolvedValue({
+        user: { id: "u1" },
+        session: { activeOrganizationId: "org1" },
+      });
       prismaMock.member.findFirst
         .mockResolvedValue({ id: "caller-mem", role: "owner", userId: "u1" })
         .mockResolvedValue({ id: "target-mem", role: "member" });
       mockImpersonate.mockRejectedValueOnce(new Error("API check failed"));
-      prismaMock.session.create.mockResolvedValueOnce({ id: "s-manual", token: "man-tok" });
+      prismaMock.session.create.mockResolvedValueOnce({
+        id: "s-manual",
+        token: "man-tok",
+      });
 
       const req: any = { params: { id: "target-user" }, body: {} };
       const res = createRes();
@@ -250,14 +298,23 @@ describe("orgMembersController", () => {
       await (orgMembersController.impersonateUser as any)(req, res);
 
       expect(prismaMock.session.create).toHaveBeenCalled();
-      expect(res.setHeader).toHaveBeenCalledWith("Set-Cookie", expect.stringContaining("better-auth.session_token="));
+      expect(res.setHeader).toHaveBeenCalledWith(
+        "Set-Cookie",
+        expect.stringContaining("better-auth.session_token="),
+      );
     });
   });
 
   describe("bulkInvite", () => {
     it("returns 400 if no file uploaded", async () => {
-      mockGetSession.mockResolvedValueOnce({ user: { id: "u1" }, session: { activeOrganizationId: "org1" } });
-      prismaMock.member.findFirst.mockResolvedValueOnce({ id: "caller-mem", role: "owner" });
+      mockGetSession.mockResolvedValueOnce({
+        user: { id: "u1" },
+        session: { activeOrganizationId: "org1" },
+      });
+      prismaMock.member.findFirst.mockResolvedValueOnce({
+        id: "caller-mem",
+        role: "owner",
+      });
 
       const req: any = {};
       const res = createRes();
@@ -269,12 +326,22 @@ describe("orgMembersController", () => {
     });
 
     it("invites CSV members successfully", async () => {
-      mockGetSession.mockResolvedValueOnce({ user: { id: "u1" }, session: { activeOrganizationId: "org1" } });
-      prismaMock.member.findFirst.mockResolvedValueOnce({ id: "caller-mem", role: "owner" });
+      mockGetSession.mockResolvedValueOnce({
+        user: { id: "u1" },
+        session: { activeOrganizationId: "org1" },
+      });
+      prismaMock.member.findFirst.mockResolvedValueOnce({
+        id: "caller-mem",
+        role: "owner",
+      });
       mockCreateInvitation.mockResolvedValueOnce({ id: "inv-1" });
 
       const req: any = {
-        file: { mimetype: "text/csv", originalname: "invites.csv", buffer: Buffer.from("email,role\ntest@example.com,member") }
+        file: {
+          mimetype: "text/csv",
+          originalname: "invites.csv",
+          buffer: Buffer.from("email,role\ntest@example.com,member"),
+        },
       };
       const res = createRes();
 
@@ -291,8 +358,14 @@ describe("orgMembersController", () => {
 
   describe("inviteMember", () => {
     it("invites member successfully", async () => {
-      mockGetSession.mockResolvedValueOnce({ user: { id: "u1" }, session: { activeOrganizationId: "org1" } });
-      prismaMock.member.findFirst.mockResolvedValueOnce({ id: "caller-mem", role: "owner" });
+      mockGetSession.mockResolvedValueOnce({
+        user: { id: "u1" },
+        session: { activeOrganizationId: "org1" },
+      });
+      prismaMock.member.findFirst.mockResolvedValueOnce({
+        id: "caller-mem",
+        role: "owner",
+      });
       mockCreateInvitation.mockResolvedValueOnce({ id: "inv-1" });
 
       const req: any = { body: { email: "new@example.com", role: "member" } };
@@ -311,8 +384,14 @@ describe("orgMembersController", () => {
 
   describe("getMembers", () => {
     it("fetches members successfully", async () => {
-      mockGetSession.mockResolvedValueOnce({ user: { id: "u1" }, session: { activeOrganizationId: "org1" } });
-      prismaMock.member.findFirst.mockResolvedValueOnce({ id: "caller-mem", role: "owner" });
+      mockGetSession.mockResolvedValueOnce({
+        user: { id: "u1" },
+        session: { activeOrganizationId: "org1" },
+      });
+      prismaMock.member.findFirst.mockResolvedValueOnce({
+        id: "caller-mem",
+        role: "owner",
+      });
       prismaMock.member.findMany.mockResolvedValueOnce([{ id: "mem-1" }]);
 
       const req: any = { query: {} };
@@ -331,7 +410,14 @@ describe("orgMembersController", () => {
 
   describe("getInvitationPublic", () => {
     it("returns invitation details if pending", async () => {
-      const invitation = { id: "inv-1", email: "new@example.com", role: "member", status: "pending", expiresAt: new Date(), organization: { name: "Org", slug: "org" } };
+      const invitation = {
+        id: "inv-1",
+        email: "new@example.com",
+        role: "member",
+        status: "pending",
+        expiresAt: new Date(),
+        organization: { name: "Org", slug: "org" },
+      };
       prismaMock.invitation.findUnique.mockResolvedValueOnce(invitation);
 
       const req: any = { params: { id: "inv-1" } };
@@ -342,7 +428,10 @@ describe("orgMembersController", () => {
       expect(res.json).toHaveBeenCalledWith({
         success: true,
         message: "Invitation found",
-        data: expect.objectContaining({ id: "inv-1", email: "new@example.com" }),
+        data: expect.objectContaining({
+          id: "inv-1",
+          email: "new@example.com",
+        }),
       });
     });
 
@@ -355,14 +444,22 @@ describe("orgMembersController", () => {
       await (orgMembersController.getInvitationPublic as any)(req, res);
 
       expect(res.status).toHaveBeenCalledWith(404);
-      expect(res.json).toHaveBeenCalledWith({ message: "Invitation not found" });
+      expect(res.json).toHaveBeenCalledWith({
+        message: "Invitation not found",
+      });
     });
   });
 
   describe("getPendingInvitations", () => {
     it("fetches pending invitations", async () => {
-      mockGetSession.mockResolvedValueOnce({ user: { id: "u1" }, session: { activeOrganizationId: "org1" } });
-      prismaMock.member.findFirst.mockResolvedValueOnce({ id: "caller-mem", role: "owner" });
+      mockGetSession.mockResolvedValueOnce({
+        user: { id: "u1" },
+        session: { activeOrganizationId: "org1" },
+      });
+      prismaMock.member.findFirst.mockResolvedValueOnce({
+        id: "caller-mem",
+        role: "owner",
+      });
       prismaMock.invitation.findMany.mockResolvedValueOnce([{ id: "inv-1" }]);
 
       const req: any = {};
@@ -376,8 +473,14 @@ describe("orgMembersController", () => {
 
   describe("revokeInvitation", () => {
     it("revokes invitation successfully", async () => {
-      mockGetSession.mockResolvedValueOnce({ user: { id: "u1" }, session: { activeOrganizationId: "org1" } });
-      prismaMock.member.findFirst.mockResolvedValueOnce({ id: "caller-mem", role: "owner" });
+      mockGetSession.mockResolvedValueOnce({
+        user: { id: "u1" },
+        session: { activeOrganizationId: "org1" },
+      });
+      prismaMock.member.findFirst.mockResolvedValueOnce({
+        id: "caller-mem",
+        role: "owner",
+      });
       prismaMock.invitation.findFirst.mockResolvedValueOnce({ id: "inv-1" });
       mockCancelInvitation.mockResolvedValueOnce({ id: "inv-1" });
 

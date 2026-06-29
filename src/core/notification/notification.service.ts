@@ -40,9 +40,11 @@ export class NotificationService {
    */
   async send(
     notifiables: Notifiable | Notifiable[],
-    notification: Notification
+    notification: Notification,
   ): Promise<void> {
-    const notifiableList = Array.isArray(notifiables) ? notifiables : [notifiables];
+    const notifiableList = Array.isArray(notifiables)
+      ? notifiables
+      : [notifiables];
 
     const promises = notifiableList.flatMap((notifiable) => {
       // Resolve the channels to send via
@@ -60,7 +62,7 @@ export class NotificationService {
               recipientId: notifiable.id,
               notification: notification.constructor.name,
             },
-            `[NOTIFICATION] Failed to send notification via channel [${channel}]`
+            `[NOTIFICATION] Failed to send notification via channel [${channel}]`,
           );
         }
       });

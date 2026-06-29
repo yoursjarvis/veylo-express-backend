@@ -21,7 +21,9 @@ const { authServiceMock, configMock } = vi.hoisted(() => ({
   configMock: vi.fn(),
 }));
 
-vi.mock("../src/app/services/auth.service", () => ({ authService: authServiceMock }));
+vi.mock("../src/app/services/auth.service", () => ({
+  authService: authServiceMock,
+}));
 vi.mock("../src/utils/config", () => ({ config: configMock }));
 
 import { authController } from "../src/app/http/controllers/auth.controller";
@@ -276,7 +278,11 @@ describe("authController", () => {
 
     await (authController.verifyEmail as any)(req, res);
 
-    expect(authServiceMock.verifyEmail).toHaveBeenCalledWith(req, res, "0123456789");
+    expect(authServiceMock.verifyEmail).toHaveBeenCalledWith(
+      req,
+      res,
+      "0123456789",
+    );
     expect(res.json).toHaveBeenCalledWith({
       success: true,
       message: "Email verified",

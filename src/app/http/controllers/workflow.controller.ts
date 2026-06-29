@@ -7,12 +7,20 @@ import { ok } from "@/utils/http-response";
 export const workflowController = {
   async getTransitions(req: Request, res: Response) {
     const { projectId } = req.params;
-    const transitions = await workflowService.getProjectWorkflow(projectId as string);
+    const transitions = await workflowService.getProjectWorkflow(
+      projectId as string,
+    );
     return ok(res, "Transitions fetched successfully", transitions);
   },
 
   async createTransition(req: Request, res: Response) {
-    const { projectId, organizationId, fromStatusId, toStatusId, requiredRoleId } = req.body;
+    const {
+      projectId,
+      organizationId,
+      fromStatusId,
+      toStatusId,
+      requiredRoleId,
+    } = req.body;
     const transition = await workflowService.createTransition({
       projectId,
       organizationId,

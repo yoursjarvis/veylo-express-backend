@@ -7,7 +7,7 @@ import { betterAuthHeaders } from "@/lib/auth/node-headers";
 export const requirePermission = (
   requiredPermission: string,
   scopeTypeExtractor: (req: Request) => "ORGANIZATION" | "PROJECT",
-  scopeIdExtractor: (req: Request) => string
+  scopeIdExtractor: (req: Request) => string,
 ) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -23,18 +23,22 @@ export const requirePermission = (
       const scopeId = scopeIdExtractor(req);
 
       if (!scopeId) {
-        return res.status(400).json({ message: "Scope ID is missing in request" });
+        return res
+          .status(400)
+          .json({ message: "Scope ID is missing in request" });
       }
 
       const hasPermission = await rbacService.checkPermission(
         session.user.id,
         scopeType,
         scopeId,
-        requiredPermission
+        requiredPermission,
       );
 
       if (!hasPermission) {
-        return res.status(403).json({ message: "Forbidden: You do not have the required permissions." });
+        return res.status(403).json({
+          message: "Forbidden: You do not have the required permissions.",
+        });
       }
 
       next();

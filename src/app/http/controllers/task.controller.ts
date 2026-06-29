@@ -1,8 +1,14 @@
 import type { Request, Response } from "express";
 
 import { asyncHandler } from "@/app/http/middlewares/async-handler.middleware";
-import { verifyProjectAccess, resolveSession } from "@/app/http/middlewares/project-access.middleware";
-import { taskCreateSchema, taskUpdateSchema } from "@/app/http/validators/task.validator";
+import {
+  verifyProjectAccess,
+  resolveSession,
+} from "@/app/http/middlewares/project-access.middleware";
+import {
+  taskCreateSchema,
+  taskUpdateSchema,
+} from "@/app/http/validators/task.validator";
 import { taskService } from "@/app/services/task.service";
 import { mediaService } from "@/core/media";
 import { BadRequestException } from "@/utils/app-error";
@@ -20,7 +26,7 @@ export const taskController = {
       projectId,
       userId,
       organizationId,
-      validatedData
+      validatedData,
     );
 
     return ok(res, "Task created successfully", task);
@@ -57,7 +63,7 @@ export const taskController = {
     const updatedTask = await taskService.updateTask(
       taskId,
       userId,
-      validatedData
+      validatedData,
     );
 
     return ok(res, "Task updated successfully", updatedTask);
@@ -96,7 +102,7 @@ export const taskController = {
         size: req.file.size,
       },
       "task_attachments",
-      false
+      false,
     );
 
     const url = mediaService.generateUrl(media);

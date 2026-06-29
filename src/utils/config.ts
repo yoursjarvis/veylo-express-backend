@@ -27,16 +27,18 @@ type PathValue<T, P extends string> = P extends `${infer K}.${infer Rest}`
 type ConfigKey = Paths<typeof configs>;
 
 export function config<K extends ConfigKey>(
-  key: K
+  key: K,
 ): PathValue<typeof configs, K> {
-  const value = key
-    .split(".")
-    .reduce<unknown>((obj, part) => {
-      if (obj && typeof obj === "object" && part in (obj as Record<string, unknown>)) {
-        return (obj as Record<string, unknown>)[part];
-      }
-      return undefined;
-    }, configs as unknown);
+  const value = key.split(".").reduce<unknown>((obj, part) => {
+    if (
+      obj &&
+      typeof obj === "object" &&
+      part in (obj as Record<string, unknown>)
+    ) {
+      return (obj as Record<string, unknown>)[part];
+    }
+    return undefined;
+  }, configs as unknown);
 
   return value as PathValue<typeof configs, K>;
 }

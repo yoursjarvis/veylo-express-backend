@@ -28,7 +28,7 @@ export const projectController = {
     const project = await projectService.createProject(
       workspaceId,
       activeOrgId,
-      validatedData
+      validatedData,
     );
 
     return ok(res, "Project created successfully", project);
@@ -39,11 +39,13 @@ export const projectController = {
     return ok(res, "Project templates fetched successfully", templates);
   }),
 
-  getProjectTemplateBySlug: asyncHandler(async (req: Request, res: Response) => {
-    const slug = req.params.slug as string;
-    const template = await projectService.getProjectTemplateBySlug(slug);
-    return ok(res, "Project template fetched successfully", template);
-  }),
+  getProjectTemplateBySlug: asyncHandler(
+    async (req: Request, res: Response) => {
+      const slug = req.params.slug as string;
+      const template = await projectService.getProjectTemplateBySlug(slug);
+      return ok(res, "Project template fetched successfully", template);
+    },
+  ),
 
   getProjects: asyncHandler(async (req: Request, res: Response) => {
     const workspaceId = req.params.workspaceId as string;
@@ -61,7 +63,11 @@ export const projectController = {
       userId = ctx.userId;
     }
 
-    const projects = await projectService.getProjects(workspaceId, canSeeAll, userId);
+    const projects = await projectService.getProjects(
+      workspaceId,
+      canSeeAll,
+      userId,
+    );
 
     return ok(res, "Projects fetched successfully", projects);
   }),
@@ -81,7 +87,10 @@ export const projectController = {
 
     const validatedData = projectUpdateSchema.parse(req.body);
 
-    const updatedProject = await projectService.updateProject(projectId, validatedData);
+    const updatedProject = await projectService.updateProject(
+      projectId,
+      validatedData,
+    );
 
     return ok(res, "Project updated successfully", updatedProject);
   }),
@@ -110,7 +119,12 @@ export const projectController = {
     const { project, userId } = await verifyProjectAdmin(req, projectId);
     const { userIds } = req.body as { userIds: string[] };
 
-    const members = await projectService.addProjectMembers(projectId, project.workspaceId, userIds, userId);
+    const members = await projectService.addProjectMembers(
+      projectId,
+      project.workspaceId,
+      userIds,
+      userId,
+    );
 
     return ok(res, "Members assigned to project", members);
   }),
@@ -164,7 +178,11 @@ export const projectController = {
     const serviceId = req.params.serviceId as string;
     const { key, value, note } = vaultItemSchema.parse(req.body);
 
-    const result = await projectService.addOrUpdateVaultItem(serviceId, { key, value, note });
+    const result = await projectService.addOrUpdateVaultItem(serviceId, {
+      key,
+      value,
+      note,
+    });
 
     return ok(res, "Vault item saved successfully", result);
   }),
@@ -176,7 +194,10 @@ export const projectController = {
     const itemId = req.params.itemId as string;
     const { value, note } = updateVaultItemSchema.parse(req.body);
 
-    const result = await projectService.updateVaultItem(itemId, { value, note });
+    const result = await projectService.updateVaultItem(itemId, {
+      value,
+      note,
+    });
 
     return ok(res, "Vault item updated successfully", result);
   }),
@@ -201,7 +222,10 @@ export const projectController = {
       throw new BadRequestException("No file uploaded");
     }
 
-    const fileDetails = await projectService.uploadProjectFile(projectId, req.file);
+    const fileDetails = await projectService.uploadProjectFile(
+      projectId,
+      req.file,
+    );
 
     return ok(res, "File uploaded successfully", fileDetails);
   }),

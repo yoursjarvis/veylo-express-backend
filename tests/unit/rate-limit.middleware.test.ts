@@ -79,7 +79,10 @@ describe("rate-limit middleware", () => {
     middleware(req, res, next);
     expect(next).toHaveBeenCalledTimes(2); // still 2
     expect(res.status).toHaveBeenCalledWith(429);
-    expect(res.setHeader).toHaveBeenCalledWith("Retry-After", expect.any(Number));
+    expect(res.setHeader).toHaveBeenCalledWith(
+      "Retry-After",
+      expect.any(Number),
+    );
     expect(res.json).toHaveBeenCalledWith({
       success: false,
       message: "Too many requests",

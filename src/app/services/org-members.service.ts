@@ -13,16 +13,30 @@ import {
 } from "@/utils/app-error";
 
 export const orgMembersService = {
-  async verifyAdminAccess(activeOrgId: string, sessionUserId: string, targetUserId?: string) {
-    const callerMember = await orgMembersRepository.findCallerMember(activeOrgId, sessionUserId);
+  async verifyAdminAccess(
+    activeOrgId: string,
+    sessionUserId: string,
+    targetUserId?: string,
+  ) {
+    const callerMember = await orgMembersRepository.findCallerMember(
+      activeOrgId,
+      sessionUserId,
+    );
     if (!callerMember) {
-      throw new ForbiddenException("Forbidden: You must be an organization admin");
+      throw new ForbiddenException(
+        "Forbidden: You must be an organization admin",
+      );
     }
 
     if (targetUserId) {
-      const targetMember = await orgMembersRepository.findTargetMember(activeOrgId, targetUserId);
+      const targetMember = await orgMembersRepository.findTargetMember(
+        activeOrgId,
+        targetUserId,
+      );
       if (!targetMember) {
-        throw new NotFoundException("Not Found: User is not a member of this organization");
+        throw new NotFoundException(
+          "Not Found: User is not a member of this organization",
+        );
       }
 
       // Prevent modifying other admins if caller is not owner
@@ -30,26 +44,44 @@ export const orgMembersService = {
         callerMember.role === "admin" &&
         (targetMember.role === "admin" || targetMember.role === "owner")
       ) {
-        throw new ForbiddenException("Forbidden: Admins cannot modify other admins or owners");
+        throw new ForbiddenException(
+          "Forbidden: Admins cannot modify other admins or owners",
+        );
       }
     }
 
     return callerMember;
   },
 
-  async banMember(activeOrgId: string, sessionUserId: string, targetUserId: string, reason?: string) {
+  async banMember(
+    activeOrgId: string,
+    sessionUserId: string,
+    targetUserId: string,
+    reason?: string,
+  ) {
     await this.verifyAdminAccess(activeOrgId, sessionUserId, targetUserId);
 
-    await orgMembersRepository.banUser(targetUserId, reason || "Banned by organization admin");
+    await orgMembersRepository.banUser(
+      targetUserId,
+      reason || "Banned by organization admin",
+    );
     await orgMembersRepository.deleteSessionsByUserId(targetUserId);
   },
 
-  async unbanMember(activeOrgId: string, sessionUserId: string, targetUserId: string) {
+  async unbanMember(
+    activeOrgId: string,
+    sessionUserId: string,
+    targetUserId: string,
+  ) {
     await this.verifyAdminAccess(activeOrgId, sessionUserId, targetUserId);
     await orgMembersRepository.unbanUser(targetUserId);
   },
 
-  async revokeSessions(activeOrgId: string, sessionUserId: string, targetUserId: string) {
+  async revokeSessions(
+    activeOrgId: string,
+    sessionUserId: string,
+    targetUserId: string,
+  ) {
     await this.verifyAdminAccess(activeOrgId, sessionUserId, targetUserId);
     await orgMembersRepository.deleteSessionsByUserId(targetUserId);
   },
@@ -58,13 +90,18 @@ export const orgMembersService = {
     activeOrgId: string,
     sessionUserId: string,
     targetUserId: string,
-    headers: HeadersInit
+    headers: HeadersInit,
   ) {
-    const callerMember = await this.verifyAdminAccess(activeOrgId, sessionUserId, targetUserId);
+    const callerMember = await this.verifyAdminAccess(
+      activeOrgId,
+      sessionUserId,
+      targetUserId,
+    );
 
     try {
       // Create impersonated session using Better Auth API
-      const impersonateUser = (auth.api as Record<string, unknown>).impersonateUser as (options: {
+      const impersonateUser = (auth.api as Record<string, unknown>)
+        .impersonateUser as (options: {
         body: { userId: string };
         headers: HeadersInit;
       }) => Promise<unknown>;
@@ -96,7 +133,7 @@ export const orgMembersService = {
       search?: string;
       role?: string;
       status?: string;
-    }
+    },
   ) {
     await this.verifyAdminAccess(activeOrgId, sessionUserId);
 
@@ -119,7 +156,8 @@ export const orgMembersService = {
   },
 
   async getInvitationPublic(invitationId: string) {
-    const invitation = await orgMembersRepository.findInvitationById(invitationId);
+    const invitation =
+      await orgMembersRepository.findInvitationById(invitationId);
     if (!invitation) {
       throw new NotFoundException("Invitation not found");
     }
@@ -145,9 +183,21 @@ export const orgMembersService = {
     return orgMembersRepository.findPendingInvitations(activeOrgId);
   },
 
-  async inviteMember(activeOrgId: string, email: string, role: string, projectIds: string[] | undefined, headers: HeadersInit) {
-    const createInvitation = (auth.api as Record<string, unknown>).createInvitation as (options: {
-      body: { email: string; role: string; organizationId: string; resend: boolean };
+  async inviteMember(
+    activeOrgId: string,
+    email: string,
+    role: string,
+    projectIds: string[] | undefined,
+    headers: HeadersInit,
+  ) {
+    const createInvitation = (auth.api as Record<string, unknown>)
+      .createInvitation as (options: {
+      body: {
+        email: string;
+        role: string;
+        organizationId: string;
+        resend: boolean;
+      };
       headers: HeadersInit;
     }) => Promise<{ id: string; [key: string]: unknown } | null>;
     const invitation = await createInvitation({
@@ -173,7 +223,7 @@ export const orgMembersService = {
   async bulkInvite(
     activeOrgId: string,
     file: { buffer: Buffer; mimetype: string; originalname: string },
-    headers: HeadersInit
+    headers: HeadersInit,
   ) {
     let records: Record<string, unknown>[] = [];
 
@@ -182,12 +232,20 @@ export const orgMembersService = {
         columns: true,
         skip_empty_lines: true,
       }) as Record<string, unknown>[];
-    } else if (file.originalname.endsWith(".xlsx") || file.originalname.endsWith(".xls")) {
+    } else if (
+      file.originalname.endsWith(".xlsx") ||
+      file.originalname.endsWith(".xls")
+    ) {
       const workbook = xlsx.read(file.buffer, { type: "buffer" });
       const sheetName = workbook.SheetNames[0];
-      records = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName]) as Record<string, unknown>[];
+      records = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName]) as Record<
+        string,
+        unknown
+      >[];
     } else {
-      throw new BadRequestException("Unsupported file type. Please upload CSV or Excel.");
+      throw new BadRequestException(
+        "Unsupported file type. Please upload CSV or Excel.",
+      );
     }
 
     const results = {
@@ -196,13 +254,21 @@ export const orgMembersService = {
       errors: [] as string[],
     };
 
-    const createInvitation = (auth.api as Record<string, unknown>).createInvitation as (options: {
-      body: { email: string; role: string; organizationId: string; resend: boolean };
+    const createInvitation = (auth.api as Record<string, unknown>)
+      .createInvitation as (options: {
+      body: {
+        email: string;
+        role: string;
+        organizationId: string;
+        resend: boolean;
+      };
       headers: HeadersInit;
     }) => Promise<unknown>;
 
     for (const record of records) {
-      const email = (record.email as string | undefined) || (record.Email as string | undefined);
+      const email =
+        (record.email as string | undefined) ||
+        (record.Email as string | undefined);
       const role = String(record.role || record.Role || "member").toLowerCase();
 
       if (!email) {
@@ -226,22 +292,33 @@ export const orgMembersService = {
       } catch (error) {
         const err = error as Error;
         results.failed++;
-        results.errors.push(`Failed to invite ${email}: ${err.message || "Unknown error"}`);
+        results.errors.push(
+          `Failed to invite ${email}: ${err.message || "Unknown error"}`,
+        );
       }
     }
 
     return results;
   },
 
-  async revokeInvitation(activeOrgId: string, sessionUserId: string, id: string, headers: HeadersInit) {
+  async revokeInvitation(
+    activeOrgId: string,
+    sessionUserId: string,
+    id: string,
+    headers: HeadersInit,
+  ) {
     await this.verifyAdminAccess(activeOrgId, sessionUserId);
 
-    const invitation = await orgMembersRepository.findInvitationInOrg(id, activeOrgId);
+    const invitation = await orgMembersRepository.findInvitationInOrg(
+      id,
+      activeOrgId,
+    );
     if (!invitation) {
       throw new NotFoundException("Invitation not found in this organization");
     }
 
-    const cancelInvitation = (auth.api as Record<string, unknown>).cancelInvitation as (options: {
+    const cancelInvitation = (auth.api as Record<string, unknown>)
+      .cancelInvitation as (options: {
       body: { invitationId: string };
       headers: HeadersInit;
     }) => Promise<unknown>;

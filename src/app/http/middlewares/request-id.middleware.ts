@@ -5,7 +5,7 @@ import { type NextFunction, type Request, type Response } from "express";
 export const requestIdMiddleware = (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const id = randomUUID();
 

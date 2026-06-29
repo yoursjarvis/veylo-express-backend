@@ -1,5 +1,9 @@
 import prisma from "@/lib/prisma";
-import { NotFoundException, ForbiddenException, BadRequestException } from "@/utils/app-error";
+import {
+  NotFoundException,
+  ForbiddenException,
+  BadRequestException,
+} from "@/utils/app-error";
 
 export const workLogService = {
   async createWorkLog(
@@ -9,7 +13,7 @@ export const workLogService = {
       hoursLogged: number;
       loggedAt?: string;
       description?: string | null;
-    }
+    },
   ) {
     if (data.hoursLogged <= 0) {
       throw new BadRequestException("Hours logged must be greater than zero");
@@ -92,7 +96,7 @@ export const workLogService = {
       hoursLogged?: number;
       loggedAt?: string;
       description?: string | null;
-    }
+    },
   ) {
     const workLog = await prisma.workLog.findUnique({
       where: { id: workLogId },
@@ -111,9 +115,12 @@ export const workLogService = {
     }
 
     const updateData: Record<string, number | Date | string | null> = {};
-    if (data.hoursLogged !== undefined) updateData.hoursLogged = data.hoursLogged;
-    if (data.loggedAt !== undefined) updateData.loggedAt = new Date(data.loggedAt);
-    if (data.description !== undefined) updateData.description = data.description;
+    if (data.hoursLogged !== undefined)
+      updateData.hoursLogged = data.hoursLogged;
+    if (data.loggedAt !== undefined)
+      updateData.loggedAt = new Date(data.loggedAt);
+    if (data.description !== undefined)
+      updateData.description = data.description;
 
     return prisma.workLog.update({
       where: { id: workLogId },

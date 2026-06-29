@@ -10,35 +10,35 @@ mediaRoutes.post(
   "/avatar",
   requireAuth,
   upload.single("avatar"),
-  mediaController.uploadAvatar
+  mediaController.uploadAvatar,
 );
 
 mediaRoutes.post(
   "/org/logo",
   requireAuth,
   upload.single("logo"),
-  mediaController.uploadOrgLogo
+  mediaController.uploadOrgLogo,
 );
 
 mediaRoutes.post(
   "/workspace/:id/icon",
   requireAuth,
   upload.single("icon"),
-  mediaController.uploadWorkspaceIcon
+  mediaController.uploadWorkspaceIcon,
 );
 
 mediaRoutes.post(
   "/project/:id/icon",
   requireAuth,
   upload.single("icon"),
-  mediaController.uploadProjectIcon
+  mediaController.uploadProjectIcon,
 );
 
 mediaRoutes.post(
   "/upload",
   requireAuth,
   upload.single("file"),
-  mediaController.uploadFile
+  mediaController.uploadFile,
 );
 
 // Versioning & Annotations
@@ -46,25 +46,23 @@ mediaRoutes.post(
   "/media/:parentMediaId/version",
   requireAuth,
   upload.single("file"),
-  mediaController.uploadVersion
+  mediaController.uploadVersion,
 );
 
 mediaRoutes.post(
   "/media/:mediaId/annotations",
   requireAuth,
-  mediaController.createAnnotation
+  mediaController.createAnnotation,
 );
 
 mediaRoutes.get(
   "/media/:mediaId/annotations",
   requireAuth,
-  mediaController.getAnnotations
+  mediaController.getAnnotations,
 );
 
 mediaRoutes.delete(
   "/annotations/:id",
   requireAuth,
-  mediaController.deleteAnnotation
+  mediaController.deleteAnnotation,
 );
-
-

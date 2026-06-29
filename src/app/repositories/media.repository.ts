@@ -18,7 +18,11 @@ export const mediaRepository = {
     });
   },
 
-  async findWorkspaceMember(workspaceId: string, userId: string, activeOrgId: string) {
+  async findWorkspaceMember(
+    workspaceId: string,
+    userId: string,
+    activeOrgId: string,
+  ) {
     return prisma.workspaceMember.findFirst({
       where: {
         workspaceId,

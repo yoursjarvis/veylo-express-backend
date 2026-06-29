@@ -21,26 +21,33 @@ export const authService = {
   async signUp(
     req: Request,
     res: Response,
-    input: { firstName: string; lastName: string; email: string; password: string }
+    input: {
+      firstName: string;
+      lastName: string;
+      email: string;
+      password: string;
+    },
   ) {
     const headers = betterAuthHeaders(req);
     const callbackURL = config("auth.betterAuth.emailVerificationRedirectURL");
 
-    const result = await (auth.api.signUpEmail as unknown as (options: {
-      headers: HeadersInit;
-      returnHeaders: boolean;
-      body: Record<string, unknown>;
-    }) => Promise<{
-      response: {
-        user?: {
-          id: string;
-          email: string;
-          name: string;
-          emailVerified: boolean;
+    const result = await (
+      auth.api.signUpEmail as unknown as (options: {
+        headers: HeadersInit;
+        returnHeaders: boolean;
+        body: Record<string, unknown>;
+      }) => Promise<{
+        response: {
+          user?: {
+            id: string;
+            email: string;
+            name: string;
+            emailVerified: boolean;
+          } | null;
         } | null;
-      } | null;
-      headers: Headers;
-    }>)({
+        headers: Headers;
+      }>
+    )({
       headers,
       returnHeaders: true,
       body: {
@@ -57,26 +64,33 @@ export const authService = {
 
     // Auto-login if the user was invited (email verified via hook)
     if (result.response?.user?.emailVerified) {
-       try {
-         const loginResult = await auth.api.signInEmail({
-            headers,
-            returnHeaders: true,
-            body: {
-               email: input.email,
-               password: input.password,
-            }
-         });
-         forwardSetCookie(res, loginResult.headers);
-         return loginResult.response;
-       } catch (error) {
-          logger.error({ error, email: input.email }, "[AUTH][signup] auto-login failed");
-       }
+      try {
+        const loginResult = await auth.api.signInEmail({
+          headers,
+          returnHeaders: true,
+          body: {
+            email: input.email,
+            password: input.password,
+          },
+        });
+        forwardSetCookie(res, loginResult.headers);
+        return loginResult.response;
+      } catch (error) {
+        logger.error(
+          { error, email: input.email },
+          "[AUTH][signup] auto-login failed",
+        );
+      }
     }
 
     return result.response;
   },
 
-  async login(req: Request, res: Response, input: { email: string; password: string }) {
+  async login(
+    req: Request,
+    res: Response,
+    input: { email: string; password: string },
+  ) {
     const headers = betterAuthHeaders(req);
     const now = new Date();
     const email = input.email.trim().toLowerCase();
@@ -90,7 +104,10 @@ export const authService = {
       }
     }
 
-    let result: { response: { token?: string } & Record<string, unknown>; headers: Headers };
+    let result: {
+      response: { token?: string } & Record<string, unknown>;
+      headers: Headers;
+    };
     try {
       result = await auth.api.signInEmail({
         headers,
@@ -119,7 +136,10 @@ export const authService = {
         }
       }
 
-      logger.error({ error, email }, "[AUTH][login] unexpected sign-in failure");
+      logger.error(
+        { error, email },
+        "[AUTH][login] unexpected sign-in failure",
+      );
       throw new UnauthorizedException("Invalid credentials");
     }
 
@@ -137,7 +157,10 @@ export const authService = {
           lastActiveAt: now,
         });
       } catch (error) {
-        logger.error({ error, email }, "[AUTH][login] session metadata update failed");
+        logger.error(
+          { error, email },
+          "[AUTH][login] session metadata update failed",
+        );
       }
     }
 
@@ -145,7 +168,10 @@ export const authService = {
       try {
         await authRepository.markLoginSuccess(user.id, now);
       } catch (error) {
-        logger.error({ error, userId: user.id, email }, "[AUTH][login] login success bookkeeping failed");
+        logger.error(
+          { error, userId: user.id, email },
+          "[AUTH][login] login success bookkeeping failed",
+        );
       }
     }
 
@@ -194,7 +220,10 @@ export const authService = {
     return result.response;
   },
 
-  async requestPasswordReset(req: Request, input: { email: string; redirectTo: string }) {
+  async requestPasswordReset(
+    req: Request,
+    input: { email: string; redirectTo: string },
+  ) {
     const headers = betterAuthHeaders(req);
     await auth.api.requestPasswordReset({
       headers,
@@ -208,7 +237,7 @@ export const authService = {
   async resetPassword(
     req: Request,
     res: Response,
-    input: { token: string; newPassword: string }
+    input: { token: string; newPassword: string },
   ) {
     const headers = betterAuthHeaders(req);
     const result = await auth.api.resetPassword({
@@ -234,7 +263,10 @@ export const authService = {
     });
     forwardSetCookie(res, result.headers);
 
-    if (verification && (result.response as Record<string, unknown> | null)?.status !== false) {
+    if (
+      verification &&
+      (result.response as Record<string, unknown> | null)?.status !== false
+    ) {
       const user = await prisma.user.findUnique({
         where: { email: verification.identifier },
       });
@@ -242,10 +274,15 @@ export const authService = {
         try {
           void mailService
             .to(user.email, user.name || undefined)
-            .view("welcome", { firstName: (user as Record<string, unknown>).firstName as string })
+            .view("welcome", {
+              firstName: (user as Record<string, unknown>).firstName as string,
+            })
             .queue();
         } catch (error) {
-          logger.error({ error, userId: user.id }, "[AUTH][welcome] enqueue failed after verification");
+          logger.error(
+            { error, userId: user.id },
+            "[AUTH][welcome] enqueue failed after verification",
+          );
         }
       }
     }
@@ -256,7 +293,7 @@ export const authService = {
   async changePassword(
     req: Request,
     res: Response,
-    input: { currentPassword: string; newPassword: string }
+    input: { currentPassword: string; newPassword: string },
   ) {
     const headers = betterAuthHeaders(req);
     const sessionResult = await auth.api.getSession({ headers });
@@ -291,7 +328,10 @@ export const authService = {
     const headers = betterAuthHeaders(req);
 
     // Authorization is enforced by matching against the authenticated user.
-    const sessionResult = await auth.api.getSession({ headers, returnHeaders: true });
+    const sessionResult = await auth.api.getSession({
+      headers,
+      returnHeaders: true,
+    });
     const userId = sessionResult.response?.user?.id;
     if (!userId) throw new UnauthorizedException();
 
@@ -312,7 +352,13 @@ export const authService = {
   async updateUser(
     req: Request,
     res: Response,
-    input: { firstName?: string; lastName?: string; name?: string; image?: string; notificationPreferences?: string }
+    input: {
+      firstName?: string;
+      lastName?: string;
+      name?: string;
+      image?: string;
+      notificationPreferences?: string;
+    },
   ) {
     const headers = betterAuthHeaders(req);
     const result = await auth.api.updateUser({
@@ -348,14 +394,22 @@ export const authService = {
     try {
       void mailService
         .to(session.user.email, session.user.name ?? undefined)
-        .view("two-factor-otp", { otp, firstName: (session.user as Record<string, unknown>).firstName as string })
+        .view("two-factor-otp", {
+          otp,
+          firstName: (session.user as Record<string, unknown>)
+            .firstName as string,
+        })
         .queue();
     } catch (error) {
       logger.error({ error }, "[AUTH][two-factor-otp] enqueue failed");
     }
   },
 
-  async enableTwoFactorSocial(req: Request, res: Response, input: { otp: string }) {
+  async enableTwoFactorSocial(
+    req: Request,
+    res: Response,
+    input: { otp: string },
+  ) {
     const headers = betterAuthHeaders(req);
     const session = await auth.api.getSession({ headers });
     if (!session?.user) throw new UnauthorizedException();
@@ -378,7 +432,8 @@ export const authService = {
     await prisma.verification.delete({ where: { id: verification.id } });
 
     // Enable 2FA.
-    const enableTwoFactor = (auth.api as Record<string, unknown>).enableTwoFactor as (options: {
+    const enableTwoFactor = (auth.api as Record<string, unknown>)
+      .enableTwoFactor as (options: {
       headers: HeadersInit;
       body: Record<string, unknown>;
     }) => Promise<{ data?: unknown; [key: string]: unknown }>;

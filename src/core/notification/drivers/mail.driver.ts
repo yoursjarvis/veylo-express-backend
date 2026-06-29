@@ -5,11 +5,14 @@ import { NotificationDriver } from "../contracts/notification-driver";
 import { Notifiable, Notification } from "../notification.types";
 
 export class MailDriver implements NotificationDriver {
-  async send(notifiable: Notifiable, notification: Notification): Promise<void> {
+  async send(
+    notifiable: Notifiable,
+    notification: Notification,
+  ): Promise<void> {
     if (typeof notification.toMail !== "function") {
       logger.warn(
         { notification: notification.constructor.name },
-        "[NOTIFICATION][mail] toMail method not found on notification"
+        "[NOTIFICATION][mail] toMail method not found on notification",
       );
       return;
     }
@@ -20,8 +23,11 @@ export class MailDriver implements NotificationDriver {
 
       if (!email) {
         logger.error(
-          { recipientId: notifiable.id, notification: notification.constructor.name },
-          "[NOTIFICATION][mail] Recipient has no email address"
+          {
+            recipientId: notifiable.id,
+            notification: notification.constructor.name,
+          },
+          "[NOTIFICATION][mail] Recipient has no email address",
         );
         return;
       }
@@ -32,11 +38,13 @@ export class MailDriver implements NotificationDriver {
           email,
           notification: notification.constructor.name,
         },
-        "[NOTIFICATION][mail] Sending email notification"
+        "[NOTIFICATION][mail] Sending email notification",
       );
 
       if ("template" in payload) {
-        const mailBuilder = mailService.to(email).view(payload.template, payload.data);
+        const mailBuilder = mailService
+          .to(email)
+          .view(payload.template, payload.data);
         if (payload.subject) {
           mailBuilder.subject(payload.subject);
         }
@@ -58,8 +66,12 @@ export class MailDriver implements NotificationDriver {
       }
     } catch (error) {
       logger.error(
-        { error, recipientId: notifiable.id, notification: notification.constructor.name },
-        "[NOTIFICATION][mail] Failed to send email notification"
+        {
+          error,
+          recipientId: notifiable.id,
+          notification: notification.constructor.name,
+        },
+        "[NOTIFICATION][mail] Failed to send email notification",
       );
     }
   }

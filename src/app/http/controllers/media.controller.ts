@@ -43,7 +43,11 @@ export const mediaController = {
       return res.status(400).json({ message: "No active organization found" });
     }
 
-    const result = await mediaService.uploadOrgLogo(user.id as string, activeOrgId, req.file);
+    const result = await mediaService.uploadOrgLogo(
+      user.id as string,
+      activeOrgId,
+      req.file,
+    );
 
     return ok(res, "Organization logo uploaded successfully", result);
   }),
@@ -72,7 +76,7 @@ export const mediaController = {
       workspaceId,
       user.id as string,
       activeOrgId,
-      req.file
+      req.file,
     );
 
     return ok(res, "Workspace icon uploaded successfully", result);
@@ -102,7 +106,7 @@ export const mediaController = {
       projectId,
       user.id as string,
       activeOrgId,
-      req.file
+      req.file,
     );
 
     return ok(res, "Project icon uploaded successfully", result);
@@ -142,7 +146,9 @@ export const mediaController = {
     }
 
     if (x === undefined || y === undefined || !content) {
-      return res.status(400).json({ message: "Coordinates x, y, and content are required" });
+      return res
+        .status(400)
+        .json({ message: "Coordinates x, y, and content are required" });
     }
 
     const annotation = await mediaService.createAnnotation({

@@ -24,7 +24,11 @@ export const taskExtrasController = {
 
     const validatedData = statusSchema.parse(req.body);
 
-    const status = await taskExtrasService.createStatus(projectId, organizationId, validatedData);
+    const status = await taskExtrasService.createStatus(
+      projectId,
+      organizationId,
+      validatedData,
+    );
 
     return ok(res, "Status created successfully", status);
   }),
@@ -50,7 +54,10 @@ export const taskExtrasController = {
 
     const validatedData = statusUpdateSchema.parse(req.body);
 
-    const updated = await taskExtrasService.updateStatus(statusId, validatedData);
+    const updated = await taskExtrasService.updateStatus(
+      statusId,
+      validatedData,
+    );
 
     return ok(res, "Status updated successfully", updated);
   }),
@@ -83,7 +90,12 @@ export const taskExtrasController = {
     const { organizationId } = project;
     const validatedData = subtaskSchema.parse(req.body);
 
-    const subtask = await taskExtrasService.createSubtask(taskId, organizationId, validatedData, userId);
+    const subtask = await taskExtrasService.createSubtask(
+      taskId,
+      organizationId,
+      validatedData,
+      userId,
+    );
 
     return ok(res, "Subtask added successfully", subtask);
   }),
@@ -96,13 +108,20 @@ export const taskExtrasController = {
       throw new NotFoundException("Subtask not found");
     }
 
-    const { userId } = await verifyProjectAccess(req, subtask.parentTask!.projectId);
+    const { userId } = await verifyProjectAccess(
+      req,
+      subtask.parentTask!.projectId,
+    );
     const validatedData = subtaskSchema.partial().parse(req.body);
 
     const updated = await taskExtrasService.updateSubtask(
-      { ...subtask, taskId: subtask.parentTaskId!, isCompleted: subtask.status?.category === "done" },
+      {
+        ...subtask,
+        taskId: subtask.parentTaskId!,
+        isCompleted: subtask.status?.category === "done",
+      },
       validatedData,
-      userId
+      userId,
     );
 
     return ok(res, "Subtask updated successfully", updated);
@@ -116,9 +135,15 @@ export const taskExtrasController = {
       throw new NotFoundException("Subtask not found");
     }
 
-    const { userId } = await verifyProjectAccess(req, subtask.parentTask!.projectId);
+    const { userId } = await verifyProjectAccess(
+      req,
+      subtask.parentTask!.projectId,
+    );
 
-    await taskExtrasService.deleteSubtask({ ...subtask, taskId: subtask.parentTaskId! }, userId);
+    await taskExtrasService.deleteSubtask(
+      { ...subtask, taskId: subtask.parentTaskId! },
+      userId,
+    );
 
     return ok(res, "Subtask deleted successfully");
   }),
@@ -136,7 +161,12 @@ export const taskExtrasController = {
     const { organizationId } = project;
     const validatedData = commentSchema.parse(req.body);
 
-    const comment = await taskExtrasService.createComment(taskId, organizationId, validatedData, userId);
+    const comment = await taskExtrasService.createComment(
+      taskId,
+      organizationId,
+      validatedData,
+      userId,
+    );
 
     return ok(res, "Comment added successfully", comment);
   }),
@@ -149,7 +179,10 @@ export const taskExtrasController = {
       throw new NotFoundException("Comment not found");
     }
 
-    const { userId, activeOrgId } = await verifyProjectAccess(req, comment.task.projectId);
+    const { userId, activeOrgId } = await verifyProjectAccess(
+      req,
+      comment.task.projectId,
+    );
 
     await taskExtrasService.deleteComment(comment, userId, activeOrgId);
 
@@ -167,7 +200,11 @@ export const taskExtrasController = {
     const { userId } = await verifyProjectAccess(req, comment.task.projectId);
     const validatedData = commentSchema.parse(req.body);
 
-    const updatedComment = await taskExtrasService.updateComment(commentId, validatedData, userId);
+    const updatedComment = await taskExtrasService.updateComment(
+      commentId,
+      validatedData,
+      userId,
+    );
 
     return ok(res, "Comment updated successfully", updatedComment);
   }),
@@ -180,7 +217,11 @@ export const taskExtrasController = {
 
     const validatedData = customFieldSchema.parse(req.body);
 
-    const field = await taskExtrasService.createCustomField(projectId, organizationId, validatedData);
+    const field = await taskExtrasService.createCustomField(
+      projectId,
+      organizationId,
+      validatedData,
+    );
 
     return ok(res, "Custom field defined successfully", field);
   }),
@@ -222,7 +263,11 @@ export const taskExtrasController = {
 
     const users = await taskExtrasService.getReactionUsers(commentId, emoji);
 
-    return ok(res, "Users fetched successfully", users.map((r) => r.user));
+    return ok(
+      res,
+      "Users fetched successfully",
+      users.map((r) => r.user),
+    );
   }),
 
   toggleCommentReaction: asyncHandler(async (req: Request, res: Response) => {
@@ -237,8 +282,18 @@ export const taskExtrasController = {
 
     const { userId } = await verifyProjectAccess(req, comment.task.projectId);
 
-    const result = await taskExtrasService.toggleCommentReaction(commentId, emoji, userId);
+    const result = await taskExtrasService.toggleCommentReaction(
+      commentId,
+      emoji,
+      userId,
+    );
 
-    return ok(res, result.toggledOn ? "Reaction added successfully" : "Reaction removed successfully", result);
+    return ok(
+      res,
+      result.toggledOn
+        ? "Reaction added successfully"
+        : "Reaction removed successfully",
+      result,
+    );
   }),
 };

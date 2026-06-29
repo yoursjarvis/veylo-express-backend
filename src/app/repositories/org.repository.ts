@@ -62,14 +62,17 @@ export const orgRepository = {
       const workspace = await tx.workspace.create({
         data: {
           name: data.workspaceName,
-          slug: data.workspaceName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, ''),
+          slug: data.workspaceName
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/(^-|-$)+/g, ""),
           organizationId: org.id,
         },
       });
 
       await tx.session.update({
         where: { id: data.sessionId },
-        data: { activeOrganizationId: org.id }
+        data: { activeOrganizationId: org.id },
       });
 
       return { org, workspace };

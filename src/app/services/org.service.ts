@@ -9,7 +9,7 @@ export const orgService = {
     userId: string,
     session: { id: string; token: string },
     data: { name: string; slug: string; workspaceName: string },
-    file?: Express.Multer.File
+    file?: Express.Multer.File,
   ) {
     // Check if the user and session exist in the primary database (prevents errors from stale cached Redis sessions)
     const [dbUser, dbSession] = await Promise.all([
@@ -19,14 +19,16 @@ export const orgService = {
 
     if (!dbUser || !dbSession) {
       throw new UnauthorizedException(
-        "Unauthorized: Session is stale or invalid in the database. Please log out and log in again."
+        "Unauthorized: Session is stale or invalid in the database. Please log out and log in again.",
       );
     }
 
     // 1. Check if user already owns an organization
     const existingOrg = await orgRepository.findOwnerMember(userId);
     if (existingOrg) {
-      throw new BadRequestException("You have already created an organization.");
+      throw new BadRequestException(
+        "You have already created an organization.",
+      );
     }
 
     // 2. Check if slug is taken
@@ -56,7 +58,7 @@ export const orgService = {
             mimetype: file.mimetype,
             size: file.size,
           },
-          "logo"
+          "logo",
         );
 
         const url = mediaService.generateUrl(media);
@@ -67,7 +69,7 @@ export const orgService = {
       } catch (mediaError) {
         logger.error(
           { mediaError, orgId: result.org.id },
-          "Failed to process logo upload during org setup"
+          "Failed to process logo upload during org setup",
         );
       }
     }
@@ -81,7 +83,7 @@ export const orgService = {
     } catch (redisError) {
       logger.error(
         { redisError },
-        "Failed to invalidate Redis session cache during org setup"
+        "Failed to invalidate Redis session cache during org setup",
       );
     }
 

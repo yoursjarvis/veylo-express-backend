@@ -5,44 +5,32 @@ import { requireAuth } from "@/app/http/middlewares/require-auth.middleware";
 
 export const workspaceRoutes = Router();
 
-workspaceRoutes.get(
-  "/",
-  requireAuth,
-  workspaceController.getWorkspaces
-);
+workspaceRoutes.get("/", requireAuth, workspaceController.getWorkspaces);
 
-workspaceRoutes.post(
-  "/",
-  requireAuth,
-  workspaceController.createWorkspace
-);
+workspaceRoutes.post("/", requireAuth, workspaceController.createWorkspace);
 
-workspaceRoutes.patch(
-  "/:id",
-  requireAuth,
-  workspaceController.updateWorkspace
-);
+workspaceRoutes.patch("/:id", requireAuth, workspaceController.updateWorkspace);
 
 workspaceRoutes.delete(
   "/:id",
   requireAuth,
-  workspaceController.deleteWorkspace
+  workspaceController.deleteWorkspace,
 );
 
 workspaceRoutes.get(
   "/:id/members",
   requireAuth,
-  workspaceController.getWorkspaceMembers
+  workspaceController.getWorkspaceMembers,
 );
 
 workspaceRoutes.post(
   "/:id/members",
   requireAuth,
-  workspaceController.addWorkspaceMembers
+  workspaceController.addWorkspaceMembers,
 );
 
 workspaceRoutes.delete(
   "/:id/members/:userId",
   requireAuth,
-  workspaceController.removeWorkspaceMember
+  workspaceController.removeWorkspaceMember,
 );

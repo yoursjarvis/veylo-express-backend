@@ -1,45 +1,54 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { authApiMock, authRepositoryMock, configMock, loggerMock, betterAuthHeadersMock } =
-  vi.hoisted(() => ({
-    authApiMock: {
-      signUpEmail: vi.fn(),
-      signInEmail: vi.fn(),
-      signOut: vi.fn(),
-      getSession: vi.fn(),
-      requestPasswordReset: vi.fn(),
-      resetPassword: vi.fn(),
-      verifyEmail: vi.fn(),
-      changePassword: vi.fn(),
-      listSessions: vi.fn(),
-      revokeSessions: vi.fn(),
-      revokeSession: vi.fn(),
-    },
-    authRepositoryMock: {
-      findUserByEmail: vi.fn(),
-      markLoginSuccess: vi.fn(),
-      markLoginFailure: vi.fn(),
-      updateSessionMetadataByToken: vi.fn(),
-      revokeSessionByIdForUser: vi.fn(),
-    },
-    configMock: vi.fn().mockImplementation((key: string) => {
-      if (key === "mail.queue.name") return "mail-queue";
-      if (key === "database.redis.host") return "localhost";
-      if (key === "database.redis.port") return 6379;
-      return undefined;
-    }),
-    loggerMock: {
-      error: vi.fn(),
-      warn: vi.fn(),
-    },
-    betterAuthHeadersMock: vi.fn(),
-  }));
+const {
+  authApiMock,
+  authRepositoryMock,
+  configMock,
+  loggerMock,
+  betterAuthHeadersMock,
+} = vi.hoisted(() => ({
+  authApiMock: {
+    signUpEmail: vi.fn(),
+    signInEmail: vi.fn(),
+    signOut: vi.fn(),
+    getSession: vi.fn(),
+    requestPasswordReset: vi.fn(),
+    resetPassword: vi.fn(),
+    verifyEmail: vi.fn(),
+    changePassword: vi.fn(),
+    listSessions: vi.fn(),
+    revokeSessions: vi.fn(),
+    revokeSession: vi.fn(),
+  },
+  authRepositoryMock: {
+    findUserByEmail: vi.fn(),
+    markLoginSuccess: vi.fn(),
+    markLoginFailure: vi.fn(),
+    updateSessionMetadataByToken: vi.fn(),
+    revokeSessionByIdForUser: vi.fn(),
+  },
+  configMock: vi.fn().mockImplementation((key: string) => {
+    if (key === "mail.queue.name") return "mail-queue";
+    if (key === "database.redis.host") return "localhost";
+    if (key === "database.redis.port") return 6379;
+    return undefined;
+  }),
+  loggerMock: {
+    error: vi.fn(),
+    warn: vi.fn(),
+  },
+  betterAuthHeadersMock: vi.fn(),
+}));
 
 vi.mock("../src/lib/auth/auth", () => ({ auth: { api: authApiMock } }));
-vi.mock("../src/app/repositories/auth.repository", () => ({ authRepository: authRepositoryMock }));
+vi.mock("../src/app/repositories/auth.repository", () => ({
+  authRepository: authRepositoryMock,
+}));
 vi.mock("../src/lib/logger", () => ({ logger: loggerMock }));
 vi.mock("../src/utils/config", () => ({ config: configMock }));
-vi.mock("../src/lib/auth/node-headers", () => ({ betterAuthHeaders: betterAuthHeadersMock }));
+vi.mock("../src/lib/auth/node-headers", () => ({
+  betterAuthHeaders: betterAuthHeadersMock,
+}));
 vi.mock("../src/app/services/mail", () => ({
   mailService: {
     to: vi.fn().mockReturnValue({
@@ -49,7 +58,9 @@ vi.mock("../src/app/services/mail", () => ({
     }),
   },
 }));
-vi.mock("../src/lib/prisma", () => ({ default: { user: { update: vi.fn() }, session: { findFirst: vi.fn() } } }));
+vi.mock("../src/lib/prisma", () => ({
+  default: { user: { update: vi.fn() }, session: { findFirst: vi.fn() } },
+}));
 
 import { authService } from "../src/app/services/auth.service";
 
@@ -82,12 +93,14 @@ describe("authService.login", () => {
       response: { token: "session-token", user: { id: "user-1" } },
     });
     authRepositoryMock.updateSessionMetadataByToken.mockRejectedValueOnce(
-      new Error("metadata write failed")
+      new Error("metadata write failed"),
     );
     authRepositoryMock.markLoginSuccess.mockResolvedValueOnce(undefined);
 
     const req: any = {
-      headers: { "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/124.0" },
+      headers: {
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/124.0",
+      },
       ip: "127.0.0.1",
     };
     const res = createRes();
@@ -97,7 +110,9 @@ describe("authService.login", () => {
       password: "correct-horse-battery-staple",
     });
 
-    expect(authRepositoryMock.findUserByEmail).toHaveBeenCalledWith("jane.doe@example.com");
+    expect(authRepositoryMock.findUserByEmail).toHaveBeenCalledWith(
+      "jane.doe@example.com",
+    );
     expect(authApiMock.signInEmail).toHaveBeenCalledWith({
       headers,
       returnHeaders: true,
@@ -106,18 +121,20 @@ describe("authService.login", () => {
         password: "correct-horse-battery-staple",
       },
     });
-    expect(authRepositoryMock.updateSessionMetadataByToken).toHaveBeenCalledWith(
+    expect(
+      authRepositoryMock.updateSessionMetadataByToken,
+    ).toHaveBeenCalledWith(
       "session-token",
       expect.objectContaining({
         browser: "Chrome",
         os: "Windows",
         ipAddress: "127.0.0.1",
         userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/124.0",
-      })
+      }),
     );
     expect(authRepositoryMock.markLoginSuccess).toHaveBeenCalledWith(
       "user-1",
-      expect.any(Date)
+      expect.any(Date),
     );
     expect(res.setHeader).toHaveBeenCalledWith("set-cookie", [
       "session=abc; Path=/; HttpOnly",
@@ -145,12 +162,12 @@ describe("authService.login", () => {
       authService.login(req, res, {
         email: "Jane.Doe@Example.com",
         password: "wrong-password",
-      })
+      }),
     ).rejects.toMatchObject({ message: "Invalid credentials" });
 
     expect(authRepositoryMock.markLoginFailure).toHaveBeenCalledWith(
       "jane.doe@example.com",
-      expect.any(Date)
+      expect.any(Date),
     );
   });
 
@@ -174,7 +191,7 @@ describe("authService.login", () => {
       authService.login(req, res, {
         email: "Jane.Doe@Example.com",
         password: "correct-password",
-      })
+      }),
     ).rejects.toMatchObject({
       message: "Email not verified",
       statusCode: 403,

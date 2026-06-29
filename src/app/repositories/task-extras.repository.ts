@@ -237,7 +237,11 @@ export const taskExtrasRepository = {
     });
   },
 
-  async createCommentReaction(commentId: string, userId: string, emoji: string) {
+  async createCommentReaction(
+    commentId: string,
+    userId: string,
+    emoji: string,
+  ) {
     return prisma.commentReaction.create({
       data: { commentId, userId, emoji },
     });

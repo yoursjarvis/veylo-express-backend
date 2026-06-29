@@ -38,7 +38,7 @@ export interface WorkspaceAdminContext {
  * Throws UnauthorizedException or BadRequestException on failure.
  */
 export async function resolveSession(
-  req: Request
+  req: Request,
 ): Promise<{ activeOrgId: string; userId: string }> {
   const session = await auth.api.getSession({
     headers: betterAuthHeaders(req),
@@ -48,7 +48,8 @@ export async function resolveSession(
     throw new UnauthorizedException();
   }
 
-  const activeOrgId = (session.session as Record<string, unknown>).activeOrganizationId as string | undefined;
+  const activeOrgId = (session.session as Record<string, unknown>)
+    .activeOrganizationId as string | undefined;
   if (!activeOrgId) {
     throw new BadRequestException("No active organization found");
   }
@@ -62,7 +63,7 @@ export async function resolveSession(
  */
 export async function verifyWorkspaceAdmin(
   req: Request,
-  workspaceId: string
+  workspaceId: string,
 ): Promise<WorkspaceAdminContext> {
   const { activeOrgId, userId } = await resolveSession(req);
 
@@ -91,7 +92,7 @@ export async function verifyWorkspaceAdmin(
 
   if (!callerWorkspaceMember) {
     throw new ForbiddenException(
-      "Forbidden: You must be an organization or workspace admin"
+      "Forbidden: You must be an organization or workspace admin",
     );
   }
 
@@ -109,7 +110,7 @@ export async function verifyWorkspaceAdmin(
  */
 export async function verifyProjectAccess(
   req: Request,
-  projectId: string
+  projectId: string,
 ): Promise<ProjectAccessContext> {
   const { activeOrgId, userId } = await resolveSession(req);
 
@@ -157,7 +158,7 @@ export async function verifyProjectAccess(
 
   if (!projectMember) {
     throw new ForbiddenException(
-      "Forbidden: You must be a project member or workspace/org admin"
+      "Forbidden: You must be a project member or workspace/org admin",
     );
   }
 
@@ -172,7 +173,7 @@ export async function verifyProjectAccess(
  */
 export async function verifyProjectAdmin(
   req: Request,
-  projectId: string
+  projectId: string,
 ): Promise<ProjectAccessContext> {
   const project = await prisma.project.findUnique({
     where: { id: projectId },

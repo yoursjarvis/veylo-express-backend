@@ -27,7 +27,9 @@ export const authRepository = {
     const lockAfter = 5;
     const lockMinutes = 15;
     const lockedUntil =
-      failed >= lockAfter ? new Date(now.getTime() + lockMinutes * 60 * 1000) : null;
+      failed >= lockAfter
+        ? new Date(now.getTime() + lockMinutes * 60 * 1000)
+        : null;
 
     await prisma.user.update({
       where: { id: user.id },
@@ -47,7 +49,7 @@ export const authRepository = {
       ipAddress?: string;
       userAgent?: string;
       lastActiveAt?: Date;
-    }
+    },
   ) {
     return prisma.session.updateMany({
       where: { token },
@@ -55,11 +57,14 @@ export const authRepository = {
     });
   },
 
-  revokeSessionByIdForUser(sessionId: string, userId: string, now = new Date()) {
+  revokeSessionByIdForUser(
+    sessionId: string,
+    userId: string,
+    now = new Date(),
+  ) {
     return prisma.session.updateMany({
       where: { id: sessionId, userId },
       data: { revokedAt: now },
     });
   },
 };
-

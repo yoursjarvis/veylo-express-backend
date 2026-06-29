@@ -21,6 +21,4 @@ export type MailMessage = {
 };
 
 export type MailSendResult =
-  | { ok: true; messageId?: string }
-  | { ok: false; error: unknown };
-
+  { ok: true; messageId?: string } | { ok: false; error: unknown };

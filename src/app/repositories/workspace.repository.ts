@@ -39,7 +39,12 @@ export const workspaceRepository = {
     });
   },
 
-  findWorkspaceMemberWithOrg(workspaceId: string, userId: string, role: string, orgId: string) {
+  findWorkspaceMemberWithOrg(
+    workspaceId: string,
+    userId: string,
+    role: string,
+    orgId: string,
+  ) {
     return prisma.workspaceMember.findFirst({
       where: {
         workspaceId,
@@ -81,7 +86,12 @@ export const workspaceRepository = {
     });
   },
 
-  async createWorkspace(data: { name: string; slug: string; organizationId: string; creatorUserId: string }) {
+  async createWorkspace(data: {
+    name: string;
+    slug: string;
+    organizationId: string;
+    creatorUserId: string;
+  }) {
     return prisma.workspace.create({
       data: {
         name: data.name,
@@ -128,7 +138,8 @@ export const workspaceRepository = {
 
     if (workspaces.length === 0) return;
 
-    const createData: { workspaceId: string; userId: string; role: string }[] = [];
+    const createData: { workspaceId: string; userId: string; role: string }[] =
+      [];
 
     for (const admin of orgAdmins) {
       for (const workspace of workspaces) {

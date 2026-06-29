@@ -5,40 +5,60 @@ import {
   NotFoundException,
 } from "@/utils/app-error";
 
-async function verifyOrgAdmin(activeOrgId: string | null | undefined, userId: string) {
+async function verifyOrgAdmin(
+  activeOrgId: string | null | undefined,
+  userId: string,
+) {
   if (!activeOrgId) {
     throw new BadRequestException("No active organization found");
   }
 
-  const callerMember = await workspaceRepository.findOrgMember(activeOrgId, userId, ["owner", "admin"]);
+  const callerMember = await workspaceRepository.findOrgMember(
+    activeOrgId,
+    userId,
+    ["owner", "admin"],
+  );
   if (!callerMember) {
-    throw new ForbiddenException("Forbidden: You must be an organization admin");
+    throw new ForbiddenException(
+      "Forbidden: You must be an organization admin",
+    );
   }
 
   return { activeOrgId, userId };
 }
 
-async function verifyWorkspaceAdmin(activeOrgId: string | null | undefined, userId: string, workspaceId: string) {
+async function verifyWorkspaceAdmin(
+  activeOrgId: string | null | undefined,
+  userId: string,
+  workspaceId: string,
+) {
   if (!activeOrgId) {
     throw new BadRequestException("No active organization found");
   }
 
   // Check Org Admin
-  const callerOrgMember = await workspaceRepository.findOrgMember(activeOrgId, userId, ["owner", "admin"]);
+  const callerOrgMember = await workspaceRepository.findOrgMember(
+    activeOrgId,
+    userId,
+    ["owner", "admin"],
+  );
   if (callerOrgMember) {
     return { activeOrgId, userId };
   }
 
   // Check Workspace Admin
-  const callerWorkspaceMember = await workspaceRepository.findWorkspaceMemberWithOrg(
-    workspaceId,
-    userId,
-    "admin",
-    activeOrgId
-  );
+  const callerWorkspaceMember =
+    await workspaceRepository.findWorkspaceMemberWithOrg(
+      workspaceId,
+      userId,
+      "admin",
+      activeOrgId,
+    );
 
   if (!callerWorkspaceMember) {
-    throw new ForbiddenException("Forbidden: You must be an organization or workspace admin");
+    throw new ForbiddenException(
+      "Forbidden: You must be an organization or workspace admin",
+    );
   }
 
   return { activeOrgId, userId };
@@ -63,11 +83,13 @@ export const workspaceService = {
   async createWorkspace(
     activeOrgId: string | null | undefined,
     userId: string,
-    data: { name: string; slug: string; icon?: string }
+    data: { name: string; slug: string; icon?: string },
   ) {
     await verifyOrgAdmin(activeOrgId, userId);
 
-    const existingWorkspace = await workspaceRepository.findWorkspaceBySlug(data.slug);
+    const existingWorkspace = await workspaceRepository.findWorkspaceBySlug(
+      data.slug,
+    );
     if (existingWorkspace) {
       throw new BadRequestException("Workspace slug already exists");
     }
@@ -92,17 +114,21 @@ export const workspaceService = {
     activeOrgId: string | null | undefined,
     userId: string,
     id: string,
-    data: { name?: string; slug?: string; icon?: string }
+    data: { name?: string; slug?: string; icon?: string },
   ) {
     await verifyWorkspaceAdmin(activeOrgId, userId, id);
 
-    const workspace = await workspaceRepository.findWorkspaceByIdAndOrg(id, activeOrgId!);
+    const workspace = await workspaceRepository.findWorkspaceByIdAndOrg(
+      id,
+      activeOrgId!,
+    );
     if (!workspace) {
       throw new NotFoundException("Workspace not found");
     }
 
     if (data.slug) {
-      const existingWorkspace = await workspaceRepository.findWorkspaceBySlugExcludeId(data.slug, id);
+      const existingWorkspace =
+        await workspaceRepository.findWorkspaceBySlugExcludeId(data.slug, id);
       if (existingWorkspace) {
         throw new BadRequestException("Workspace slug already exists");
       }
@@ -111,10 +137,17 @@ export const workspaceService = {
     return workspaceRepository.updateWorkspace(id, data);
   },
 
-  async deleteWorkspace(activeOrgId: string | null | undefined, userId: string, id: string) {
+  async deleteWorkspace(
+    activeOrgId: string | null | undefined,
+    userId: string,
+    id: string,
+  ) {
     await verifyWorkspaceAdmin(activeOrgId, userId, id);
 
-    const workspace = await workspaceRepository.findWorkspaceByIdAndOrg(id, activeOrgId!);
+    const workspace = await workspaceRepository.findWorkspaceByIdAndOrg(
+      id,
+      activeOrgId!,
+    );
     if (!workspace) {
       throw new NotFoundException("Workspace not found");
     }
@@ -122,7 +155,11 @@ export const workspaceService = {
     await workspaceRepository.deleteWorkspace(id);
   },
 
-  async getWorkspaceMembers(activeOrgId: string | null | undefined, userId: string, workspaceId: string) {
+  async getWorkspaceMembers(
+    activeOrgId: string | null | undefined,
+    userId: string,
+    workspaceId: string,
+  ) {
     await verifyWorkspaceAdmin(activeOrgId, userId, workspaceId);
 
     try {
@@ -138,7 +175,7 @@ export const workspaceService = {
     activeOrgId: string | null | undefined,
     userId: string,
     workspaceId: string,
-    userIds: string[]
+    userIds: string[],
   ) {
     await verifyWorkspaceAdmin(activeOrgId, userId, workspaceId);
 
@@ -147,15 +184,24 @@ export const workspaceService = {
     }
 
     // Verify all users are part of the organization
-    const orgMembers = await workspaceRepository.getOrgMembersByIds(activeOrgId!, userIds);
+    const orgMembers = await workspaceRepository.getOrgMembersByIds(
+      activeOrgId!,
+      userIds,
+    );
     if (orgMembers.length !== userIds.length) {
-      throw new BadRequestException("One or more users are not members of this organization");
+      throw new BadRequestException(
+        "One or more users are not members of this organization",
+      );
     }
 
     return Promise.all(
       userIds.map((targetUserId) =>
-        workspaceRepository.upsertWorkspaceMember(workspaceId, targetUserId, "member")
-      )
+        workspaceRepository.upsertWorkspaceMember(
+          workspaceId,
+          targetUserId,
+          "member",
+        ),
+      ),
     );
   },
 
@@ -163,7 +209,7 @@ export const workspaceService = {
     activeOrgId: string | null | undefined,
     userId: string,
     workspaceId: string,
-    targetUserId: string
+    targetUserId: string,
   ) {
     await verifyWorkspaceAdmin(activeOrgId, userId, workspaceId);
 

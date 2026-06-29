@@ -16,20 +16,26 @@ const defaultRedirectOrigin = (() => {
 export default {
   betterAuth: {
     secret: env("BETTER_AUTH_SECRET").required(),
-    secondaryStorageEnabled: env("AUTH_SECONDARY_STORAGE_ENABLED").boolean(false),
-    url: env("BETTER_AUTH_URL").url(env("APP_URL").string("http://localhost:4000")),
+    secondaryStorageEnabled: env("AUTH_SECONDARY_STORAGE_ENABLED").boolean(
+      false,
+    ),
+    url: env("BETTER_AUTH_URL").url(
+      env("APP_URL").string("http://localhost:4000"),
+    ),
     emailVerificationRedirectURL: env("AUTH_EMAIL_VERIFICATION_REDIRECT").url(
-      `${defaultRedirectOrigin}/verify-email`
+      `${defaultRedirectOrigin}/verify-email`,
     ),
     resetPasswordRedirectURL: env("AUTH_RESET_PASSWORD_REDIRECT").url(
-      `${defaultRedirectOrigin}/reset-password`
+      `${defaultRedirectOrigin}/reset-password`,
     ),
   },
   social: {
     google: {
       clientId: env("GOOGLE_CLIENT_ID").required(),
       clientSecret: env("GOOGLE_CLIENT_SECRET").required(),
-      redirectURL: env("GOOGLE_REDIRECT_URL").url(env("APP_URL").string("http://localhost:4000")),
+      redirectURL: env("GOOGLE_REDIRECT_URL").url(
+        env("APP_URL").string("http://localhost:4000"),
+      ),
     },
     github: {
       clientId: env("GITHUB_CLIENT_ID").required(),
@@ -37,4 +43,3 @@ export default {
     },
   },
 };
-

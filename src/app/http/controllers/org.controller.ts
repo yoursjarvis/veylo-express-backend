@@ -22,7 +22,7 @@ export const orgController = {
       session.user.id,
       session.session,
       validatedData,
-      req.file
+      req.file,
     );
 
     return res.status(201).json({

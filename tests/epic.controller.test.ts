@@ -7,7 +7,7 @@ vi.mock("../src/app/http/middlewares/async-handler.middleware", () => ({
 
 const { mockVerifyProjectAccess, prismaMock } = vi.hoisted(() => ({
   mockVerifyProjectAccess: vi.fn().mockResolvedValue({
-    project: { organizationId: "org-123" }
+    project: { organizationId: "org-123" },
   }),
   prismaMock: {
     epic: {
@@ -24,7 +24,10 @@ vi.mock("../src/app/http/middlewares/project-access.middleware", () => ({
   verifyProjectAccess: mockVerifyProjectAccess,
 }));
 
-vi.mock("@/lib/prisma", () => ({ default: prismaMock, basePrisma: prismaMock }));
+vi.mock("@/lib/prisma", () => ({
+  default: prismaMock,
+  basePrisma: prismaMock,
+}));
 
 import { epicController } from "../src/app/http/controllers/epic.controller";
 
@@ -42,12 +45,22 @@ describe("epicController", () => {
 
   describe("createEpic", () => {
     it("creates epic successfully", async () => {
-      const epic = { id: "e1", title: "Epic 1", projectId: "p1", organizationId: "org-123" };
+      const epic = {
+        id: "e1",
+        title: "Epic 1",
+        projectId: "p1",
+        organizationId: "org-123",
+      };
       prismaMock.epic.create.mockResolvedValueOnce(epic);
 
       const req: any = {
         params: { projectId: "p1" },
-        body: { title: "Epic 1", description: "Desc", color: "#FFFFFF", startDate: "2026-06-25T02:00:00.000Z" }
+        body: {
+          title: "Epic 1",
+          description: "Desc",
+          color: "#FFFFFF",
+          startDate: "2026-06-25T02:00:00.000Z",
+        },
       };
       const res = createRes();
 
@@ -64,7 +77,7 @@ describe("epicController", () => {
           startDate: expect.any(Date),
           endDate: null,
           status: "open",
-        }
+        },
       });
       expect(res.json).toHaveBeenCalledWith({
         success: true,
@@ -117,7 +130,9 @@ describe("epicController", () => {
       const req: any = { params: { id: "e1" } };
       const res = createRes();
 
-      await expect((epicController.getEpic as any)(req, res)).rejects.toThrow("Epic not found");
+      await expect((epicController.getEpic as any)(req, res)).rejects.toThrow(
+        "Epic not found",
+      );
     });
   });
 
@@ -130,7 +145,7 @@ describe("epicController", () => {
 
       const req: any = {
         params: { id: "e1" },
-        body: { title: "Updated", status: "in_progress" }
+        body: { title: "Updated", status: "in_progress" },
       };
       const res = createRes();
 
@@ -154,7 +169,9 @@ describe("epicController", () => {
       const req: any = { params: { id: "e1" }, body: { title: "Updated" } };
       const res = createRes();
 
-      await expect((epicController.updateEpic as any)(req, res)).rejects.toThrow("Epic not found");
+      await expect(
+        (epicController.updateEpic as any)(req, res),
+      ).rejects.toThrow("Epic not found");
     });
   });
 
@@ -169,7 +186,9 @@ describe("epicController", () => {
       await (epicController.deleteEpic as any)(req, res);
 
       expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1");
-      expect(prismaMock.epic.delete).toHaveBeenCalledWith({ where: { id: "e1" } });
+      expect(prismaMock.epic.delete).toHaveBeenCalledWith({
+        where: { id: "e1" },
+      });
       expect(res.json).toHaveBeenCalledWith({
         success: true,
         message: "Epic deleted successfully",
@@ -183,7 +202,9 @@ describe("epicController", () => {
       const req: any = { params: { id: "e1" } };
       const res = createRes();
 
-      await expect((epicController.deleteEpic as any)(req, res)).rejects.toThrow("Epic not found");
+      await expect(
+        (epicController.deleteEpic as any)(req, res),
+      ).rejects.toThrow("Epic not found");
     });
   });
 });

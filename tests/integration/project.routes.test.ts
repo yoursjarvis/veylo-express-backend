@@ -26,17 +26,24 @@ vi.mock("../../src/app/http/middlewares/rate-limit.middleware", () => ({
   rateLimit: () => (req: any, res: any, next: any) => next(),
 }));
 
-const { mockWorkspaceAdmin, mockVerifyProjectAccess, mockVerifyProjectAdmin } = vi.hoisted(() => ({
-  mockWorkspaceAdmin: vi.fn().mockResolvedValue({ userId: "user-123", activeOrgId: "org-123" }),
-  mockVerifyProjectAccess: vi.fn().mockResolvedValue(undefined),
-  mockVerifyProjectAdmin: vi.fn().mockResolvedValue({ project: { id: "proj-123", workspaceId: "ws-123" } }),
-}));
+const { mockWorkspaceAdmin, mockVerifyProjectAccess, mockVerifyProjectAdmin } =
+  vi.hoisted(() => ({
+    mockWorkspaceAdmin: vi
+      .fn()
+      .mockResolvedValue({ userId: "user-123", activeOrgId: "org-123" }),
+    mockVerifyProjectAccess: vi.fn().mockResolvedValue(undefined),
+    mockVerifyProjectAdmin: vi.fn().mockResolvedValue({
+      project: { id: "proj-123", workspaceId: "ws-123" },
+    }),
+  }));
 
 vi.mock("../../src/app/http/middlewares/project-access.middleware", () => ({
   verifyProjectAccess: mockVerifyProjectAccess,
   verifyProjectAdmin: mockVerifyProjectAdmin,
   verifyWorkspaceAdmin: mockWorkspaceAdmin,
-  resolveSession: vi.fn().mockResolvedValue({ activeOrgId: "org-123", userId: "user-123" }),
+  resolveSession: vi
+    .fn()
+    .mockResolvedValue({ activeOrgId: "org-123", userId: "user-123" }),
 }));
 
 vi.mock("../../src/utils/crypto", () => ({
@@ -56,7 +63,9 @@ describe("Project API Endpoint Integration Tests (/api/v1/projects)", () => {
 
   describe("GET /api/v1/project-templates", () => {
     it("successfully retrieves templates", async () => {
-      prismaMock.projectTemplate.findMany.mockResolvedValueOnce([{ id: "t1", name: "Scrum" }]);
+      prismaMock.projectTemplate.findMany.mockResolvedValueOnce([
+        { id: "t1", name: "Scrum" },
+      ]);
 
       const res = await request(app).get("/api/v1/project-templates");
 
@@ -69,7 +78,9 @@ describe("Project API Endpoint Integration Tests (/api/v1/projects)", () => {
   describe("POST /api/v1/workspaces/:workspaceId/projects", () => {
     it("creates project successfully", async () => {
       prismaMock.projectTemplate.findUnique.mockResolvedValueOnce(null); // fallback
-      prismaMock.workspace.findUnique.mockResolvedValueOnce({ organizationId: "org-123" });
+      prismaMock.workspace.findUnique.mockResolvedValueOnce({
+        organizationId: "org-123",
+      });
 
       const created = createProject({ id: "proj-123", title: "New Project" });
       prismaMock.project.create.mockResolvedValueOnce(created);
@@ -86,7 +97,9 @@ describe("Project API Endpoint Integration Tests (/api/v1/projects)", () => {
 
   describe("GET /api/v1/projects/:id/members", () => {
     it("retrieves project members", async () => {
-      prismaMock.projectMember.findMany.mockResolvedValueOnce([{ id: "m1", userId: "u1" }]);
+      prismaMock.projectMember.findMany.mockResolvedValueOnce([
+        { id: "m1", userId: "u1" },
+      ]);
 
       const res = await request(app).get("/api/v1/projects/proj-123/members");
 

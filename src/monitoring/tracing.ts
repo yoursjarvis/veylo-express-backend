@@ -12,7 +12,8 @@ const traceExporter = new OTLPTraceExporter({
 
 export const otel = new NodeSDK({
   resource: resourceFromAttributes({
-    [SemanticResourceAttributes.SERVICE_NAME]: config("app.name") || "veylo-backend",
+    [SemanticResourceAttributes.SERVICE_NAME]:
+      config("app.name") || "veylo-backend",
     [SemanticResourceAttributes.SERVICE_VERSION]: "1.0.0",
     [SemanticResourceAttributes.DEPLOYMENT_ENVIRONMENT]: config("app.env"),
   }),
@@ -35,6 +36,4 @@ export const otel = new NodeSDK({
   ],
 });
 
-
 otel.start();
-

@@ -2,7 +2,10 @@ import type { Request, Response } from "express";
 
 import { asyncHandler } from "@/app/http/middlewares/async-handler.middleware";
 import { verifyProjectAccess } from "@/app/http/middlewares/project-access.middleware";
-import { milestoneCreateSchema, milestoneUpdateSchema } from "@/app/http/validators/milestone.validator";
+import {
+  milestoneCreateSchema,
+  milestoneUpdateSchema,
+} from "@/app/http/validators/milestone.validator";
 import { milestoneRepository } from "@/app/repositories/milestone.repository";
 import { milestoneService } from "@/app/services/milestone.service";
 import { NotFoundException } from "@/utils/app-error";
@@ -16,7 +19,11 @@ export const milestoneController = {
 
     const validatedData = milestoneCreateSchema.parse(req.body);
 
-    const milestone = await milestoneService.createMilestone(projectId, organizationId, validatedData);
+    const milestone = await milestoneService.createMilestone(
+      projectId,
+      organizationId,
+      validatedData,
+    );
 
     return ok(res, "Milestone created successfully", milestone);
   }),
@@ -42,7 +49,10 @@ export const milestoneController = {
 
     const validatedData = milestoneUpdateSchema.parse(req.body);
 
-    const updated = await milestoneService.updateMilestone(milestoneId, validatedData);
+    const updated = await milestoneService.updateMilestone(
+      milestoneId,
+      validatedData,
+    );
 
     return ok(res, "Milestone updated successfully", updated);
   }),

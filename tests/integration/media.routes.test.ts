@@ -48,7 +48,7 @@ import { createUser, createProject } from "../helpers/factories";
 describe("Media API Endpoint Integration Tests (/api/v1/media)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    
+
     // Configure default mock user/session
     setMockUser(createUser({ id: "user-123", email: "user@example.com" }), {
       activeOrganizationId: "org-123",
@@ -59,7 +59,9 @@ describe("Media API Endpoint Integration Tests (/api/v1/media)", () => {
     it("successfully uploads user avatar and updates user record", async () => {
       const mockMedia = { id: "media-avatar" };
       mockMediaService.addMedia.mockResolvedValueOnce(mockMedia);
-      mockMediaService.getUrl.mockResolvedValueOnce("http://localhost/avatars/avatar.png");
+      mockMediaService.getUrl.mockResolvedValueOnce(
+        "http://localhost/avatars/avatar.png",
+      );
       prismaMock.user.update.mockResolvedValueOnce({ id: "user-123" });
 
       const res = await request(app)
@@ -79,7 +81,7 @@ describe("Media API Endpoint Integration Tests (/api/v1/media)", () => {
           originalname: "avatar.png",
         }),
         "avatars",
-        true
+        true,
       );
 
       expect(prismaMock.user.update).toHaveBeenCalledWith({
@@ -101,11 +103,16 @@ describe("Media API Endpoint Integration Tests (/api/v1/media)", () => {
   describe("POST /api/v1/media/org/logo", () => {
     it("successfully uploads organization logo for owner/admin", async () => {
       // User is Org Admin/Owner
-      prismaMock.member.findFirst.mockResolvedValueOnce({ id: "member-123", role: "owner" });
+      prismaMock.member.findFirst.mockResolvedValueOnce({
+        id: "member-123",
+        role: "owner",
+      });
 
       const mockMedia = { id: "media-logo" };
       mockMediaService.addMedia.mockResolvedValueOnce(mockMedia);
-      mockMediaService.getUrl.mockResolvedValueOnce("http://localhost/logos/logo.png");
+      mockMediaService.getUrl.mockResolvedValueOnce(
+        "http://localhost/logos/logo.png",
+      );
 
       const res = await request(app)
         .post("/api/v1/media/org/logo")
@@ -124,7 +131,7 @@ describe("Media API Endpoint Integration Tests (/api/v1/media)", () => {
           originalname: "logo.png",
         }),
         "logos",
-        true
+        true,
       );
     });
 
@@ -137,11 +144,15 @@ describe("Media API Endpoint Integration Tests (/api/v1/media)", () => {
         .attach("logo", Buffer.from("dummy-logo-content"), "logo.png");
 
       expect(res.status).toBe(403);
-      expect(res.body.message).toBe("You do not have permission to upload logos for this organization");
+      expect(res.body.message).toBe(
+        "You do not have permission to upload logos for this organization",
+      );
     });
 
     it("returns 400 Bad Request when there is no active organization in the session", async () => {
-      setMockUser(createUser({ id: "user-123" }), { activeOrganizationId: null });
+      setMockUser(createUser({ id: "user-123" }), {
+        activeOrganizationId: null,
+      });
 
       const res = await request(app)
         .post("/api/v1/media/org/logo")
@@ -156,13 +167,18 @@ describe("Media API Endpoint Integration Tests (/api/v1/media)", () => {
   describe("POST /api/v1/media/workspace/:id/icon", () => {
     it("successfully uploads workspace icon for admin member", async () => {
       // User is workspace admin
-      prismaMock.workspaceMember.findFirst.mockResolvedValueOnce({ id: "ws-member-123", role: "admin" });
+      prismaMock.workspaceMember.findFirst.mockResolvedValueOnce({
+        id: "ws-member-123",
+        role: "admin",
+      });
       prismaMock.member.findFirst.mockResolvedValueOnce(null); // orgAdmin is null but workspaceMember is admin
       prismaMock.workspace.update.mockResolvedValueOnce({ id: "ws-123" });
 
       const mockMedia = { id: "media-ws-icon" };
       mockMediaService.addMedia.mockResolvedValueOnce(mockMedia);
-      mockMediaService.getUrl.mockResolvedValueOnce("http://localhost/icons/ws-icon.png");
+      mockMediaService.getUrl.mockResolvedValueOnce(
+        "http://localhost/icons/ws-icon.png",
+      );
 
       const res = await request(app)
         .post("/api/v1/media/workspace/ws-123/icon")
@@ -187,21 +203,31 @@ describe("Media API Endpoint Integration Tests (/api/v1/media)", () => {
         .attach("icon", Buffer.from("dummy-icon-content"), "icon.png");
 
       expect(res.status).toBe(403);
-      expect(res.body.message).toBe("You do not have permission to upload icons for this workspace");
+      expect(res.body.message).toBe(
+        "You do not have permission to upload icons for this workspace",
+      );
     });
   });
 
   describe("POST /api/v1/media/project/:id/icon", () => {
     it("successfully uploads project icon for admin member", async () => {
-      const mockProject = createProject({ id: "proj-123", workspaceId: "ws-123" });
+      const mockProject = createProject({
+        id: "proj-123",
+        workspaceId: "ws-123",
+      });
       prismaMock.project.findUnique.mockResolvedValueOnce(mockProject);
-      prismaMock.workspaceMember.findFirst.mockResolvedValueOnce({ id: "ws-member-123", role: "admin" });
+      prismaMock.workspaceMember.findFirst.mockResolvedValueOnce({
+        id: "ws-member-123",
+        role: "admin",
+      });
       prismaMock.member.findFirst.mockResolvedValueOnce(null);
       prismaMock.project.update.mockResolvedValueOnce(mockProject);
 
       const mockMedia = { id: "media-proj-icon" };
       mockMediaService.addMedia.mockResolvedValueOnce(mockMedia);
-      mockMediaService.getUrl.mockResolvedValueOnce("http://localhost/icons/proj-icon.png");
+      mockMediaService.getUrl.mockResolvedValueOnce(
+        "http://localhost/icons/proj-icon.png",
+      );
 
       const res = await request(app)
         .post("/api/v1/media/project/proj-123/icon")
@@ -229,7 +255,10 @@ describe("Media API Endpoint Integration Tests (/api/v1/media)", () => {
     });
 
     it("returns 403 Forbidden when user does not have permission", async () => {
-      const mockProject = createProject({ id: "proj-123", workspaceId: "ws-123" });
+      const mockProject = createProject({
+        id: "proj-123",
+        workspaceId: "ws-123",
+      });
       prismaMock.project.findUnique.mockResolvedValueOnce(mockProject);
       prismaMock.workspaceMember.findFirst.mockResolvedValueOnce(null);
       prismaMock.member.findFirst.mockResolvedValueOnce(null);
@@ -240,7 +269,9 @@ describe("Media API Endpoint Integration Tests (/api/v1/media)", () => {
         .attach("icon", Buffer.from("dummy-icon-content"), "icon.png");
 
       expect(res.status).toBe(403);
-      expect(res.body.message).toBe("You do not have permission to upload icons for this project");
+      expect(res.body.message).toBe(
+        "You do not have permission to upload icons for this project",
+      );
     });
   });
 
@@ -248,7 +279,9 @@ describe("Media API Endpoint Integration Tests (/api/v1/media)", () => {
     it("successfully uploads a generic file attachment", async () => {
       const mockMedia = { id: "media-attachment" };
       mockMediaService.addMedia.mockResolvedValueOnce(mockMedia);
-      mockMediaService.getUrl.mockResolvedValueOnce("http://localhost/attachments/attachment.pdf");
+      mockMediaService.getUrl.mockResolvedValueOnce(
+        "http://localhost/attachments/attachment.pdf",
+      );
 
       const res = await request(app)
         .post("/api/v1/media/upload")
@@ -258,7 +291,9 @@ describe("Media API Endpoint Integration Tests (/api/v1/media)", () => {
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
       expect(res.body.data.media_id).toBe("media-attachment");
-      expect(res.body.data.url).toBe("http://localhost/attachments/attachment.pdf");
+      expect(res.body.data.url).toBe(
+        "http://localhost/attachments/attachment.pdf",
+      );
 
       expect(mockMediaService.addMedia).toHaveBeenCalledWith(
         "User",
@@ -267,7 +302,7 @@ describe("Media API Endpoint Integration Tests (/api/v1/media)", () => {
           originalname: "attachment.pdf",
         }),
         "attachments",
-        false
+        false,
       );
     });
   });

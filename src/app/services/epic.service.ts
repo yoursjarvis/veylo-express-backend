@@ -10,7 +10,7 @@ export const epicService = {
       color?: string;
       startDate?: string | null;
       endDate?: string | null;
-    }
+    },
   ) {
     return epicRepository.create({
       title: validatedData.title,
@@ -18,7 +18,9 @@ export const epicService = {
       color: validatedData.color ?? "#6366f1",
       projectId,
       organizationId,
-      startDate: validatedData.startDate ? new Date(validatedData.startDate) : null,
+      startDate: validatedData.startDate
+        ? new Date(validatedData.startDate)
+        : null,
       endDate: validatedData.endDate ? new Date(validatedData.endDate) : null,
       status: "open",
     });
@@ -41,18 +43,26 @@ export const epicService = {
       status?: "open" | "in_progress" | "done";
       startDate?: string | null;
       endDate?: string | null;
-    }
+    },
   ) {
     const updateData: Record<string, unknown> = {};
-    if (validatedData.title !== undefined) updateData.title = validatedData.title;
-    if (validatedData.description !== undefined) updateData.description = validatedData.description;
-    if (validatedData.color !== undefined) updateData.color = validatedData.color;
-    if (validatedData.status !== undefined) updateData.status = validatedData.status;
+    if (validatedData.title !== undefined)
+      updateData.title = validatedData.title;
+    if (validatedData.description !== undefined)
+      updateData.description = validatedData.description;
+    if (validatedData.color !== undefined)
+      updateData.color = validatedData.color;
+    if (validatedData.status !== undefined)
+      updateData.status = validatedData.status;
     if (validatedData.startDate !== undefined) {
-      updateData.startDate = validatedData.startDate ? new Date(validatedData.startDate) : null;
+      updateData.startDate = validatedData.startDate
+        ? new Date(validatedData.startDate)
+        : null;
     }
     if (validatedData.endDate !== undefined) {
-      updateData.endDate = validatedData.endDate ? new Date(validatedData.endDate) : null;
+      updateData.endDate = validatedData.endDate
+        ? new Date(validatedData.endDate)
+        : null;
     }
 
     return epicRepository.update(epicId, updateData);

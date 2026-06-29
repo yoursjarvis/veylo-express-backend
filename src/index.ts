@@ -32,17 +32,22 @@ if (SSL_KEY && SSL_CRT && fs.existsSync(SSL_KEY) && fs.existsSync(SSL_CRT)) {
   const server = https.createServer(options, app);
   webSocketManager.init(server);
   server.listen(PORT, () => {
-    logger.info(`HTTPS Server running on https://${config("app.domain")}:${PORT}`);
+    logger.info(
+      `HTTPS Server running on https://${config("app.domain")}:${PORT}`,
+    );
   });
 } else {
   const server = http.createServer(app);
   webSocketManager.init(server);
   server.listen(PORT, () => {
-    logger.info(`HTTP Server running on http://${config("app.domain")}:${PORT}`);
+    logger.info(
+      `HTTP Server running on http://${config("app.domain")}:${PORT}`,
+    );
     if (config("app.env") === "development") {
-      logger.warn("SSL certificates not found. Google OAuth might fail for subdomains.");
+      logger.warn(
+        "SSL certificates not found. Google OAuth might fail for subdomains.",
+      );
     }
   });
 }
 // Trigger tsx watch reload
-

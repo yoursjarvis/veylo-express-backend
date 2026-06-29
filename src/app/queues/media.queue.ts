@@ -1,4 +1,3 @@
-
 import { Queue } from "bullmq";
 import { BullMQOtel } from "bullmq-otel";
 
@@ -18,4 +17,3 @@ export const mediaQueue = new Queue<MediaQueuePayload>("media", {
   },
   telemetry: new BullMQOtel(),
 });
-

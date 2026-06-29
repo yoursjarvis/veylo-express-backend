@@ -6,11 +6,11 @@ export default defineConfig({
   test: {
     environment: "node",
     globals: true,
-    setupFiles: ["dotenv/config", "./tests/setup.ts"]
+    setupFiles: ["dotenv/config", "./tests/setup.ts"],
   },
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "src")
-    }
-  }
+      "@": path.resolve(__dirname, "src"),
+    },
+  },
 });

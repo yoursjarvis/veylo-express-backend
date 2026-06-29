@@ -30,4 +30,3 @@ export const changePasswordSchema = z.object({
 export const verifyEmailQuerySchema = z.object({
   token: z.string().min(10),
 });
-

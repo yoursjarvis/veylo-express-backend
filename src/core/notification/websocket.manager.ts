@@ -8,7 +8,6 @@ import { auth } from "@/lib/auth/auth";
 import { logger } from "@/lib/logger";
 import { config } from "@/utils/config";
 
-
 export class WebSocketManager {
   private static instance: WebSocketManager;
   private wss: WebSocketServer | null = null;
@@ -69,7 +68,10 @@ export class WebSocketManager {
           this.wss!.emit("connection", ws, userId);
         });
       } catch (error) {
-        logger.error({ error }, "[WEBSOCKET][upgrade] Error authenticating upgrade request");
+        logger.error(
+          { error },
+          "[WEBSOCKET][upgrade] Error authenticating upgrade request",
+        );
         socket.write("HTTP/1.1 500 Internal Server Error\r\n\r\n");
         socket.destroy();
       }
@@ -158,13 +160,19 @@ export class WebSocketManager {
             this.sendLocalToAll(event, data);
           }
         } catch (error) {
-          logger.error({ error, message }, "[WEBSOCKET][redis-sub] Failed to parse message");
+          logger.error(
+            { error, message },
+            "[WEBSOCKET][redis-sub] Failed to parse message",
+          );
         }
       }
     });
 
     void this.subRedis.subscribe(channelName).then(() => {
-      logger.info({ channel: channelName }, "[WEBSOCKET][redis-sub] Subscribed to Redis channel");
+      logger.info(
+        { channel: channelName },
+        "[WEBSOCKET][redis-sub] Subscribed to Redis channel",
+      );
     });
   }
 

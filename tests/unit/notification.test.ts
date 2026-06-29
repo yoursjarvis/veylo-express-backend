@@ -106,14 +106,16 @@ describe("Notification System", () => {
 
     // Assert mail channel was called
     expect(mockMailTo).toHaveBeenCalledWith("recipient@example.com");
-    expect(mockMailView).toHaveBeenCalledWith("welcome", { firstName: "TestUser" });
+    expect(mockMailView).toHaveBeenCalledWith("welcome", {
+      firstName: "TestUser",
+    });
     expect(mockMailSend).toHaveBeenCalled();
 
     // Assert broadcast channel was called
     expect(mockBroadcastToUser).toHaveBeenCalledWith(
       "recipient-123-uuid",
       "test.event",
-      { foo: "bar" }
+      { foo: "bar" },
     );
   });
 });

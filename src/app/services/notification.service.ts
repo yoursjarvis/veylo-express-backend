@@ -23,7 +23,8 @@ export const notificationService = {
   // Dispatch a Slack webhook payload
   async dispatchSlackWebhook(projectId: string, text: string) {
     try {
-      const webhooks = await notificationRepository.findActiveSlackWebhooks(projectId);
+      const webhooks =
+        await notificationRepository.findActiveSlackWebhooks(projectId);
 
       for (const webhook of webhooks) {
         // Native fetch call to post to Slack
@@ -61,12 +62,16 @@ export const notificationService = {
       }
 
       // Check recipient notification preferences
-      const preferencesRecord = await notificationRepository.getUserPreferences(data.recipientId);
+      const preferencesRecord = await notificationRepository.getUserPreferences(
+        data.recipientId,
+      );
       let channels = { in_app: true, email: true, push: true };
 
       if (preferencesRecord && preferencesRecord.notificationPreferences) {
         try {
-          const preferences = JSON.parse(preferencesRecord.notificationPreferences);
+          const preferences = JSON.parse(
+            preferencesRecord.notificationPreferences,
+          );
           if (preferences && typeof preferences === "object") {
             const types = preferences.types || preferences;
             // If explicitly set to false, skip notification creation completely
@@ -74,7 +79,10 @@ export const notificationService = {
               return;
             }
 
-            if (preferences.channels && typeof preferences.channels === "object") {
+            if (
+              preferences.channels &&
+              typeof preferences.channels === "object"
+            ) {
               channels = {
                 ...channels,
                 ...preferences.channels,
@@ -103,7 +111,10 @@ export const notificationService = {
             const { mailService } = await import("@/core/mail");
             await mailService
               .to(recipientUser.email, recipientUser.name)
-              .view("notification", { title: data.title, message: data.message })
+              .view("notification", {
+                title: data.title,
+                message: data.message,
+              })
               .queue();
           }
         } catch (mailErr) {
@@ -139,7 +150,11 @@ export const notificationService = {
 
       // Handle mentions in description
       if (task.description) {
-        await this.handleMentionsInDescription(task.id, creatorId, task.description);
+        await this.handleMentionsInDescription(
+          task.id,
+          creatorId,
+          task.description,
+        );
       }
 
       // 2. Slack Notification
@@ -157,7 +172,11 @@ export const notificationService = {
   },
 
   // Handle task updated notifications
-  async handleTaskUpdated(taskId: string, updaterId: string, oldTask: Record<string, unknown>) {
+  async handleTaskUpdated(
+    taskId: string,
+    updaterId: string,
+    oldTask: Record<string, unknown>,
+  ) {
     try {
       const task = await notificationRepository.findTaskForNotification(taskId);
 
@@ -170,7 +189,9 @@ export const notificationService = {
 
       // Status change check
       if (oldTask.statusId !== task.statusId) {
-        changes.push(`Status updated from *${oldTask.statusName as string}* to *${task.status.name}*`);
+        changes.push(
+          `Status updated from *${oldTask.statusName as string}* to *${task.status.name}*`,
+        );
 
         const notifyIds = new Set<string>();
         if (task.assigneeId) notifyIds.add(task.assigneeId);
@@ -191,8 +212,11 @@ export const notificationService = {
 
       // Assignee change check
       if (oldTask.assigneeId !== task.assigneeId) {
-        const oldAssigneeName = (oldTask.assigneeName as string) || "Unassigned";
-        changes.push(`Assignee updated from *${oldAssigneeName}* to *${task.assignee?.name || "Unassigned"}*`);
+        const oldAssigneeName =
+          (oldTask.assigneeName as string) || "Unassigned";
+        changes.push(
+          `Assignee updated from *${oldAssigneeName}* to *${task.assignee?.name || "Unassigned"}*`,
+        );
 
         // Notify new assignee
         if (task.assigneeId) {
@@ -208,7 +232,11 @@ export const notificationService = {
         }
 
         // Notify old assignee if removed
-        if (oldTask.assigneeId && oldTask.assigneeId !== task.assigneeId && oldTask.assigneeId !== updaterId) {
+        if (
+          oldTask.assigneeId &&
+          oldTask.assigneeId !== task.assigneeId &&
+          oldTask.assigneeId !== updaterId
+        ) {
           await this.createInAppNotification({
             recipientId: oldTask.assigneeId as string,
             senderId: updaterId,
@@ -227,7 +255,7 @@ export const notificationService = {
           task.id,
           updaterId,
           task.description,
-          oldTask.description as string
+          oldTask.description as string,
         );
       }
 
@@ -246,7 +274,8 @@ export const notificationService = {
   // Handle comment notifications and parse mentions
   async handleCommentAdded(commentId: string, authorId: string) {
     try {
-      const comment = await notificationRepository.findCommentForNotification(commentId);
+      const comment =
+        await notificationRepository.findCommentForNotification(commentId);
 
       if (!comment) return;
 
@@ -264,12 +293,14 @@ export const notificationService = {
       const notifiedUserIds = new Set<string>();
 
       if (mentionedNames.size > 0) {
-        const projectMembers = await notificationRepository.findProjectMembers(task.projectId);
+        const projectMembers = await notificationRepository.findProjectMembers(
+          task.projectId,
+        );
 
         for (const member of projectMembers) {
           const u = member.user;
           const isMentioned = Array.from(mentionedNames).some(
-            (name) => name.toLowerCase() === u.name.toLowerCase()
+            (name) => name.toLowerCase() === u.name.toLowerCase(),
           );
 
           if (isMentioned && u.id !== authorId) {
@@ -288,7 +319,12 @@ export const notificationService = {
       }
 
       // 2. In-app notification for Comment Reply
-      if (comment.parentId && comment.parent && comment.parent.userId !== authorId && !notifiedUserIds.has(comment.parent.userId)) {
+      if (
+        comment.parentId &&
+        comment.parent &&
+        comment.parent.userId !== authorId &&
+        !notifiedUserIds.has(comment.parent.userId)
+      ) {
         notifiedUserIds.add(comment.parent.userId);
         await this.createInAppNotification({
           recipientId: comment.parent.userId,
@@ -302,7 +338,11 @@ export const notificationService = {
       }
 
       // 3. In-app notification to Assignee (if not already notified via mention/reply)
-      if (task.assigneeId && task.assigneeId !== authorId && !notifiedUserIds.has(task.assigneeId)) {
+      if (
+        task.assigneeId &&
+        task.assigneeId !== authorId &&
+        !notifiedUserIds.has(task.assigneeId)
+      ) {
         await this.createInAppNotification({
           recipientId: task.assigneeId,
           senderId: authorId,
@@ -329,18 +369,18 @@ export const notificationService = {
     taskId: string,
     authorId: string,
     newDescription: string,
-    oldDescription?: string
+    oldDescription?: string,
   ) {
     try {
       if (!newDescription) return;
       const mentionRegex = /@([A-Za-z0-9_]+(?:\s+[A-Za-z0-9_]+)?)/g;
-      
+
       const newMentions = new Set<string>();
       let match;
       while ((match = mentionRegex.exec(newDescription)) !== null) {
         newMentions.add(match[1].trim().toLowerCase());
       }
-      
+
       if (newMentions.size === 0) return;
 
       const oldMentions = new Set<string>();
@@ -352,20 +392,24 @@ export const notificationService = {
       }
 
       // Filter out users already mentioned in old description
-      const freshMentions = Array.from(newMentions).filter(name => !oldMentions.has(name));
+      const freshMentions = Array.from(newMentions).filter(
+        (name) => !oldMentions.has(name),
+      );
       if (freshMentions.length === 0) return;
 
       const task = await notificationRepository.findTaskForNotification(taskId);
       if (!task) return;
 
-      const projectMembers = await notificationRepository.findProjectMembers(task.projectId);
+      const projectMembers = await notificationRepository.findProjectMembers(
+        task.projectId,
+      );
       const author = await notificationRepository.findUserName(authorId);
       const authorName = author?.name || "Someone";
 
       for (const member of projectMembers) {
         const u = member.user;
         const isMentioned = freshMentions.some(
-          (name) => name === u.name.toLowerCase()
+          (name) => name === u.name.toLowerCase(),
         );
 
         if (isMentioned && u.id !== authorId) {
@@ -386,9 +430,14 @@ export const notificationService = {
   },
 
   // Handle when users are added to a project
-  async handleAddedToProject(projectId: string, adderId: string, addedUserIds: string[]) {
+  async handleAddedToProject(
+    projectId: string,
+    adderId: string,
+    addedUserIds: string[],
+  ) {
     try {
-      const project = await notificationRepository.findProjectForNotification(projectId);
+      const project =
+        await notificationRepository.findProjectForNotification(projectId);
       if (!project) return;
 
       const adder = await notificationRepository.findUserName(adderId);
@@ -414,7 +463,8 @@ export const notificationService = {
   // Handle when someone reacts to a comment/reply
   async handleCommentReaction(reactionId: string) {
     try {
-      const reaction = await notificationRepository.findReactionForNotification(reactionId);
+      const reaction =
+        await notificationRepository.findReactionForNotification(reactionId);
       if (!reaction) return;
 
       const reactorId = reaction.userId;

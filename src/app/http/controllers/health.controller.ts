@@ -24,44 +24,38 @@ export const healthController = {
 
   async readyz(req: Request, res: Response) {
     try {
-      await Promise.all([
-        prisma.$queryRaw`SELECT 1`,
-        redisClient.ping()
-      ]);
+      await Promise.all([prisma.$queryRaw`SELECT 1`, redisClient.ping()]);
       res.status(200).json({
         status: "ready",
         timestamp: new Date().toISOString(),
         checks: {
           postgres: "ok",
-          redis: "ok"
-        }
+          redis: "ok",
+        },
       });
     } catch (error) {
       logger.error({ error }, "Readiness check failed");
       res.status(503).json({
         status: "not ready",
         timestamp: new Date().toISOString(),
-        error: error instanceof Error ? error.message : "Unknown error"
+        error: error instanceof Error ? error.message : "Unknown error",
       });
     }
   },
 
   async healthz(req: Request, res: Response) {
     try {
-      await Promise.all([
-        prisma.$queryRaw`SELECT 1`,
-        redisClient.ping()
-      ]);
+      await Promise.all([prisma.$queryRaw`SELECT 1`, redisClient.ping()]);
       res.status(200).json({
         status: "healthy",
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     } catch (error) {
       res.status(500).json({
         status: "unhealthy",
         timestamp: new Date().toISOString(),
-        error: error instanceof Error ? error.message : "Unknown error"
+        error: error instanceof Error ? error.message : "Unknown error",
       });
     }
-  }
+  },
 };

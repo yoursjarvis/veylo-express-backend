@@ -116,7 +116,7 @@ const masterPermissions: PermissionSeed[] = [
 
 async function main() {
   console.log("Seeding master permissions...");
-  
+
   for (const p of masterPermissions) {
     // Find if the permission already exists based on unique attributes
     const existing = await prisma.permission.findFirst({
@@ -147,8 +147,10 @@ async function main() {
       });
     }
   }
-  
-  console.log(`Successfully processed ${masterPermissions.length} permissions.`);
+
+  console.log(
+    `Successfully processed ${masterPermissions.length} permissions.`,
+  );
 }
 
 main()

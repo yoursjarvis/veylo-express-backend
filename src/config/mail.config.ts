@@ -15,7 +15,10 @@ export default {
       port: env("MAIL_PORT").int(587),
       username: env("MAIL_USERNAME").raw(),
       password: env("MAIL_PASSWORD").raw(),
-      encryption: env("MAIL_ENCRYPTION").enum(["tls", "ssl", "none"] as const, "tls"),
+      encryption: env("MAIL_ENCRYPTION").enum(
+        ["tls", "ssl", "none"] as const,
+        "tls",
+      ),
     },
     resend: {
       apiKey: env("RESEND_API_KEY").raw(),
@@ -30,4 +33,3 @@ export default {
     fallbackToSend: env("MAIL_QUEUE_FALLBACK_TO_SEND").boolean(true),
   },
 };
-

@@ -5,7 +5,11 @@ import { orgMembersService } from "@/app/services/org-members.service";
 import { auth } from "@/lib/auth/auth";
 import { betterAuthHeaders } from "@/lib/auth/node-headers";
 import { logger } from "@/lib/logger";
-import { UnauthorizedException, BadRequestException, NotFoundException } from "@/utils/app-error";
+import {
+  UnauthorizedException,
+  BadRequestException,
+  NotFoundException,
+} from "@/utils/app-error";
 import { ok } from "@/utils/http-response";
 
 async function getActiveOrgAndSession(req: Request) {
@@ -62,7 +66,7 @@ export const orgMembersController = {
       activeOrgId,
       sessionUserId,
       id,
-      betterAuthHeaders(req)
+      betterAuthHeaders(req),
     );
 
     if (result.success) {
@@ -70,9 +74,11 @@ export const orgMembersController = {
     } else {
       res.setHeader(
         "Set-Cookie",
-        `better-auth.session_token=${result.fallback?.token}; Path=/; HttpOnly; SameSite=Lax`
+        `better-auth.session_token=${result.fallback?.token}; Path=/; HttpOnly; SameSite=Lax`,
       );
-      return ok(res, "Impersonation started", { session: result.fallback?.session });
+      return ok(res, "Impersonation started", {
+        session: result.fallback?.session,
+      });
     }
   }),
 
@@ -84,7 +90,9 @@ export const orgMembersController = {
     await orgMembersService.verifyAdminAccess(activeOrgId, sessionUserId, id);
 
     if (!password || password.length < 6) {
-      return res.status(400).json({ message: "Password must be at least 6 characters" });
+      return res
+        .status(400)
+        .json({ message: "Password must be at least 6 characters" });
     }
 
     return res.status(501).json({
@@ -103,7 +111,7 @@ export const orgMembersController = {
     const results = await orgMembersService.bulkInvite(
       activeOrgId,
       req.file,
-      betterAuthHeaders(req)
+      betterAuthHeaders(req),
     );
 
     return ok(res, "Bulk invite processed", results);
@@ -125,7 +133,7 @@ export const orgMembersController = {
         email,
         role,
         projectIds,
-        betterAuthHeaders(req)
+        betterAuthHeaders(req),
       );
 
       return ok(res, "Invitation sent successfully", result);
@@ -172,13 +180,17 @@ export const orgMembersController = {
     const role = req.query.role as string;
     const status = req.query.status as string; // 'banned' or 'active'
 
-    const result = await orgMembersService.getMembers(activeOrgId, sessionUserId, {
-      limit,
-      cursor,
-      search,
-      role,
-      status,
-    });
+    const result = await orgMembersService.getMembers(
+      activeOrgId,
+      sessionUserId,
+      {
+        limit,
+        cursor,
+        search,
+        role,
+        status,
+      },
+    );
 
     return ok(res, "Members fetched", result);
   }),
@@ -194,7 +206,9 @@ export const orgMembersController = {
         return res.status(404).json({ message: "Invitation not found" });
       }
       if (error instanceof BadRequestException) {
-        return res.status(400).json({ message: "Invitation is no longer active" });
+        return res
+          .status(400)
+          .json({ message: "Invitation is no longer active" });
       }
       throw error;
     }
@@ -203,7 +217,10 @@ export const orgMembersController = {
   getPendingInvitations: asyncHandler(async (req: Request, res: Response) => {
     const { activeOrgId, sessionUserId } = await getActiveOrgAndSession(req);
 
-    const invitations = await orgMembersService.getPendingInvitations(activeOrgId, sessionUserId);
+    const invitations = await orgMembersService.getPendingInvitations(
+      activeOrgId,
+      sessionUserId,
+    );
 
     return ok(res, "Pending invitations fetched", invitations);
   }),
@@ -217,7 +234,7 @@ export const orgMembersController = {
         activeOrgId,
         sessionUserId,
         id,
-        betterAuthHeaders(req)
+        betterAuthHeaders(req),
       );
 
       return ok(res, "Invitation revoked successfully", result);

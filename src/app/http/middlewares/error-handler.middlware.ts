@@ -10,7 +10,7 @@ export const errorMiddleware = (
   err: unknown,
   req: Request,
   res: Response,
-  _next: NextFunction
+  _next: NextFunction,
 ) => {
   let error: AppError;
 
@@ -19,13 +19,13 @@ export const errorMiddleware = (
       err.issues.map((e: ZodIssue) => ({
         field: e.path.join("."),
         message: e.message,
-      }))
+      })),
     );
   } else if (err instanceof AppError) {
     error = err;
   } else {
     error = new AppError(
-      err instanceof Error ? err.message : "Internal Server Error"
+      err instanceof Error ? err.message : "Internal Server Error",
     );
   }
 
@@ -41,9 +41,7 @@ export const errorMiddleware = (
 
   const response: Record<string, unknown> = {
     success: false,
-    message: error.expose
-      ? error.message
-      : "Something went wrong",
+    message: error.expose ? error.message : "Something went wrong",
     errorCode: error.errorCode,
     statusCode: error.statusCode,
     requestId: req.headers["x-request-id"],

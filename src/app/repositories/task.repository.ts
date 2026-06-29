@@ -40,20 +40,22 @@ export const taskRepository = {
         blockingDependencies: {
           include: {
             blockedTask: {
-              select: { id: true, title: true, taskKey: true, statusId: true }
-            }
-          }
+              select: { id: true, title: true, taskKey: true, statusId: true },
+            },
+          },
         },
         blockedByDependencies: {
           include: {
             blockingTask: {
-              select: { id: true, title: true, taskKey: true, statusId: true }
-            }
-          }
+              select: { id: true, title: true, taskKey: true, statusId: true },
+            },
+          },
         },
         comments: {
           include: {
-            user: { select: { id: true, name: true, image: true, email: true } },
+            user: {
+              select: { id: true, name: true, image: true, email: true },
+            },
             reactions: {
               select: {
                 id: true,
@@ -77,7 +79,14 @@ export const taskRepository = {
   async findTaskWithRelations(taskId: string) {
     return prisma.task.findUnique({
       where: { id: taskId },
-      include: { status: true, assignee: true, reporter: true, sprint: true, epic: true, milestone: true },
+      include: {
+        status: true,
+        assignee: true,
+        reporter: true,
+        sprint: true,
+        epic: true,
+        milestone: true,
+      },
     });
   },
 

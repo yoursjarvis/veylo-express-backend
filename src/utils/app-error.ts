@@ -1,8 +1,5 @@
 import { HTTP_STATUS, HttpStatusCodeType } from "@/app/constants/http";
-import {
-  ErrorCodeEnum,
-  ErrorCodeEnumType,
-} from "@/app/enums/error-code.enum";
+import { ErrorCodeEnum, ErrorCodeEnumType } from "@/app/enums/error-code.enum";
 
 export interface AppErrorOptions {
   statusCode?: HttpStatusCodeType;
@@ -26,18 +23,15 @@ export class AppError extends Error {
 
     this.name = this.constructor.name;
 
-    this.statusCode =
-      options.statusCode ?? HTTP_STATUS.INTERNAL_SERVER_ERROR;
+    this.statusCode = options.statusCode ?? HTTP_STATUS.INTERNAL_SERVER_ERROR;
 
-    this.errorCode =
-      options.errorCode ?? ErrorCodeEnum.INTERNAL_SERVER_ERROR;
+    this.errorCode = options.errorCode ?? ErrorCodeEnum.INTERNAL_SERVER_ERROR;
 
     this.details = options.details;
     this.cause = options.cause;
 
     this.expose =
-      options.expose ??
-      (this.statusCode >= 400 && this.statusCode < 500);
+      options.expose ?? (this.statusCode >= 400 && this.statusCode < 500);
 
     this.isOperational = options.isOperational ?? true;
 

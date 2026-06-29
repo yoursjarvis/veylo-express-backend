@@ -27,19 +27,15 @@ const worker = new Worker<MailQueuePayload>(
     prefix: config("mail.queue.prefix"),
     concurrency: 5,
     telemetry: new BullMQOtel(),
-  }
+  },
 );
-
 
 worker.on("completed", (job) => {
   logger.info({ jobId: job.id }, "[MAIL][worker] job completed");
 });
 
 worker.on("failed", (job, error) => {
-  logger.error(
-    { jobId: job?.id, error },
-    "[MAIL][worker] job failed"
-  );
+  logger.error({ jobId: job?.id, error }, "[MAIL][worker] job failed");
 });
 
 async function shutdown(signal: string) {
@@ -52,12 +48,10 @@ async function shutdown(signal: string) {
   process.exit(0);
 }
 
-
 process.on("SIGINT", () => void shutdown("SIGINT"));
 process.on("SIGTERM", () => void shutdown("SIGTERM"));
 
 logger.info(
   { queue: config("mail.queue.name"), mailer: config("mail.default") },
-  "[MAIL][worker] started"
+  "[MAIL][worker] started",
 );
-

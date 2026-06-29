@@ -25,4 +25,3 @@ describe("http-response", () => {
     expect(res.status).toHaveBeenCalledWith(401);
   });
 });
-

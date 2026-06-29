@@ -2,7 +2,10 @@ import type { Request, Response } from "express";
 
 import { asyncHandler } from "@/app/http/middlewares/async-handler.middleware";
 import { verifyProjectAccess } from "@/app/http/middlewares/project-access.middleware";
-import { sprintCreateSchema, sprintUpdateSchema } from "@/app/http/validators/sprint.validator";
+import {
+  sprintCreateSchema,
+  sprintUpdateSchema,
+} from "@/app/http/validators/sprint.validator";
 import { sprintRepository } from "@/app/repositories/sprint.repository";
 import { sprintService } from "@/app/services/sprint.service";
 import { NotFoundException } from "@/utils/app-error";
@@ -16,7 +19,11 @@ export const sprintController = {
 
     const validatedData = sprintCreateSchema.parse(req.body);
 
-    const sprint = await sprintService.createSprint(projectId, organizationId, validatedData);
+    const sprint = await sprintService.createSprint(
+      projectId,
+      organizationId,
+      validatedData,
+    );
 
     return ok(res, "Sprint created successfully", sprint);
   }),
@@ -54,7 +61,11 @@ export const sprintController = {
     const { userId } = await verifyProjectAccess(req, existingSprint.projectId);
     const validatedData = sprintUpdateSchema.parse(req.body);
 
-    const updatedSprint = await sprintService.updateSprint(existingSprint, validatedData, userId);
+    const updatedSprint = await sprintService.updateSprint(
+      existingSprint,
+      validatedData,
+      userId,
+    );
 
     return ok(res, "Sprint updated successfully", updatedSprint);
   }),

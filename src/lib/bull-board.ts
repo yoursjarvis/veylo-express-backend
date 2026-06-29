@@ -9,10 +9,7 @@ const serverAdapter = new ExpressAdapter();
 serverAdapter.setBasePath("/admin/queues");
 
 createBullBoard({
-  queues: [
-    new BullMQAdapter(mailQueue),
-    new BullMQAdapter(mediaQueue),
-  ],
+  queues: [new BullMQAdapter(mailQueue), new BullMQAdapter(mediaQueue)],
   serverAdapter: serverAdapter,
 });
 

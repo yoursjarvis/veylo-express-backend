@@ -25,15 +25,16 @@ async function main() {
   let orgSlug = "";
   let orgName = "";
 
-  const userInput = (await askQuestion("Enter Organization ID or Slug (leave blank to select first found or create a new one): ")).trim();
+  const userInput = (
+    await askQuestion(
+      "Enter Organization ID or Slug (leave blank to select first found or create a new one): ",
+    )
+  ).trim();
 
   if (userInput) {
     const foundOrg = await prisma.organization.findFirst({
       where: {
-        OR: [
-          { id: userInput },
-          { slug: userInput },
-        ],
+        OR: [{ id: userInput }, { slug: userInput }],
       },
     });
 
@@ -41,9 +42,13 @@ async function main() {
       orgId = foundOrg.id;
       orgSlug = foundOrg.slug || "";
       orgName = foundOrg.name;
-      console.log(`Found existing organization: ${orgName} (ID: ${orgId}, Slug: ${orgSlug})`);
+      console.log(
+        `Found existing organization: ${orgName} (ID: ${orgId}, Slug: ${orgSlug})`,
+      );
     } else {
-      console.log(`Organization not found with ID/Slug: "${userInput}". Creating a new one...`);
+      console.log(
+        `Organization not found with ID/Slug: "${userInput}". Creating a new one...`,
+      );
     }
   }
 
@@ -54,7 +59,9 @@ async function main() {
       orgId = firstOrg.id;
       orgSlug = firstOrg.slug || "";
       orgName = firstOrg.name;
-      console.log(`Using existing organization: ${orgName} (ID: ${orgId}, Slug: ${orgSlug})`);
+      console.log(
+        `Using existing organization: ${orgName} (ID: ${orgId}, Slug: ${orgSlug})`,
+      );
     } else {
       // Create a brand new organization
       orgName = faker.company.name() + " Test";
@@ -66,7 +73,9 @@ async function main() {
         },
       });
       orgId = newOrg.id;
-      console.log(`Created new organization: ${orgName} (ID: ${orgId}, Slug: ${orgSlug})`);
+      console.log(
+        `Created new organization: ${orgName} (ID: ${orgId}, Slug: ${orgSlug})`,
+      );
     }
   }
 
@@ -77,8 +86,19 @@ async function main() {
   // 3. Create Org Members
   console.log("Creating organization members...");
   const users = [];
-  const memberRoles = ["admin", "member", "member", "member", "member", "member", "member", "member", "member", "member"];
-  
+  const memberRoles = [
+    "admin",
+    "member",
+    "member",
+    "member",
+    "member",
+    "member",
+    "member",
+    "member",
+    "member",
+    "member",
+  ];
+
   for (let i = 0; i < 10; i++) {
     const firstName = faker.person.firstName();
     const lastName = faker.person.lastName();
@@ -115,17 +135,26 @@ async function main() {
 
     users.push(user);
   }
-  console.log(`Created ${users.length} test users as org members with password: "${PASSWORD}"`);
+  console.log(
+    `Created ${users.length} test users as org members with password: "${PASSWORD}"`,
+  );
 
   // 4. Create Custom Roles and Permissions
   console.log("Seeding custom roles and permissions for organization...");
   const permissions = await prisma.permission.findMany();
-  
+
   if (permissions.length === 0) {
-    console.log("Warning: No master permissions found in the database. Please run npm run seed:permissions first.");
+    console.log(
+      "Warning: No master permissions found in the database. Please run npm run seed:permissions first.",
+    );
   }
 
-  const roleNames = ["Product Owner", "Senior Developer", "QA Engineer", "Project Lead"];
+  const roleNames = [
+    "Product Owner",
+    "Senior Developer",
+    "QA Engineer",
+    "Project Lead",
+  ];
   const seededRoles = [];
   for (const roleName of roleNames) {
     // Upsert Role
@@ -147,14 +176,14 @@ async function main() {
     // Assign a subset of permissions
     const count = faker.number.int({ min: 5, max: permissions.length });
     const selectedPerms = faker.helpers.arrayElements(permissions, count);
-    
+
     await prisma.rolePermission.deleteMany({
       where: { roleId: role.id },
     });
 
     if (selectedPerms.length > 0) {
       await prisma.rolePermission.createMany({
-        data: selectedPerms.map(p => ({
+        data: selectedPerms.map((p) => ({
           roleId: role.id,
           permissionId: p.id,
         })),
@@ -186,7 +215,9 @@ async function main() {
 
     seededRoles.push(role);
   }
-  console.log(`Seeded ${seededRoles.length} custom organization roles and assignments.`);
+  console.log(
+    `Seeded ${seededRoles.length} custom organization roles and assignments.`,
+  );
 
   // 5. Setup Workspace
   let workspace = await prisma.workspace.findFirst({
@@ -198,7 +229,10 @@ async function main() {
     workspace = await prisma.workspace.create({
       data: {
         name: wsName,
-        slug: faker.helpers.slugify(wsName.toLowerCase()) + "-" + faker.number.int({ min: 100, max: 999 }),
+        slug:
+          faker.helpers.slugify(wsName.toLowerCase()) +
+          "-" +
+          faker.number.int({ min: 100, max: 999 }),
         organizationId: orgId,
       },
     });
@@ -231,9 +265,13 @@ async function main() {
   const projectKeys = [
     "WEB" + faker.number.int({ min: 10, max: 99 }),
     "API" + faker.number.int({ min: 10, max: 99 }),
-    "OPS" + faker.number.int({ min: 10, max: 99 })
+    "OPS" + faker.number.int({ min: 10, max: 99 }),
   ];
-  const projectTitles = ["Web Application v2", "Core Services API", "Business Operations Dashboard"];
+  const projectTitles = [
+    "Web Application v2",
+    "Core Services API",
+    "Business Operations Dashboard",
+  ];
   const projects = [];
 
   for (let i = 0; i < projectKeys.length; i++) {
@@ -244,7 +282,8 @@ async function main() {
       data: {
         projectKey: projKey,
         title: projTitle,
-        description: faker.company.catchPhrase() + ". " + faker.lorem.paragraph(2),
+        description:
+          faker.company.catchPhrase() + ". " + faker.lorem.paragraph(2),
         template: projectTemplates[i],
         workspaceId: workspace.id,
         organizationId: orgId,
@@ -264,7 +303,9 @@ async function main() {
 
     projects.push(proj);
   }
-  console.log(`Created ${projects.length} projects: ${projects.map(p => p.projectKey).join(", ")}`);
+  console.log(
+    `Created ${projects.length} projects: ${projects.map((p) => p.projectKey).join(", ")}`,
+  );
 
   // 7. Seed project metadata per project (statuses, epics, sprints, milestones, labels)
   const allProjectStatuses: Record<string, { id: string }[]> = {};
@@ -299,7 +340,12 @@ async function main() {
     allProjectStatuses[proj.id] = statuses;
 
     // B. Epics
-    const epicsData = ["Authentication & Security", "Billing & Subscriptions", "Analytics Dashboard", "Mobile Responsive UI"];
+    const epicsData = [
+      "Authentication & Security",
+      "Billing & Subscriptions",
+      "Analytics Dashboard",
+      "Mobile Responsive UI",
+    ];
     const epics = [];
     for (const epicName of epicsData) {
       const epic = await prisma.epic.create({
@@ -308,7 +354,14 @@ async function main() {
           organizationId: orgId,
           title: epicName,
           description: faker.lorem.sentence(),
-          color: faker.helpers.arrayElement(["#6366f1", "#10b981", "#f59e0b", "#3b82f6", "#ef4444", "#8b5cf6"]),
+          color: faker.helpers.arrayElement([
+            "#6366f1",
+            "#10b981",
+            "#f59e0b",
+            "#3b82f6",
+            "#ef4444",
+            "#8b5cf6",
+          ]),
           status: faker.helpers.arrayElement(["open", "in_progress", "done"]),
         },
       });
@@ -406,7 +459,7 @@ async function main() {
   // 8. Seed 50 Main Tasks
   console.log("Generating 50 main tasks across the projects...");
   const tasks = [];
-  
+
   for (let i = 1; i <= 50; i++) {
     const randomProject = faker.helpers.arrayElement(projects);
     const projId = randomProject.id;
@@ -419,14 +472,21 @@ async function main() {
 
     const randomStatus = faker.helpers.arrayElement(statuses);
     const randomEpic = faker.helpers.arrayElement(epics);
-    const randomSprint = sprints.length > 0 ? faker.helpers.arrayElement(sprints) : null;
+    const randomSprint =
+      sprints.length > 0 ? faker.helpers.arrayElement(sprints) : null;
     const randomMilestone = faker.helpers.arrayElement(milestones);
     const randomCreator = faker.helpers.arrayElement(users);
     const randomAssignee = faker.helpers.arrayElement([null, ...users]);
     const randomReporter = faker.helpers.arrayElement(users);
 
-    const title = faker.hacker.verb() + " " + faker.hacker.adjective() + " " + faker.hacker.noun();
-    const description = faker.hacker.phrase() + "\n\n" + faker.lorem.paragraph(1);
+    const title =
+      faker.hacker.verb() +
+      " " +
+      faker.hacker.adjective() +
+      " " +
+      faker.hacker.noun();
+    const description =
+      faker.hacker.phrase() + "\n\n" + faker.lorem.paragraph(1);
 
     // Get next task sequence for key
     const taskSeq = i; // Let's keep it sequential per loop or project
@@ -444,13 +504,21 @@ async function main() {
         milestoneId: randomMilestone.id,
         sprintId: randomSprint ? randomSprint.id : null,
         type: faker.helpers.arrayElement(["task", "bug", "feature", "story"]),
-        priority: faker.helpers.arrayElement(["low", "medium", "high", "urgent"]),
+        priority: faker.helpers.arrayElement([
+          "low",
+          "medium",
+          "high",
+          "urgent",
+        ]),
         estimate: faker.helpers.arrayElement([1, 2, 3, 5, 8, 13]),
         creatorId: randomCreator.id,
         assigneeId: randomAssignee ? randomAssignee.id : null,
         reporterId: randomReporter.id,
         position: i * 1000,
-        dueDate: faker.helpers.arrayElement([null, faker.date.soon({ days: 30 })]),
+        dueDate: faker.helpers.arrayElement([
+          null,
+          faker.date.soon({ days: 30 }),
+        ]),
       },
     });
 
@@ -461,7 +529,10 @@ async function main() {
     });
 
     // Add random labels
-    const selectedLabels = faker.helpers.arrayElements(labels, faker.number.int({ min: 0, max: 2 }));
+    const selectedLabels = faker.helpers.arrayElements(
+      labels,
+      faker.number.int({ min: 0, max: 2 }),
+    );
     for (const l of selectedLabels) {
       await prisma.taskLabel.create({
         data: {
@@ -486,7 +557,7 @@ async function main() {
               "Blocking issue: we need to review requirements.",
               "Looking great! PR is submitted.",
               "Can we double check the credentials?",
-              "This should be finished by tomorrow afternoon."
+              "This should be finished by tomorrow afternoon.",
             ]),
           },
         });
@@ -499,13 +570,17 @@ async function main() {
         data: {
           taskId: task.id,
           userId: randomAssignee.id,
-          hoursLogged: faker.number.float({ min: 0.5, max: 8, multipleOf: 0.5 }),
+          hoursLogged: faker.number.float({
+            min: 0.5,
+            max: 8,
+            multipleOf: 0.5,
+          }),
           description: faker.helpers.arrayElement([
             "Initial setup & scaffolding",
             "Refactoring controllers",
             "Debugging database connection leak",
             "Writing unit tests",
-            "QA validation"
+            "QA validation",
           ]),
         },
       });
@@ -530,7 +605,8 @@ async function main() {
   for (let s = 1; s <= 15; s++) {
     const parentTask = faker.helpers.arrayElement(tasks);
     const parentKey = parentTask.taskKey.split("-")[0];
-    const randomProject = projects.find(p => p.projectKey === parentKey) || projects[0];
+    const randomProject =
+      projects.find((p) => p.projectKey === parentKey) || projects[0];
 
     const randomStatus = allProjectStatuses[randomProject.id][1]; // To Do or similar
     const randomCreator = faker.helpers.arrayElement(users);
@@ -568,9 +644,12 @@ async function main() {
   console.log("\n===========================================");
   console.log("Database seeded successfully with test data!");
   console.log("Created Organization: " + orgName + " (Slug: " + orgSlug + ")");
-  console.log("Created Users: " + users.map(u => u.email).join(", "));
+  console.log("Created Users: " + users.map((u) => u.email).join(", "));
   console.log("All user accounts have password: " + PASSWORD);
-  console.log("Created Projects: " + projects.map(p => `${p.title} (${p.projectKey})`).join(", "));
+  console.log(
+    "Created Projects: " +
+      projects.map((p) => `${p.title} (${p.projectKey})`).join(", "),
+  );
   console.log("Created Tasks: 50 main tasks and 15 sub-tasks");
   console.log("===========================================");
 

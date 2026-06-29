@@ -15,7 +15,7 @@ export class MediaService {
     modelId: string,
     file: UploadedFile,
     collectionName: MediaCollection = "default",
-    replace: boolean = false
+    replace: boolean = false,
   ) {
     if (replace) {
       const existingMedia = await prisma.media.findMany({
@@ -31,7 +31,6 @@ export class MediaService {
     const fileName = `${id}-${file.originalname}`;
     const relativePath = path.join(modelType, collectionName, fileName);
 
-    
     // Store file (Local storage implementation for now)
     if (disk === "local") {
       const root = config("storage.disks.local.root");
@@ -39,8 +38,8 @@ export class MediaService {
       await fs.mkdir(path.dirname(fullPath), { recursive: true });
       await fs.writeFile(fullPath, file.buffer);
     } else {
-        // TODO: S3 implementation if needed
-        throw new Error(`Disk ${disk} not implemented yet`);
+      // TODO: S3 implementation if needed
+      throw new Error(`Disk ${disk} not implemented yet`);
     }
 
     const media = await prisma.media.create({
@@ -60,7 +59,10 @@ export class MediaService {
     try {
       await mediaQueue.add("process", { mediaId: media.id });
     } catch (error) {
-      logger.error({ error, mediaId: media.id }, "[MEDIA] Failed to queue conversion");
+      logger.error(
+        { error, mediaId: media.id },
+        "[MEDIA] Failed to queue conversion",
+      );
     }
 
     return media;
@@ -86,7 +88,11 @@ export class MediaService {
     // Delete file from disk
     if (media.disk === "local") {
       const root = config("storage.disks.local.root");
-      const relativePath = path.join(media.modelType, media.collectionName, media.fileName);
+      const relativePath = path.join(
+        media.modelType,
+        media.collectionName,
+        media.fileName,
+      );
       const fullPath = path.join(process.cwd(), root, relativePath);
       try {
         await fs.unlink(fullPath);
@@ -95,10 +101,19 @@ export class MediaService {
       }
 
       // Delete conversions
-      const conversions = (media.generatedConversions as Record<string, { fileName?: string }>) || {};
+      const conversions =
+        (media.generatedConversions as Record<string, { fileName?: string }>) ||
+        {};
       for (const conversion of Object.values(conversions)) {
         if (conversion.fileName) {
-          const conversionPath = path.join(process.cwd(), root, media.modelType, media.collectionName, "conversions", conversion.fileName);
+          const conversionPath = path.join(
+            process.cwd(),
+            root,
+            media.modelType,
+            media.collectionName,
+            "conversions",
+            conversion.fileName,
+          );
           try {
             await fs.unlink(conversionPath);
           } catch {

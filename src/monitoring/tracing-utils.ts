@@ -7,7 +7,10 @@ const tracer = trace.getTracer("veylo-backend-tracer");
  * @param name The name of the span
  * @param fn The async function to execute
  */
-export async function withTrace<T>(name: string, fn: () => Promise<T>): Promise<T> {
+export async function withTrace<T>(
+  name: string,
+  fn: () => Promise<T>,
+): Promise<T> {
   return tracer.startActiveSpan(name, async (span) => {
     try {
       const result = await fn();
@@ -18,7 +21,9 @@ export async function withTrace<T>(name: string, fn: () => Promise<T>): Promise<
         code: SpanStatusCode.ERROR,
         message: error instanceof Error ? error.message : String(error),
       });
-      span.recordException(error instanceof Error ? error : new Error(String(error)));
+      span.recordException(
+        error instanceof Error ? error : new Error(String(error)),
+      );
       throw error;
     } finally {
       span.end();

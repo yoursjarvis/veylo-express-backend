@@ -32,7 +32,7 @@ export const projectRepository = {
       organizationId: string;
     },
     resolvedStatuses: { name: string; category: string; order: number }[],
-    resolvedCustomFields: { name: string; type: string }[]
+    resolvedCustomFields: { name: string; type: string }[],
   ) {
     return prisma.project.create({
       data: {
@@ -49,7 +49,10 @@ export const projectRepository = {
         },
         taskStatuses: {
           createMany: {
-            data: resolvedStatuses.map((s) => ({ ...s, organizationId: data.organizationId })),
+            data: resolvedStatuses.map((s) => ({
+              ...s,
+              organizationId: data.organizationId,
+            })),
           },
         },
         customFields:
@@ -222,7 +225,12 @@ export const projectRepository = {
     });
   },
 
-  upsertVaultItem(serviceId: string, key: string, value: string, note: string | null) {
+  upsertVaultItem(
+    serviceId: string,
+    key: string,
+    value: string,
+    note: string | null,
+  ) {
     return prisma.vaultItem.upsert({
       where: {
         serviceId_key: { serviceId, key },
@@ -276,7 +284,17 @@ export const projectRepository = {
     });
   },
 
-  createAutomationRule(projectId: string, data: { name: string; trigger: string; triggerVal?: string | null; action: string; actionVal?: string | null; isActive?: boolean }) {
+  createAutomationRule(
+    projectId: string,
+    data: {
+      name: string;
+      trigger: string;
+      triggerVal?: string | null;
+      action: string;
+      actionVal?: string | null;
+      isActive?: boolean;
+    },
+  ) {
     return prisma.automationRule.create({
       data: {
         projectId,
@@ -290,7 +308,17 @@ export const projectRepository = {
     });
   },
 
-  updateAutomationRule(ruleId: string, data: { name?: string; trigger?: string; triggerVal?: string | null; action?: string; actionVal?: string | null; isActive?: boolean }) {
+  updateAutomationRule(
+    ruleId: string,
+    data: {
+      name?: string;
+      trigger?: string;
+      triggerVal?: string | null;
+      action?: string;
+      actionVal?: string | null;
+      isActive?: boolean;
+    },
+  ) {
     return prisma.automationRule.update({
       where: { id: ruleId },
       data: {

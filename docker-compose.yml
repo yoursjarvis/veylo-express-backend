@@ -66,7 +66,14 @@ services:
   redis:
     image: redis:8.6
     restart: unless-stopped
-    command: ["redis-server", "--appendonly", "yes", "--requirepass", "${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env}"]
+    command:
+      [
+        "redis-server",
+        "--appendonly",
+        "yes",
+        "--requirepass",
+        "${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env}",
+      ]
     ports:
       - "6379:6379"
     networks:
@@ -131,12 +138,12 @@ services:
 
   tempo:
     image: grafana/tempo:latest
-    command: [ "-config.file=/etc/tempo.yaml" ]
+    command: ["-config.file=/etc/tempo.yaml"]
     volumes:
       - ./tempo.yaml:/etc/tempo.yaml
     ports:
-      - "3200:3200"   # Tempo HTTP
-      - "4317:4317"   # OTLP gRPC (Collector will forward here)
+      - "3200:3200" # Tempo HTTP
+      - "4317:4317" # OTLP gRPC (Collector will forward here)
     networks:
       - veylo-network
 

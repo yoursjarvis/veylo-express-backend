@@ -18,7 +18,9 @@ export const notificationController = {
       throw new UnauthorizedException();
     }
 
-    const notifications = await notificationService.getUserNotifications(session.user.id);
+    const notifications = await notificationService.getUserNotifications(
+      session.user.id,
+    );
 
     return ok(res, "Notifications fetched successfully", notifications);
   }),
@@ -34,7 +36,10 @@ export const notificationController = {
       throw new UnauthorizedException();
     }
 
-    const updated = await notificationService.markNotificationAsRead(session.user.id, notificationId);
+    const updated = await notificationService.markNotificationAsRead(
+      session.user.id,
+      notificationId,
+    );
 
     return ok(res, "Notification marked as read", updated);
   }),

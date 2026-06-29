@@ -39,7 +39,12 @@ export const dependencyController = {
     const { userId } = await verifyProjectAccess(req, task.projectId);
     await verifyProjectAccess(req, depTask.projectId);
 
-    const dependency = await dependencyService.createDependency(task, depTask, validatedData, userId);
+    const dependency = await dependencyService.createDependency(
+      task,
+      depTask,
+      validatedData,
+      userId,
+    );
 
     return ok(res, "Task dependency added successfully", dependency);
   }),
@@ -47,13 +52,17 @@ export const dependencyController = {
   deleteDependency: asyncHandler(async (req: Request, res: Response) => {
     const dependencyId = req.params.id as string;
 
-    const dependency = await dependencyRepository.findDependencyById(dependencyId);
+    const dependency =
+      await dependencyRepository.findDependencyById(dependencyId);
 
     if (!dependency) {
       throw new NotFoundException("Dependency not found");
     }
 
-    const { userId } = await verifyProjectAccess(req, dependency.blockingTask.projectId);
+    const { userId } = await verifyProjectAccess(
+      req,
+      dependency.blockingTask.projectId,
+    );
     await verifyProjectAccess(req, dependency.blockedTask.projectId);
 
     await dependencyService.deleteDependency(dependency, userId);

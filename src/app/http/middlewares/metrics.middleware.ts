@@ -1,14 +1,11 @@
 import { type NextFunction, type Request, type Response } from "express";
 
-import {
-  httpRequestDuration,
-  httpRequestsTotal,
-} from "@/monitoring/metrics";
+import { httpRequestDuration, httpRequestsTotal } from "@/monitoring/metrics";
 
 export const metricsMiddleware = (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const end = httpRequestDuration.startTimer();
 

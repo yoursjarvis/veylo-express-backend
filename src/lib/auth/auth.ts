@@ -1,13 +1,17 @@
 import { betterAuth, type SecondaryStorage } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
-import { admin, lastLoginMethod, organization, twoFactor } from "better-auth/plugins";
+import {
+  admin,
+  lastLoginMethod,
+  organization,
+  twoFactor,
+} from "better-auth/plugins";
 
 import { mailService } from "@/core/mail";
 import { logger } from "@/lib/logger";
 import prisma, { basePrisma } from "@/lib/prisma";
 import { redis } from "@/lib/redis";
 import { config } from "@/utils/config";
-
 
 import { ac, roles } from "./permissions";
 
@@ -19,7 +23,9 @@ function resolveTrustedOrigins(): string[] {
     try {
       const url = new URL(origin);
       // Add wildcard for subdomains (e.g., http://*.veylo.local:3000)
-      trusted.push(`${url.protocol}//*.${url.hostname}${url.port ? `:${url.port}` : ""}`);
+      trusted.push(
+        `${url.protocol}//*.${url.hostname}${url.port ? `:${url.port}` : ""}`,
+      );
     } catch {
       // ignore invalid origins
     }
@@ -78,11 +84,25 @@ export const auth = betterAuth({
     additionalFields: {
       firstName: { type: "string", required: true },
       lastName: { type: "string", required: true },
-      notificationPreferences: { type: "string", required: false, defaultValue: "[]" },
-      isActive: { type: "boolean", required: false, defaultValue: true, input: false },
+      notificationPreferences: {
+        type: "string",
+        required: false,
+        defaultValue: "[]",
+      },
+      isActive: {
+        type: "boolean",
+        required: false,
+        defaultValue: true,
+        input: false,
+      },
       lastLoginAt: { type: "date", required: false, input: false },
       passwordChangedAt: { type: "date", required: false, input: false },
-      failedLoginAttempts: { type: "number", required: false, defaultValue: 0, input: false },
+      failedLoginAttempts: {
+        type: "number",
+        required: false,
+        defaultValue: 0,
+        input: false,
+      },
       lockedUntil: { type: "date", required: false, input: false },
       deletedAt: { type: "date", required: false, input: false },
     },
@@ -123,7 +143,10 @@ export const auth = betterAuth({
                 .view("welcome", { firstName })
                 .queue();
             } catch (error) {
-              logger.error({ error, userId: user.id }, "[AUTH][welcome] enqueue failed for verified signup");
+              logger.error(
+                { error, userId: user.id },
+                "[AUTH][welcome] enqueue failed for verified signup",
+              );
             }
           }
 
@@ -147,15 +170,20 @@ export const auth = betterAuth({
               if (inv.projectIds && Array.isArray(inv.projectIds)) {
                 for (const projectId of inv.projectIds) {
                   if (typeof projectId === "string") {
-                    await prisma.projectMember.create({
-                      data: {
-                        projectId,
-                        userId: user.id,
-                        role: "member",
-                      },
-                    }).catch((err) => {
-                      logger.error({ err, projectId, userId: user.id }, "[AUTH][invite] Failed to auto-assign project");
-                    });
+                    await prisma.projectMember
+                      .create({
+                        data: {
+                          projectId,
+                          userId: user.id,
+                          role: "member",
+                        },
+                      })
+                      .catch((err) => {
+                        logger.error(
+                          { err, projectId, userId: user.id },
+                          "[AUTH][invite] Failed to auto-assign project",
+                        );
+                      });
                   }
                 }
               }
@@ -167,7 +195,10 @@ export const auth = betterAuth({
               });
             }
           } catch (error) {
-            logger.error({ error, userId: user.id }, "[AUTH][invite] auto-accept failed");
+            logger.error(
+              { error, userId: user.id },
+              "[AUTH][invite] auto-accept failed",
+            );
           }
         },
       },
@@ -207,8 +238,12 @@ export const auth = betterAuth({
           name: profile.name || undefined,
           email: profile.email || undefined,
           image: profile.picture || undefined,
-          firstName: profile.given_name || profile.name?.split(" ")[0] || "User",
-          lastName: profile.family_name || profile.name?.split(" ").slice(1).join(" ") || "Name",
+          firstName:
+            profile.given_name || profile.name?.split(" ")[0] || "User",
+          lastName:
+            profile.family_name ||
+            profile.name?.split(" ").slice(1).join(" ") ||
+            "Name",
         };
       },
     },
@@ -236,9 +271,15 @@ export const auth = betterAuth({
   emailVerification: {
     sendOnSignUp: true,
     sendVerificationEmail: async ({ user, token }, _request) => {
-      const origin = _request?.headers.get("origin") || 
-                    (_request?.headers.get("referer") ? new URL(_request.headers.get("referer")!).origin : null) || 
-                    config("auth.betterAuth.emailVerificationRedirectURL").replace(/\/verify-email$/, "");
+      const origin =
+        _request?.headers.get("origin") ||
+        (_request?.headers.get("referer")
+          ? new URL(_request.headers.get("referer")!).origin
+          : null) ||
+        config("auth.betterAuth.emailVerificationRedirectURL").replace(
+          /\/verify-email$/,
+          "",
+        );
 
       const verifyUrl = `${origin}/verify-email?token=${encodeURIComponent(token)}`;
 
@@ -274,9 +315,15 @@ export const auth = betterAuth({
         }
       })();
 
-      const origin = _request?.headers.get("origin") || 
-                    (_request?.headers.get("referer") ? new URL(_request.headers.get("referer")!).origin : null) || 
-                    config("auth.betterAuth.resetPasswordRedirectURL").replace(/\/reset-password$/, "");
+      const origin =
+        _request?.headers.get("origin") ||
+        (_request?.headers.get("referer")
+          ? new URL(_request.headers.get("referer")!).origin
+          : null) ||
+        config("auth.betterAuth.resetPasswordRedirectURL").replace(
+          /\/reset-password$/,
+          "",
+        );
 
       const resetUrl = token
         ? `${origin}/reset-password?token=${encodeURIComponent(token)}`
@@ -308,7 +355,10 @@ export const auth = betterAuth({
           .view("reset-password-success", { firstName })
           .queue();
       } catch (error) {
-        logger.error({ error }, "[AUTH][reset-password-success] enqueue failed");
+        logger.error(
+          { error },
+          "[AUTH][reset-password-success] enqueue failed",
+        );
       }
     },
   },
@@ -329,21 +379,24 @@ export const auth = betterAuth({
         if (organization?.slug) {
           frontendUrl.hostname = `${organization.slug}.${frontendUrl.hostname}`;
         }
-        
+
         const inviteUrl = `${frontendUrl.origin}/accept-invite?id=${data.id}`;
         try {
           void mailService
             .to(data.email)
-            .view("invite", { 
-              inviteUrl, 
+            .view("invite", {
+              inviteUrl,
               organizationName: organization?.name || data.organization.name,
-              role: data.role
+              role: data.role,
             })
             .queue();
         } catch (error) {
-          logger.error({ error, email: data.email }, "[AUTH][invite] enqueue failed");
+          logger.error(
+            { error, email: data.email },
+            "[AUTH][invite] enqueue failed",
+          );
         }
-      }
+      },
     }),
     twoFactor({
       issuer: config("app.name"),
@@ -351,6 +404,3 @@ export const auth = betterAuth({
     }),
   ],
 });
-
-
-

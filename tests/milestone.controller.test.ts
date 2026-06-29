@@ -7,7 +7,7 @@ vi.mock("../src/app/http/middlewares/async-handler.middleware", () => ({
 
 const { mockVerifyProjectAccess, prismaMock } = vi.hoisted(() => ({
   mockVerifyProjectAccess: vi.fn().mockResolvedValue({
-    project: { organizationId: "org-123" }
+    project: { organizationId: "org-123" },
   }),
   prismaMock: {
     milestone: {
@@ -24,7 +24,10 @@ vi.mock("../src/app/http/middlewares/project-access.middleware", () => ({
   verifyProjectAccess: mockVerifyProjectAccess,
 }));
 
-vi.mock("@/lib/prisma", () => ({ default: prismaMock, basePrisma: prismaMock }));
+vi.mock("@/lib/prisma", () => ({
+  default: prismaMock,
+  basePrisma: prismaMock,
+}));
 
 import { milestoneController } from "../src/app/http/controllers/milestone.controller";
 
@@ -42,12 +45,21 @@ describe("milestoneController", () => {
 
   describe("createMilestone", () => {
     it("creates milestone successfully", async () => {
-      const milestone = { id: "m1", title: "Milestone 1", projectId: "p1", organizationId: "org-123" };
+      const milestone = {
+        id: "m1",
+        title: "Milestone 1",
+        projectId: "p1",
+        organizationId: "org-123",
+      };
       prismaMock.milestone.create.mockResolvedValueOnce(milestone);
 
       const req: any = {
         params: { projectId: "p1" },
-        body: { title: "Milestone 1", description: "Desc", dueDate: "2026-06-25T02:00:00.000Z" }
+        body: {
+          title: "Milestone 1",
+          description: "Desc",
+          dueDate: "2026-06-25T02:00:00.000Z",
+        },
       };
       const res = createRes();
 
@@ -62,7 +74,7 @@ describe("milestoneController", () => {
           organizationId: "org-123",
           dueDate: expect.any(Date),
           isCompleted: false,
-        }
+        },
       });
       expect(res.json).toHaveBeenCalledWith({
         success: true,
@@ -100,7 +112,7 @@ describe("milestoneController", () => {
 
       const req: any = {
         params: { id: "m1" },
-        body: { title: "Updated", isCompleted: true }
+        body: { title: "Updated", isCompleted: true },
       };
       const res = createRes();
 
@@ -124,7 +136,9 @@ describe("milestoneController", () => {
       const req: any = { params: { id: "m1" }, body: { title: "Updated" } };
       const res = createRes();
 
-      await expect((milestoneController.updateMilestone as any)(req, res)).rejects.toThrow("Milestone not found");
+      await expect(
+        (milestoneController.updateMilestone as any)(req, res),
+      ).rejects.toThrow("Milestone not found");
     });
   });
 
@@ -139,7 +153,9 @@ describe("milestoneController", () => {
       await (milestoneController.deleteMilestone as any)(req, res);
 
       expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1");
-      expect(prismaMock.milestone.delete).toHaveBeenCalledWith({ where: { id: "m1" } });
+      expect(prismaMock.milestone.delete).toHaveBeenCalledWith({
+        where: { id: "m1" },
+      });
       expect(res.json).toHaveBeenCalledWith({
         success: true,
         message: "Milestone deleted successfully",
@@ -153,7 +169,9 @@ describe("milestoneController", () => {
       const req: any = { params: { id: "m1" } };
       const res = createRes();
 
-      await expect((milestoneController.deleteMilestone as any)(req, res)).rejects.toThrow("Milestone not found");
+      await expect(
+        (milestoneController.deleteMilestone as any)(req, res),
+      ).rejects.toThrow("Milestone not found");
     });
   });
 });

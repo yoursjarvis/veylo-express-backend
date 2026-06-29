@@ -9,9 +9,37 @@ import { decrypt, encrypt } from "@/utils/crypto";
 
 // Malicious files filtering constants
 const DISALLOWED_EXTENSIONS = [
-  ".exe", ".dll", ".so", ".elf", ".dmg", ".pkg", ".app", ".deb", ".rpm", ".msi", ".msp",
-  ".sh", ".bash", ".bat", ".cmd", ".vbs", ".vbe", ".js", ".ts", ".html", ".htm", ".php",
-  ".py", ".pl", ".rb", ".ps1", ".jar", ".lnk", ".sys", ".com", ".scr"
+  ".exe",
+  ".dll",
+  ".so",
+  ".elf",
+  ".dmg",
+  ".pkg",
+  ".app",
+  ".deb",
+  ".rpm",
+  ".msi",
+  ".msp",
+  ".sh",
+  ".bash",
+  ".bat",
+  ".cmd",
+  ".vbs",
+  ".vbe",
+  ".js",
+  ".ts",
+  ".html",
+  ".htm",
+  ".php",
+  ".py",
+  ".pl",
+  ".rb",
+  ".ps1",
+  ".jar",
+  ".lnk",
+  ".sys",
+  ".com",
+  ".scr",
 ];
 
 const DISALLOWED_MIMETYPES = [
@@ -26,10 +54,13 @@ const DISALLOWED_MIMETYPES = [
   "application/x-perl",
   "application/x-ruby",
   "application/x-executable",
-  "application/x-sharedlib"
+  "application/x-sharedlib",
 ];
 
-const DEFAULT_STATUSES: Record<string, { name: string; category: string; order: number }[]> = {
+const DEFAULT_STATUSES: Record<
+  string,
+  { name: string; category: string; order: number }[]
+> = {
   simple: [
     { name: "To Do", category: "todo", order: 0 },
     { name: "Done", category: "done", order: 1 },
@@ -60,7 +91,7 @@ export const projectService = {
       template: string;
       teamMode?: string;
       projectKey: string;
-    }
+    },
   ) {
     const existingProject = await prisma.project.findUnique({
       where: { projectKey: data.projectKey },
@@ -74,7 +105,8 @@ export const projectService = {
     // Load template configuration from database
     const dbTemplate = await projectRepository.findTemplateBySlug(templateSlug);
 
-    let resolvedStatuses: { name: string; category: string; order: number }[] = [];
+    let resolvedStatuses: { name: string; category: string; order: number }[] =
+      [];
     let resolvedCustomFields: { name: string; type: string }[] = [];
     let resolvedTeamMode = data.teamMode || "general";
 
@@ -86,12 +118,15 @@ export const projectService = {
       } | null;
       if (templateConfig) {
         if (templateConfig.statuses) resolvedStatuses = templateConfig.statuses;
-        if (templateConfig.customFields) resolvedCustomFields = templateConfig.customFields;
-        if (templateConfig.teamMode) resolvedTeamMode = data.teamMode || templateConfig.teamMode;
+        if (templateConfig.customFields)
+          resolvedCustomFields = templateConfig.customFields;
+        if (templateConfig.teamMode)
+          resolvedTeamMode = data.teamMode || templateConfig.teamMode;
       }
     } else {
       // Fallback for custom or legacy templates
-      resolvedStatuses = DEFAULT_STATUSES[templateSlug] || DEFAULT_STATUSES["simple"];
+      resolvedStatuses =
+        DEFAULT_STATUSES[templateSlug] || DEFAULT_STATUSES["simple"];
     }
 
     // Retrieve workspace to get its organizationId
@@ -110,7 +145,7 @@ export const projectService = {
         organizationId,
       },
       resolvedStatuses,
-      resolvedCustomFields
+      resolvedCustomFields,
     );
   },
 
@@ -151,21 +186,31 @@ export const projectService = {
     return projectRepository.getProjectMembers(projectId);
   },
 
-  async addProjectMembers(projectId: string, projectWorkspaceId: string, userIds: string[], adderId: string) {
+  async addProjectMembers(
+    projectId: string,
+    projectWorkspaceId: string,
+    userIds: string[],
+    adderId: string,
+  ) {
     if (!Array.isArray(userIds) || userIds.length === 0) {
       throw new BadRequestException("User IDs are required");
     }
 
     // Verify all users are members of the Workspace
-    const workspaceMembers = await projectRepository.findWorkspaceMembers(projectWorkspaceId, userIds);
+    const workspaceMembers = await projectRepository.findWorkspaceMembers(
+      projectWorkspaceId,
+      userIds,
+    );
     if (workspaceMembers.length !== userIds.length) {
       throw new BadRequestException(
-        "One or more users are not members of this workspace. Assign them to the workspace first."
+        "One or more users are not members of this workspace. Assign them to the workspace first.",
       );
     }
 
     const members = await Promise.all(
-      userIds.map((userId) => projectRepository.upsertProjectMember(projectId, userId, "member"))
+      userIds.map((userId) =>
+        projectRepository.upsertProjectMember(projectId, userId, "member"),
+      ),
     );
 
     // Trigger notification (fire-and-forget)
@@ -233,7 +278,10 @@ export const projectService = {
     return projectRepository.deleteVaultService(serviceId);
   },
 
-  async addOrUpdateVaultItem(serviceId: string, data: { key: string; value: string; note?: string | null }) {
+  async addOrUpdateVaultItem(
+    serviceId: string,
+    data: { key: string; value: string; note?: string | null },
+  ) {
     const encryptedValue = encrypt(data.value);
     const encryptedNote = data.note ? encrypt(data.note) : null;
 
@@ -241,7 +289,7 @@ export const projectService = {
       serviceId,
       data.key,
       encryptedValue,
-      encryptedNote
+      encryptedNote,
     );
 
     return {
@@ -254,7 +302,10 @@ export const projectService = {
     };
   },
 
-  async updateVaultItem(itemId: string, data: { value?: string; note?: string | null }) {
+  async updateVaultItem(
+    itemId: string,
+    data: { value?: string; note?: string | null },
+  ) {
     const updateData: Record<string, string | null> = {};
     if (data.value !== undefined) {
       updateData.value = encrypt(data.value);
@@ -284,8 +335,13 @@ export const projectService = {
     const ext = path.extname(file.originalname).toLowerCase();
     const mime = file.mimetype.toLowerCase();
 
-    if (DISALLOWED_EXTENSIONS.includes(ext) || DISALLOWED_MIMETYPES.includes(mime)) {
-      throw new BadRequestException("File type not allowed or is potentially malicious");
+    if (
+      DISALLOWED_EXTENSIONS.includes(ext) ||
+      DISALLOWED_MIMETYPES.includes(mime)
+    ) {
+      throw new BadRequestException(
+        "File type not allowed or is potentially malicious",
+      );
     }
 
     const media = await mediaService.addMedia(
@@ -298,7 +354,7 @@ export const projectService = {
         size: file.size,
       },
       "project_files",
-      false
+      false,
     );
 
     const url = mediaService.generateUrl(media);
@@ -315,7 +371,11 @@ export const projectService = {
   },
 
   async getProjectFiles(projectId: string) {
-    const mediaFiles = await mediaService.getMedia("Project", projectId, "project_files");
+    const mediaFiles = await mediaService.getMedia(
+      "Project",
+      projectId,
+      "project_files",
+    );
     return mediaFiles.map((file) => ({
       id: file.id,
       name: file.name,
@@ -340,7 +400,15 @@ export const projectService = {
     return projectRepository.findAutomationRules(projectId);
   },
 
-  createAutomationRule(projectId: string, data: { name?: string; trigger?: string; action?: string; [key: string]: unknown }) {
+  createAutomationRule(
+    projectId: string,
+    data: {
+      name?: string;
+      trigger?: string;
+      action?: string;
+      [key: string]: unknown;
+    },
+  ) {
     if (!data.name || !data.trigger || !data.action) {
       throw new BadRequestException("Name, trigger, and action are required");
     }

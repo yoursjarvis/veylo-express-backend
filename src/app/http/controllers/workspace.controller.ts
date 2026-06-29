@@ -19,7 +19,10 @@ export const workspaceController = {
     }
 
     const activeOrgId = session.session.activeOrganizationId;
-    const workspaces = await workspaceService.getWorkspaces(activeOrgId, session.user.id);
+    const workspaces = await workspaceService.getWorkspaces(
+      activeOrgId,
+      session.user.id,
+    );
 
     return ok(res, "Workspaces fetched", workspaces);
   }),
@@ -39,7 +42,7 @@ export const workspaceController = {
     const workspace = await workspaceService.createWorkspace(
       activeOrgId,
       session.user.id,
-      validatedData
+      validatedData,
     );
 
     return ok(res, "Workspace created successfully", workspace);
@@ -62,7 +65,7 @@ export const workspaceController = {
       activeOrgId,
       session.user.id,
       id,
-      validatedData
+      validatedData,
     );
 
     return ok(res, "Workspace updated successfully", updatedWorkspace);
@@ -96,7 +99,11 @@ export const workspaceController = {
     }
 
     const activeOrgId = session.session.activeOrganizationId;
-    const members = await workspaceService.getWorkspaceMembers(activeOrgId, session.user.id, workspaceId);
+    const members = await workspaceService.getWorkspaceMembers(
+      activeOrgId,
+      session.user.id,
+      workspaceId,
+    );
 
     return ok(res, "Workspace members fetched", members);
   }),
@@ -118,7 +125,7 @@ export const workspaceController = {
       activeOrgId,
       session.user.id,
       workspaceId,
-      userIds
+      userIds,
     );
 
     return ok(res, "Members added to workspace", workspaceMembers);
@@ -137,7 +144,12 @@ export const workspaceController = {
 
     const activeOrgId = session.session.activeOrganizationId;
 
-    await workspaceService.removeWorkspaceMember(activeOrgId, session.user.id, workspaceId, userId);
+    await workspaceService.removeWorkspaceMember(
+      activeOrgId,
+      session.user.id,
+      workspaceId,
+      userId,
+    );
 
     return ok(res, "Member removed from workspace");
   }),

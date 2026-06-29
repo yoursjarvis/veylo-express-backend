@@ -8,7 +8,7 @@ export const milestoneService = {
       title: string;
       description?: string | null;
       dueDate?: string | null;
-    }
+    },
   ) {
     return milestoneRepository.create({
       title: validatedData.title,
@@ -31,14 +31,19 @@ export const milestoneService = {
       description?: string | null;
       isCompleted?: boolean;
       dueDate?: string | null;
-    }
+    },
   ) {
     const updateData: Record<string, unknown> = {};
-    if (validatedData.title !== undefined) updateData.title = validatedData.title;
-    if (validatedData.description !== undefined) updateData.description = validatedData.description;
-    if (validatedData.isCompleted !== undefined) updateData.isCompleted = validatedData.isCompleted;
+    if (validatedData.title !== undefined)
+      updateData.title = validatedData.title;
+    if (validatedData.description !== undefined)
+      updateData.description = validatedData.description;
+    if (validatedData.isCompleted !== undefined)
+      updateData.isCompleted = validatedData.isCompleted;
     if (validatedData.dueDate !== undefined) {
-      updateData.dueDate = validatedData.dueDate ? new Date(validatedData.dueDate) : null;
+      updateData.dueDate = validatedData.dueDate
+        ? new Date(validatedData.dueDate)
+        : null;
     }
 
     return milestoneRepository.update(milestoneId, updateData);

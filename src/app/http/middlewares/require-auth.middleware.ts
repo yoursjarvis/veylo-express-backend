@@ -6,11 +6,10 @@ import { betterAuthHeaders } from "@/lib/auth/node-headers";
 import { forwardSetCookie } from "@/lib/auth/set-cookie";
 import { UnauthorizedException } from "@/utils/app-error";
 
-
 export async function requireAuth(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> {
   try {
     const headers = betterAuthHeaders(req);
@@ -26,14 +25,12 @@ export async function requireAuth(
     }
 
     req.auth = {
-      user:
-        result.response.user as unknown as NonNullable<
-          Express.Request["auth"]
-        >["user"],
-      session:
-        result.response.session as unknown as NonNullable<
-          Express.Request["auth"]
-        >["session"],
+      user: result.response.user as unknown as NonNullable<
+        Express.Request["auth"]
+      >["user"],
+      session: result.response.session as unknown as NonNullable<
+        Express.Request["auth"]
+      >["session"],
     };
 
     const token = result.response.session.token;

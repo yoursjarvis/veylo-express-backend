@@ -5,7 +5,8 @@ const systemTemplates = [
   {
     name: "Software Scrum",
     slug: "software-scrum",
-    description: "Track software development cycles with sprints, story points, epics, and Scrum metrics.",
+    description:
+      "Track software development cycles with sprints, story points, epics, and Scrum metrics.",
     icon: "Layers",
     category: "software",
     isSystem: true,
@@ -35,7 +36,8 @@ const systemTemplates = [
   {
     name: "Software Kanban",
     slug: "software-kanban",
-    description: "Manage continuous flow of software delivery using a flexible Kanban board without strict cycles.",
+    description:
+      "Manage continuous flow of software delivery using a flexible Kanban board without strict cycles.",
     icon: "Kanban",
     category: "software",
     isSystem: true,
@@ -61,7 +63,8 @@ const systemTemplates = [
   {
     name: "HR Onboarding",
     slug: "hr-onboarding",
-    description: "Perfect for onboarding new hires. Create checklists, assign managers, and schedule start dates.",
+    description:
+      "Perfect for onboarding new hires. Create checklists, assign managers, and schedule start dates.",
     icon: "UserPlus",
     category: "hr",
     isSystem: true,
@@ -89,7 +92,8 @@ const systemTemplates = [
   {
     name: "Marketing Campaign",
     slug: "marketing-campaign",
-    description: "Plan, organize, and execute marketing launch campaigns with channel tracking and visual goal swimlanes.",
+    description:
+      "Plan, organize, and execute marketing launch campaigns with channel tracking and visual goal swimlanes.",
     icon: "Megaphone",
     category: "marketing",
     isSystem: true,
@@ -110,15 +114,18 @@ const systemTemplates = [
       epicEnabled: true,
       defaultViews: ["kanban", "timeline"],
       guidance: {
-        welcome: "Track launch cycles and collateral for marketing initiatives.",
-        firstStep: "Create your first campaign goal/epic and list media activities.",
+        welcome:
+          "Track launch cycles and collateral for marketing initiatives.",
+        firstStep:
+          "Create your first campaign goal/epic and list media activities.",
       },
     },
   },
   {
     name: "Finance Tracker",
     slug: "finance-tracker",
-    description: "Track payments, bookkeeping checklists, auditing records, and corporate invoice approval queues.",
+    description:
+      "Track payments, bookkeeping checklists, auditing records, and corporate invoice approval queues.",
     icon: "DollarSign",
     category: "finance",
     isSystem: true,
@@ -132,7 +139,11 @@ const systemTemplates = [
       ],
       customFields: [
         { name: "Invoice Amount", type: "number" },
-        { name: "Approval Status", type: "select", options: ["Pending", "Approved", "Rejected"] },
+        {
+          name: "Approval Status",
+          type: "select",
+          options: ["Pending", "Approved", "Rejected"],
+        },
       ],
       sprintEnabled: false,
       epicEnabled: false,
@@ -146,7 +157,8 @@ const systemTemplates = [
   {
     name: "Product Roadmap",
     slug: "product-roadmap",
-    description: "Visualize product release tracks, high-level features roadmap, and launch initiatives cross-quarter.",
+    description:
+      "Visualize product release tracks, high-level features roadmap, and launch initiatives cross-quarter.",
     icon: "Map",
     category: "general",
     isSystem: true,
@@ -159,9 +171,7 @@ const systemTemplates = [
         { name: "In Development", category: "in_progress", order: 2 },
         { name: "Shipped", category: "done", order: 3 },
       ],
-      customFields: [
-        { name: "Impact Metric", type: "text" },
-      ],
+      customFields: [{ name: "Impact Metric", type: "text" }],
       sprintEnabled: false,
       epicEnabled: true,
       defaultViews: ["timeline", "kanban"],
@@ -174,7 +184,8 @@ const systemTemplates = [
   {
     name: "General Project",
     slug: "general-project",
-    description: "A clean, simple task tracker for managing day-to-day operations and items without complex tech jargon.",
+    description:
+      "A clean, simple task tracker for managing day-to-day operations and items without complex tech jargon.",
     icon: "ClipboardList",
     category: "general",
     isSystem: true,
@@ -221,7 +232,7 @@ async function main() {
       },
     });
   }
-  
+
   console.log("Seeding HR Onboarding Checklist templates...");
   const workspaces = await prisma.workspace.findMany();
   for (const ws of workspaces) {
@@ -240,7 +251,7 @@ async function main() {
             "Issue laptop and work equipment",
             "Configure company email and Slack accounts",
             "Schedule first-day meeting with team manager",
-            "Complete employee handbook review"
+            "Complete employee handbook review",
           ],
           workspaceId: ws.id,
           organizationId: ws.organizationId,

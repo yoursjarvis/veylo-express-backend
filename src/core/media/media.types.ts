@@ -1,8 +1,5 @@
 import { Prisma } from "../../../generated/prisma/client.js";
 
-
-
-
 export type MediaCollection = "avatars" | "documents" | "logos" | (string & {});
 
 export interface Media {

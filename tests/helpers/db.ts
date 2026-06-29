@@ -17,7 +17,7 @@ const standardMock = () => ({
 export const prismaMock = {
   // Mock transaction interface to execute callbacks using the same mock layer
   $transaction: vi.fn().mockImplementation((cb) => cb(prismaMock)),
-  
+
   member: standardMock(),
   workspaceMember: standardMock(),
   workspace: standardMock(),

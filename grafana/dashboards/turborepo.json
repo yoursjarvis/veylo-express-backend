@@ -46,14 +46,17 @@
         "defaults": {
           "color": { "mode": "thresholds" },
           "thresholds": {
-            "steps": [
-              { "color": "blue", "value": null }
-            ]
+            "steps": [{ "color": "blue", "value": null }]
           }
         },
         "overrides": []
       },
-      "options": { "colorMode": "value", "graphMode": "none", "textMode": "auto", "reduceOptions": { "calcs": ["lastNotNull"] } },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      },
       "targets": [
         {
           "expr": "sum(turbo_run_duration_ms_count)",
@@ -73,14 +76,17 @@
         "defaults": {
           "color": { "mode": "thresholds" },
           "thresholds": {
-            "steps": [
-              { "color": "blue", "value": null }
-            ]
+            "steps": [{ "color": "blue", "value": null }]
           }
         },
         "overrides": []
       },
-      "options": { "colorMode": "value", "graphMode": "none", "textMode": "auto", "reduceOptions": { "calcs": ["lastNotNull"] } },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      },
       "targets": [
         {
           "expr": "sum(turbo_run_tasks_attempted_total)",
@@ -100,14 +106,17 @@
         "defaults": {
           "color": { "mode": "thresholds" },
           "thresholds": {
-            "steps": [
-              { "color": "green", "value": null }
-            ]
+            "steps": [{ "color": "green", "value": null }]
           }
         },
         "overrides": []
       },
-      "options": { "colorMode": "value", "graphMode": "none", "textMode": "auto", "reduceOptions": { "calcs": ["lastNotNull"] } },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      },
       "targets": [
         {
           "expr": "sum(turbo_run_tasks_cached_total)",
@@ -135,7 +144,12 @@
         },
         "overrides": []
       },
-      "options": { "colorMode": "value", "graphMode": "none", "textMode": "auto", "reduceOptions": { "calcs": ["lastNotNull"] } },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"] }
+      },
       "targets": [
         {
           "expr": "sum(turbo_run_tasks_failed_total)",
@@ -220,7 +234,10 @@
         },
         {
           "id": "sortBy",
-          "options": { "fields": {}, "sort": [{ "field": "Duration", "desc": true }] }
+          "options": {
+            "fields": {},
+            "sort": [{ "field": "Duration", "desc": true }]
+          }
         }
       ]
     },
@@ -297,7 +314,12 @@
           "id": "filterFieldsByName",
           "options": {
             "include": {
-              "names": ["turbo_task_name", "turbo_task_package", "turbo_task_cache_status", "Value"]
+              "names": [
+                "turbo_task_name",
+                "turbo_task_package",
+                "turbo_task_cache_status",
+                "Value"
+              ]
             }
           }
         },
@@ -320,7 +342,10 @@
         },
         {
           "id": "sortBy",
-          "options": { "fields": {}, "sort": [{ "field": "Duration (ms)", "desc": true }] }
+          "options": {
+            "fields": {},
+            "sort": [{ "field": "Duration (ms)", "desc": true }]
+          }
         }
       ]
     },

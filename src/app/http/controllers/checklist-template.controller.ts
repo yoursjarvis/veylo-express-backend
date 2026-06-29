@@ -12,7 +12,9 @@ export const checklistTemplateController = {
   getTemplates: asyncHandler(async (req: Request, res: Response) => {
     const workspaceId = req.query.workspaceId as string;
     if (!workspaceId) {
-      return res.status(400).json({ success: false, message: "workspaceId is required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "workspaceId is required" });
     }
     const templates = await checklistTemplateService.getTemplates(workspaceId);
     return res.status(200).json({ success: true, data: templates });
@@ -31,7 +33,10 @@ export const checklistTemplateController = {
   updateTemplate: asyncHandler(async (req: Request, res: Response) => {
     const id = req.params.id as string;
     const validated = checklistTemplateUpdateSchema.parse(req.body);
-    const template = await checklistTemplateService.updateTemplate(id, validated);
+    const template = await checklistTemplateService.updateTemplate(
+      id,
+      validated,
+    );
     return res.status(200).json({
       success: true,
       message: "Checklist template updated successfully",
@@ -52,10 +57,16 @@ export const checklistTemplateController = {
     const taskId = req.params.taskId as string;
     const templateId = req.body.templateId as string;
     if (!templateId) {
-      return res.status(400).json({ success: false, message: "templateId is required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "templateId is required" });
     }
     const { userId } = await resolveSession(req);
-    const subtasks = await checklistTemplateService.applyTemplateToTask(taskId, templateId, userId);
+    const subtasks = await checklistTemplateService.applyTemplateToTask(
+      taskId,
+      templateId,
+      userId,
+    );
     return res.status(200).json({
       success: true,
       message: "Checklist template applied successfully",

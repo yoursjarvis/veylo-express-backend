@@ -5,7 +5,11 @@ export const rbacRepository = {
     return prisma.permission.findMany();
   },
 
-  async createRole(data: { name: string; organizationId: string | null; isSystemDefault?: boolean }) {
+  async createRole(data: {
+    name: string;
+    organizationId: string | null;
+    isSystemDefault?: boolean;
+  }) {
     return prisma.role.create({
       data,
     });
@@ -16,16 +20,16 @@ export const rbacRepository = {
       where: {
         OR: [
           { organizationId },
-          { organizationId: null } // System default roles
-        ]
+          { organizationId: null }, // System default roles
+        ],
       },
       include: {
         permissions: {
           include: {
-            permission: true
-          }
-        }
-      }
+            permission: true,
+          },
+        },
+      },
     });
   },
 
@@ -52,9 +56,9 @@ export const rbacRepository = {
         where: { id: roleId },
         include: {
           permissions: {
-            include: { permission: true }
-          }
-        }
+            include: { permission: true },
+          },
+        },
       });
     });
   },
@@ -84,35 +88,49 @@ export const rbacRepository = {
     });
   },
 
-  async assignRoleToUser(data: { userId: string; roleId: string; scopeType: string; scopeId: string }) {
+  async assignRoleToUser(data: {
+    userId: string;
+    roleId: string;
+    scopeType: string;
+    scopeId: string;
+  }) {
     return prisma.userRoleAssignment.upsert({
       where: {
         userId_roleId_scopeType_scopeId: {
           userId: data.userId,
           roleId: data.roleId,
           scopeType: data.scopeType,
-          scopeId: data.scopeId
-        }
+          scopeId: data.scopeId,
+        },
       },
       update: {},
       create: data,
     });
   },
 
-  async removeRoleFromUser(data: { userId: string; roleId: string; scopeType: string; scopeId: string }) {
+  async removeRoleFromUser(data: {
+    userId: string;
+    roleId: string;
+    scopeType: string;
+    scopeId: string;
+  }) {
     return prisma.userRoleAssignment.delete({
       where: {
         userId_roleId_scopeType_scopeId: {
           userId: data.userId,
           roleId: data.roleId,
           scopeType: data.scopeType,
-          scopeId: data.scopeId
-        }
-      }
+          scopeId: data.scopeId,
+        },
+      },
     });
   },
 
-  async getUserPermissionsInScope(userId: string, scopeType: string, scopeId: string) {
+  async getUserPermissionsInScope(
+    userId: string,
+    scopeType: string,
+    scopeId: string,
+  ) {
     const assignments = await prisma.userRoleAssignment.findMany({
       where: {
         userId,
@@ -125,21 +143,21 @@ export const rbacRepository = {
             permissions: {
               include: {
                 permission: true,
-              }
-            }
-          }
-        }
-      }
+              },
+            },
+          },
+        },
+      },
     });
 
     // Flatten permissions
     const permissions = new Set<string>();
-    assignments.forEach(assignment => {
-      assignment.role.permissions.forEach(rp => {
+    assignments.forEach((assignment) => {
+      assignment.role.permissions.forEach((rp) => {
         permissions.add(`${rp.permission.resource}:${rp.permission.action}`);
       });
     });
 
     return Array.from(permissions);
-  }
+  },
 };

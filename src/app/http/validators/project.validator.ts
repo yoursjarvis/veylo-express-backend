@@ -8,7 +8,10 @@ export const projectCreateSchema = z.object({
     .toUpperCase()
     .min(2, "Project Key must be at least 2 characters")
     .max(10, "Project Key must be at most 10 characters")
-    .regex(/^[A-Z]+$/, "Project Key must contain only letters A-Z (no spaces, numbers, or special characters)"),
+    .regex(
+      /^[A-Z]+$/,
+      "Project Key must contain only letters A-Z (no spaces, numbers, or special characters)",
+    ),
   description: z.string().optional(),
   icon: z.string().optional(),
   template: z.string().optional().default("general-project"),
@@ -16,7 +19,10 @@ export const projectCreateSchema = z.object({
 });
 
 export const projectUpdateSchema = z.object({
-  title: z.string().min(2, "Project title must be at least 2 characters long").optional(),
+  title: z
+    .string()
+    .min(2, "Project title must be at least 2 characters long")
+    .optional(),
   description: z.string().optional(),
   icon: z.string().optional(),
   template: z.string().optional(),

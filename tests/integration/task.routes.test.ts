@@ -29,7 +29,7 @@ vi.mock("../../src/app/http/middlewares/rate-limit.middleware", () => ({
 const { mockVerifyProjectAccess, mockNotificationService } = vi.hoisted(() => ({
   mockVerifyProjectAccess: vi.fn().mockResolvedValue({
     userId: "user-123",
-    project: { organizationId: "org-123" }
+    project: { organizationId: "org-123" },
   }),
   mockNotificationService: {
     handleTaskCreated: vi.fn(),
@@ -42,7 +42,9 @@ const { mockVerifyProjectAccess, mockNotificationService } = vi.hoisted(() => ({
 
 vi.mock("../../src/app/http/middlewares/project-access.middleware", () => ({
   verifyProjectAccess: mockVerifyProjectAccess,
-  resolveSession: vi.fn().mockResolvedValue({ activeOrgId: "org-123", userId: "u1" }),
+  resolveSession: vi
+    .fn()
+    .mockResolvedValue({ activeOrgId: "org-123", userId: "u1" }),
 }));
 
 vi.mock("../../src/app/services/notification.service", () => ({
@@ -62,12 +64,19 @@ describe("Task API Endpoint Integration Tests (/api/v1/tasks)", () => {
   describe("POST /api/v1/projects/:projectId/tasks", () => {
     it("creates task successfully", async () => {
       prismaMock.taskStatus.findFirst.mockResolvedValueOnce({ id: "status-1" });
-      prismaMock.project.update.mockResolvedValueOnce({ projectKey: "PROJ", taskSequence: 1 });
-      prismaMock.task.create.mockResolvedValueOnce({ id: "t1", title: "New Task" });
+      prismaMock.project.update.mockResolvedValueOnce({
+        projectKey: "PROJ",
+        taskSequence: 1,
+      });
+      prismaMock.task.create.mockResolvedValueOnce({
+        id: "t1",
+        title: "New Task",
+      });
 
-      const res = await request(app)
-        .post("/api/v1/projects/p1/tasks")
-        .send({ title: "New Task", statusId: "550e8400-e29b-41d4-a716-446655440001" });
+      const res = await request(app).post("/api/v1/projects/p1/tasks").send({
+        title: "New Task",
+        statusId: "550e8400-e29b-41d4-a716-446655440001",
+      });
 
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
@@ -77,7 +86,11 @@ describe("Task API Endpoint Integration Tests (/api/v1/tasks)", () => {
 
   describe("GET /api/v1/projects/:projectId/tasks", () => {
     it("fetches tasks successfully", async () => {
-      prismaMock.project.findUnique.mockResolvedValueOnce({ id: "p1", organizationId: "org-123", workspaceId: "ws-123" });
+      prismaMock.project.findUnique.mockResolvedValueOnce({
+        id: "p1",
+        organizationId: "org-123",
+        workspaceId: "ws-123",
+      });
       prismaMock.task.findMany.mockResolvedValueOnce([{ id: "t1" }]);
 
       const res = await request(app).get("/api/v1/projects/p1/tasks");
@@ -90,7 +103,10 @@ describe("Task API Endpoint Integration Tests (/api/v1/tasks)", () => {
 
   describe("POST /api/v1/projects/:projectId/sprints", () => {
     it("creates sprint successfully", async () => {
-      prismaMock.sprint.create.mockResolvedValueOnce({ id: "s1", name: "Sprint 1" });
+      prismaMock.sprint.create.mockResolvedValueOnce({
+        id: "s1",
+        name: "Sprint 1",
+      });
 
       const res = await request(app)
         .post("/api/v1/projects/p1/sprints")

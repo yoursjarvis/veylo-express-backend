@@ -8,7 +8,8 @@ export const dependencyService = {
       throw new NotFoundException("Task not found");
     }
 
-    const { blockedBy, blocking } = await dependencyRepository.getDependencies(taskId);
+    const { blockedBy, blocking } =
+      await dependencyRepository.getDependencies(taskId);
 
     return {
       projectId: task.projectId,
@@ -28,25 +29,39 @@ export const dependencyService = {
   async createDependency(
     task: { id: string; organizationId: string },
     depTask: { id: string; title: string },
-    validatedData: { dependencyTaskId: string; direction: "blocks" | "blocked_by" },
-    userId: string
+    validatedData: {
+      dependencyTaskId: string;
+      direction: "blocks" | "blocked_by";
+    },
+    userId: string,
   ) {
-    const blockingTaskId = validatedData.direction === "blocks" ? task.id : depTask.id;
-    const blockedTaskId = validatedData.direction === "blocks" ? depTask.id : task.id;
+    const blockingTaskId =
+      validatedData.direction === "blocks" ? task.id : depTask.id;
+    const blockedTaskId =
+      validatedData.direction === "blocks" ? depTask.id : task.id;
 
     // Check for circular dependency
-    const circular = await dependencyRepository.findDependencyPair(blockedTaskId, blockingTaskId);
+    const circular = await dependencyRepository.findDependencyPair(
+      blockedTaskId,
+      blockingTaskId,
+    );
     if (circular) {
       throw new BadRequestException("Circular dependency detected!");
     }
 
     // Check for duplicate
-    const existing = await dependencyRepository.findDependencyPair(blockingTaskId, blockedTaskId);
+    const existing = await dependencyRepository.findDependencyPair(
+      blockingTaskId,
+      blockedTaskId,
+    );
     if (existing) {
       throw new BadRequestException("This dependency already exists");
     }
 
-    const dependency = await dependencyRepository.createDependency(blockingTaskId, blockedTaskId);
+    const dependency = await dependencyRepository.createDependency(
+      blockingTaskId,
+      blockedTaskId,
+    );
 
     await dependencyRepository.createTaskActivity({
       taskId: task.id,
@@ -66,7 +81,7 @@ export const dependencyService = {
       blockingTask: { organizationId: string };
       blockedTask: { title: string };
     },
-    userId: string
+    userId: string,
   ) {
     await dependencyRepository.deleteDependency(dependency.id);
 

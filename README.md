@@ -21,6 +21,7 @@ Production-ready email/password and social (Google, GitHub) authentication using
 To support multi-tenancy, subdomains (e.g., `tenant1.veylo.com`), and Google OAuth, you **must** use local HTTPS with a public TLD like `.com`.
 
 ### 1. Install mkcert
+
 Follow instructions for your OS: [mkcert repository](https://github.com/FiloSottile/mkcert).
 
 ```bash
@@ -30,6 +31,7 @@ mkcert -key-file certs/key.pem -cert-file certs/cert.pem "veylo.com" "*.veylo.co
 ```
 
 ### 2. Update Hosts File
+
 Add the following to `/etc/hosts` (Linux/macOS) or `C:\Windows\System32\drivers\etc\hosts` (Windows):
 
 ```text
@@ -39,7 +41,9 @@ Add the following to `/etc/hosts` (Linux/macOS) or `C:\Windows\System32\drivers\
 ```
 
 ### 3. Environment Variables
+
 Ensure your `.env` has:
+
 - `PORT=443`
 - `APP_URL="https://api.veylo.com"`
 - `APP_DOMAIN="veylo.com"`
@@ -60,25 +64,30 @@ Important note: **password hashes are stored by Better Auth in the `accounts.pas
 Copy `.env.example` to `.env` and fill in the values.
 
 ### Required Core Variables
+
 - `DATABASE_URL`: `"postgresql://user:pass@localhost:5432/veylo"`
 - `BETTER_AUTH_SECRET`: Generate using `openssl rand -hex 32`
 - `BETTER_AUTH_URL`: `"https://api.veylo.com"` (The base URL of your API)
 - `ALLOWED_ORIGINS`: `"https://veylo.com:3000,http://localhost:3000"`
 
 ### Social Auth (OAuth)
+
 To enable Google and GitHub login, you'll need to create applications in their respective developer consoles.
 
 **Google:**
+
 - `GOOGLE_CLIENT_ID`: `"your-google-client-id.apps.googleusercontent.com"`
 - `GOOGLE_CLIENT_SECRET`: `"your-google-client-secret"`
 - Callback URL: `https://api.veylo.com:4000/api/v1/auth/callback/google`
 
 **GitHub:**
+
 - `GITHUB_CLIENT_ID`: `"your-github-client-id"`
 - `GITHUB_CLIENT_SECRET`: `"your-github-client-secret"`
 - Callback URL: `https://api.veylo.com:4000/api/v1/auth/callback/github`
 
 ### Optional Variables
+
 - `AUTH_SECONDARY_STORAGE_ENABLED=true` to enable Redis-backed secondary storage (caching/rate limit hooks)
 - `AUTH_EMAIL_VERIFICATION_REDIRECT`: `"https://veylo.com:3000/verify-email"`
 - `AUTH_RESET_PASSWORD_REDIRECT`: `"https://veylo.com:3000/reset-password"`
@@ -86,16 +95,19 @@ To enable Google and GitHub login, you'll need to create applications in their r
 ## Setup & run
 
 1. **Install dependencies:**
+
    ```bash
    npm install
    ```
 
 2. **Create local environment file (first time only):**
+
    ```bash
    cp .env.example .env
    ```
 
 3. **Bootstrap local services + Prisma (recommended):**
+
    ```bash
    npm run setup:local
    ```
@@ -115,20 +127,24 @@ To enable Google and GitHub login, you'll need to create applications in their r
 The project includes a full observability stack. Use the following links to access the management and visualization tools:
 
 ### Web Dashboards
-| Dashboard | URL | Description |
-|-----------|-----|-------------|
-| **Grafana** | [http://localhost:3002](http://localhost:3002) | **Primary UI** for Logs (Loki), Traces (Tempo), and Metrics |
-| **BullMQ Admin** | [https://api.veylo.com/admin/queues](https://api.veylo.com/admin/queues) | Queue management (Jobs, Workers, Retries) |
-| **Prometheus** | [http://localhost:9090](http://localhost:9090) | Direct metrics query and alerting rules |
-| **Redis Insight** | [http://localhost:5540](http://localhost:5540) | GUI for inspecting Redis data and keys |
+
+| Dashboard         | URL                                                                      | Description                                                 |
+| ----------------- | ------------------------------------------------------------------------ | ----------------------------------------------------------- |
+| **Grafana**       | [http://localhost:3002](http://localhost:3002)                           | **Primary UI** for Logs (Loki), Traces (Tempo), and Metrics |
+| **BullMQ Admin**  | [https://api.veylo.com/admin/queues](https://api.veylo.com/admin/queues) | Queue management (Jobs, Workers, Retries)                   |
+| **Prometheus**    | [http://localhost:9090](http://localhost:9090)                           | Direct metrics query and alerting rules                     |
+| **Redis Insight** | [http://localhost:5540](http://localhost:5540)                           | GUI for inspecting Redis data and keys                      |
 
 ### Internal Service Endpoints (No Web UI)
+
 These services do not have a standalone dashboard and are accessed via Grafana:
+
 - **Tempo (Tracing):** Port `3200` (Internal OTLP/HTTP)
 - **Loki (Logs):** Port `3100` (Internal Log ingestion/query)
 - **OTEL Collector:** Port `8888` (Internal health/metrics)
 
 ### Metrics & Tracing Endpoints
+
 - **API Metrics:** `GET /metrics` (Prometheus format)
 - **OTEL Collector (gRPC):** `localhost:4317`
 - **OTEL Collector (HTTP):** `localhost:4318`
@@ -157,13 +173,14 @@ Collection: `docs/postman/veylo-auth.postman_collection.json`
 
 ## Code Quality Rules
 
-* Use strict TypeScript
-* No `any` types
-* Clean architecture
-* Production-ready code only
-* Use best practices (snake_case in DB, camelCase in App)
+- Use strict TypeScript
+- No `any` types
+- Clean architecture
+- Production-ready code only
+- Use best practices (snake_case in DB, camelCase in App)
 
 `GET /api/v1/auth/verify-email?token=...`
+
 - `POST /api/v1/auth/forgot-password` - `{ "email": "..." }`
 - `POST /api/v1/auth/reset-password` - `{ "token": "...", "new_password": "..." }`
 
@@ -173,15 +190,15 @@ Collection: `docs/postman/veylo-auth.postman_collection.json`
 
 ## Code Quality Rules
 
-* Use strict TypeScript
-* No `any` types
-* Clean architecture
-* Production-ready code only
-* Use best practices (snake_case in DB, camelCase in App)
+- Use strict TypeScript
+- No `any` types
+- Clean architecture
+- Production-ready code only
+- Use best practices (snake_case in DB, camelCase in App)
 
 Clean architecture
-* Production-ready code only
-* Use best practices (snake_case in DB, camelCase in App)
+
+- Production-ready code only
+- Use best practices (snake_case in DB, camelCase in App)
 
 pp)
-

@@ -1,8 +1,14 @@
 import type { Request, Response } from "express";
 
 import { asyncHandler } from "@/app/http/middlewares/async-handler.middleware";
-import { verifyProjectAccess, resolveSession } from "@/app/http/middlewares/project-access.middleware";
-import { workLogCreateSchema, workLogUpdateSchema } from "@/app/http/validators/worklog.validator";
+import {
+  verifyProjectAccess,
+  resolveSession,
+} from "@/app/http/middlewares/project-access.middleware";
+import {
+  workLogCreateSchema,
+  workLogUpdateSchema,
+} from "@/app/http/validators/worklog.validator";
 import { workLogService } from "@/app/services/worklog.service";
 import prisma from "@/lib/prisma";
 import { NotFoundException } from "@/utils/app-error";
@@ -19,7 +25,11 @@ export const workLogController = {
     const { userId } = await verifyProjectAccess(req, task.projectId);
     const validatedData = workLogCreateSchema.parse(req.body);
 
-    const workLog = await workLogService.createWorkLog(taskId, userId, validatedData);
+    const workLog = await workLogService.createWorkLog(
+      taskId,
+      userId,
+      validatedData,
+    );
     return ok(res, "Work log created successfully", workLog);
   }),
 
@@ -48,7 +58,11 @@ export const workLogController = {
     const { userId } = await resolveSession(req);
     const validatedData = workLogUpdateSchema.parse(req.body);
 
-    const workLog = await workLogService.updateWorkLog(id, userId, validatedData);
+    const workLog = await workLogService.updateWorkLog(
+      id,
+      userId,
+      validatedData,
+    );
     return ok(res, "Work log updated successfully", workLog);
   }),
 
