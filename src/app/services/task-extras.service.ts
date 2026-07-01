@@ -193,21 +193,18 @@ export const taskExtrasService = {
     const isAuthor = comment.userId === userId;
 
     if (!isAuthor) {
-      // Only org/workspace admins can delete others' comments
-      const callerOrgMember = await taskExtrasRepository.findOrgMember(
-        activeOrgId,
-        userId,
-        ["owner", "admin"],
-      );
-      const callerWorkspaceMember = !callerOrgMember
-        ? await taskExtrasRepository.findWorkspaceMember(
-            comment.task.projectId,
-            userId,
-            "admin",
-          )
-        : null;
+      const { rbacService } = await import("@/app/services/rbac.service");
+      const { taskRepository } = await import("@/app/repositories/task.repository");
+      
+      const project = await taskRepository.findProjectById(comment.task.projectId);
+      const isAllowed = await rbacService.authorize(userId, "task:update", {
+        organizationId: activeOrgId,
+        workspaceId: project?.workspaceId,
+        projectId: comment.task.projectId,
+        taskId: comment.id 
+      });
 
-      if (!callerOrgMember && !callerWorkspaceMember) {
+      if (!isAllowed) {
         throw new ForbiddenException(
           "Forbidden: You can only delete your own comments",
         );

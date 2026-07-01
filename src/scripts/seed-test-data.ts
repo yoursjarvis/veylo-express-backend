@@ -129,7 +129,6 @@ async function main() {
       data: {
         organizationId: orgId,
         userId: user.id,
-        role: memberRoles[i],
       },
     });
 
@@ -254,7 +253,6 @@ async function main() {
       create: {
         workspaceId: workspace.id,
         userId: u.id,
-        role: "member",
       },
     });
   }
@@ -296,7 +294,6 @@ async function main() {
         data: {
           projectId: proj.id,
           userId: u.id,
-          role: faker.helpers.arrayElement(["member", "member", "admin"]),
         },
       });
     }

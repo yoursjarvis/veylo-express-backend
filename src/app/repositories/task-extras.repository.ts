@@ -159,15 +159,15 @@ export const taskExtrasRepository = {
   },
 
   // --- ORG / WORKSPACE MEMBERSHIP FOR COMMENT DELETE AUTH ---
-  async findOrgMember(organizationId: string, userId: string, roles: string[]) {
+  async findOrgMember(organizationId: string, userId: string) {
     return prisma.member.findFirst({
-      where: { organizationId, userId, role: { in: roles } },
+      where: { organizationId, userId },
     });
   },
 
-  async findWorkspaceMember(workspaceId: string, userId: string, role: string) {
+  async findWorkspaceMember(workspaceId: string, userId: string) {
     return prisma.workspaceMember.findFirst({
-      where: { workspaceId, userId, role },
+      where: { workspaceId, userId },
     });
   },
 

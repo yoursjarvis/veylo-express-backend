@@ -39,13 +39,14 @@ export const orgMembersService = {
         );
       }
 
-      // Prevent modifying other admins if caller is not owner
-      if (
-        callerMember.role === "admin" &&
-        (targetMember.role === "admin" || targetMember.role === "owner")
-      ) {
+      const { rbacService } = await import("@/app/services/rbac.service");
+      const isAllowed = await rbacService.authorize(callerMember.userId, "member:update", {
+        organizationId: activeOrgId,
+      });
+
+      if (!isAllowed) {
         throw new ForbiddenException(
-          "Forbidden: Admins cannot modify other admins or owners",
+          "Forbidden: You do not have permission to modify members",
         );
       }
     }

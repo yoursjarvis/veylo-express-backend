@@ -9,7 +9,7 @@ export const taskCreateSchema = z.object({
   milestoneId: z.uuid().optional().nullable(),
   type: z.enum(["task", "bug", "feature", "subtask"]).default("task"),
   priority: z
-    .enum(["lowest", "low", "medium", "high", "hightest", "urgent"])
+    .enum(["low", "medium", "high", "urgent"])
     .optional()
     .default("medium"),
   estimate: z.number().optional().nullable(),
@@ -32,7 +32,7 @@ export const taskUpdateSchema = z.object({
   milestoneId: z.uuid().optional().nullable(),
   type: z.enum(["task", "bug", "feature", "subtask"]).optional(),
   priority: z
-    .enum(["lowest", "low", "medium", "high", "hightest", "urgent"])
+    .enum(["low", "medium", "high", "urgent"])
     .optional(),
   estimate: z.number().optional().nullable(),
   dueDate: z.iso.datetime().optional().nullable(),

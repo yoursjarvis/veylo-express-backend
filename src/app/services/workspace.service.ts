@@ -13,51 +13,39 @@ async function verifyOrgAdmin(
     throw new BadRequestException("No active organization found");
   }
 
-  const callerMember = await workspaceRepository.findOrgMember(
-    activeOrgId,
-    userId,
-    ["owner", "admin"],
-  );
-  if (!callerMember) {
+  const { rbacService } = await import("@/app/services/rbac.service");
+  const isAllowed = await rbacService.authorize(userId, "workspace:create", {
+    organizationId: activeOrgId,
+  });
+
+  if (!isAllowed) {
     throw new ForbiddenException(
-      "Forbidden: You must be an organization admin",
+      "Forbidden: You must have permission to create workspaces",
     );
   }
 
   return { activeOrgId, userId };
 }
 
-async function verifyWorkspaceAdmin(
+async function verifyWorkspaceAction(
   activeOrgId: string | null | undefined,
   userId: string,
   workspaceId: string,
+  action: string
 ) {
   if (!activeOrgId) {
     throw new BadRequestException("No active organization found");
   }
 
-  // Check Org Admin
-  const callerOrgMember = await workspaceRepository.findOrgMember(
-    activeOrgId,
-    userId,
-    ["owner", "admin"],
-  );
-  if (callerOrgMember) {
-    return { activeOrgId, userId };
-  }
+  const { rbacService } = await import("@/app/services/rbac.service");
+  const isAllowed = await rbacService.authorize(userId, action, {
+    organizationId: activeOrgId,
+    workspaceId,
+  });
 
-  // Check Workspace Admin
-  const callerWorkspaceMember =
-    await workspaceRepository.findWorkspaceMemberWithOrg(
-      workspaceId,
-      userId,
-      "admin",
-      activeOrgId,
-    );
-
-  if (!callerWorkspaceMember) {
+  if (!isAllowed) {
     throw new ForbiddenException(
-      "Forbidden: You must be an organization or workspace admin",
+      `Forbidden: You must have permission to ${action.split(':')[1]} this ${action.split(':')[0]}`,
     );
   }
 
@@ -116,7 +104,7 @@ export const workspaceService = {
     id: string,
     data: { name?: string; slug?: string; icon?: string },
   ) {
-    await verifyWorkspaceAdmin(activeOrgId, userId, id);
+    await verifyWorkspaceAction(activeOrgId, userId, id, "workspace:update");
 
     const workspace = await workspaceRepository.findWorkspaceByIdAndOrg(
       id,
@@ -142,7 +130,7 @@ export const workspaceService = {
     userId: string,
     id: string,
   ) {
-    await verifyWorkspaceAdmin(activeOrgId, userId, id);
+    await verifyWorkspaceAction(activeOrgId, userId, id, "workspace:delete");
 
     const workspace = await workspaceRepository.findWorkspaceByIdAndOrg(
       id,
@@ -160,7 +148,7 @@ export const workspaceService = {
     userId: string,
     workspaceId: string,
   ) {
-    await verifyWorkspaceAdmin(activeOrgId, userId, workspaceId);
+    await verifyWorkspaceAction(activeOrgId, userId, workspaceId, "workspace:update");
 
     try {
       await workspaceRepository.syncOrgAdminsToWorkspaces(activeOrgId!);
@@ -177,7 +165,7 @@ export const workspaceService = {
     workspaceId: string,
     userIds: string[],
   ) {
-    await verifyWorkspaceAdmin(activeOrgId, userId, workspaceId);
+    await verifyWorkspaceAction(activeOrgId, userId, workspaceId, "workspace:update");
 
     if (!Array.isArray(userIds) || userIds.length === 0) {
       throw new BadRequestException("User IDs are required");
@@ -199,7 +187,6 @@ export const workspaceService = {
         workspaceRepository.upsertWorkspaceMember(
           workspaceId,
           targetUserId,
-          "member",
         ),
       ),
     );
@@ -211,7 +198,7 @@ export const workspaceService = {
     workspaceId: string,
     targetUserId: string,
   ) {
-    await verifyWorkspaceAdmin(activeOrgId, userId, workspaceId);
+    await verifyWorkspaceAction(activeOrgId, userId, workspaceId, "workspace:update");
 
     return workspaceRepository.deleteWorkspaceMember(workspaceId, targetUserId);
   },

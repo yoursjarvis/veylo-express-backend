@@ -97,6 +97,28 @@ export const projectRepository = {
     });
   },
 
+  getOrgProjects(organizationId: string, canSeeAll: boolean, userId: string) {
+    return prisma.project.findMany({
+      where: {
+        organizationId,
+        deletedAt: null,
+        ...(canSeeAll
+          ? {}
+          : {
+              members: {
+                some: { userId },
+              },
+            }),
+      },
+      include: {
+        _count: {
+          select: { members: true },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+  },
+
   getProjectDetails(projectId: string) {
     return prisma.project.findUnique({
       where: { id: projectId },
@@ -158,11 +180,11 @@ export const projectRepository = {
     });
   },
 
-  upsertProjectMember(projectId: string, userId: string, role: string) {
+  upsertProjectMember(projectId: string, userId: string) {
     return prisma.projectMember.upsert({
       where: { projectId_userId: { projectId, userId } },
       update: {},
-      create: { projectId, userId, role },
+      create: { projectId, userId },
     });
   },
 

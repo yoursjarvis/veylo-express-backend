@@ -13,7 +13,7 @@ import prisma, { basePrisma } from "@/lib/prisma";
 import { redis } from "@/lib/redis";
 import { config } from "@/utils/config";
 
-import { ac, roles } from "./permissions";
+
 
 function resolveTrustedOrigins(): string[] {
   const origins = config("app.origins");
@@ -162,28 +162,56 @@ export const auth = betterAuth({
                 data: {
                   organizationId: inv.organizationId,
                   userId: user.id,
-                  role: inv.role || "member",
                 },
               });
+
+              // Assign org role via UserRoleAssignment
+              const roleName = (inv.role || "member").toLowerCase();
+              const orgRole = await prisma.role.findFirst({
+                where: { organizationId: inv.organizationId, name: roleName }
+              });
+              if (orgRole) {
+                await prisma.userRoleAssignment.create({
+                  data: {
+                    userId: user.id,
+                    roleId: orgRole.id,
+                    scopeType: "ORGANIZATION",
+                    scopeId: inv.organizationId
+                  }
+                });
+              }
 
               // If projectIds scope is defined, add user to those projects
               if (inv.projectIds && Array.isArray(inv.projectIds)) {
                 for (const projectId of inv.projectIds) {
                   if (typeof projectId === "string") {
-                    await prisma.projectMember
-                      .create({
+                    try {
+                      await prisma.projectMember.create({
                         data: {
                           projectId,
                           userId: user.id,
-                          role: "member",
                         },
-                      })
-                      .catch((err) => {
-                        logger.error(
-                          { err, projectId, userId: user.id },
-                          "[AUTH][invite] Failed to auto-assign project",
-                        );
                       });
+                      
+                      const projectRole = await prisma.role.findFirst({
+                        where: { organizationId: inv.organizationId, name: "member" }
+                      });
+                      if (projectRole) {
+                        await prisma.userRoleAssignment.create({
+                          data: {
+                            userId: user.id,
+                            roleId: projectRole.id,
+                            scopeType: "PROJECT",
+                            scopeId: projectId
+                          }
+                        });
+                      }
+                    } catch (err) {
+                      logger.error(
+                        { err, projectId, userId: user.id },
+                        "[AUTH][invite] Failed to auto-assign project",
+                      );
+                    }
                   }
                 }
               }
@@ -366,8 +394,6 @@ export const auth = betterAuth({
     lastLoginMethod(),
     admin(),
     organization({
-      ac: ac,
-      roles: roles,
       creatorRole: "owner",
       sendInvitationEmail: async (data) => {
         const organization = await prisma.organization.findUnique({

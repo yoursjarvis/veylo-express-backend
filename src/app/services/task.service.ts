@@ -415,25 +415,14 @@ export const taskService = {
 
     if (task.isPrivate && userId) {
       const project = await taskRepository.findProjectById(task.projectId);
-
-      const isOrgAdmin = !!(await taskRepository.findMember(
-        task.organizationId,
-        userId,
-      ));
-      const isWorkspaceAdmin = project
-        ? !!(await taskRepository.findWorkspaceMember(
-            project.workspaceId,
-            userId,
-          ))
-        : false;
-
-      const isAdmin = isOrgAdmin || isWorkspaceAdmin;
-
-      const isAllowed =
-        task.creatorId === userId ||
-        task.assigneeId === userId ||
-        task.reporterId === userId ||
-        isAdmin;
+      
+      const { rbacService } = await import("@/app/services/rbac.service");
+      const isAllowed = await rbacService.authorize(userId, "task:read", {
+        organizationId: task.organizationId,
+        workspaceId: project?.workspaceId,
+        projectId: task.projectId,
+        taskId: task.id
+      });
 
       if (!isAllowed) {
         throw new ForbiddenException("Forbidden: This task is private");

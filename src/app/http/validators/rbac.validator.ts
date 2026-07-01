@@ -4,15 +4,18 @@ export const createRoleSchema = z.object({
   name: z.string().min(2, "Role name must be at least 2 characters"),
   organizationId: z.string().uuid("Invalid organization ID"),
   permissionIds: z.array(z.string().uuid()).default([]),
+  bypassPermissions: z.boolean().optional(),
 });
 
 export const updateRoleSchema = z.object({
-  permissionIds: z.array(z.string().uuid()),
+  name: z.string().min(2, "Role name must be at least 2 characters").optional(),
+  permissionIds: z.array(z.string().uuid()).optional(),
+  bypassPermissions: z.boolean().optional(),
 });
 
 export const assignRoleSchema = z.object({
   userId: z.string().uuid(),
-  roleId: z.string().uuid(),
+  roleIds: z.array(z.string().uuid()),
   scopeType: z.enum(["ORGANIZATION", "PROJECT"]),
   scopeId: z.string().uuid(),
 });

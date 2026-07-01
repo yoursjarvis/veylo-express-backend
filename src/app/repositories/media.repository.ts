@@ -13,7 +13,6 @@ export const mediaRepository = {
       where: {
         organizationId,
         userId,
-        role: { in: ["owner", "admin"] },
       },
     });
   },
@@ -27,7 +26,6 @@ export const mediaRepository = {
       where: {
         workspaceId,
         userId,
-        role: "admin",
         workspace: { organizationId: activeOrgId },
       },
     });

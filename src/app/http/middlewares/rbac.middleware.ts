@@ -4,10 +4,21 @@ import { rbacService } from "@/app/services/rbac.service";
 import { auth } from "@/lib/auth/auth";
 import { betterAuthHeaders } from "@/lib/auth/node-headers";
 
+type ContextExtractor = (req: Request) => {
+  organizationId?: string;
+  workspaceId?: string;
+  projectId?: string;
+  taskId?: string;
+} | Promise<{
+  organizationId?: string;
+  workspaceId?: string;
+  projectId?: string;
+  taskId?: string;
+}>;
+
 export const requirePermission = (
   requiredPermission: string,
-  scopeTypeExtractor: (req: Request) => "ORGANIZATION" | "PROJECT",
-  scopeIdExtractor: (req: Request) => string,
+  contextExtractor: ContextExtractor
 ) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -19,20 +30,12 @@ export const requirePermission = (
         return res.status(401).json({ message: "Unauthorized" });
       }
 
-      const scopeType = scopeTypeExtractor(req);
-      const scopeId = scopeIdExtractor(req);
+      const context = await contextExtractor(req);
 
-      if (!scopeId) {
-        return res
-          .status(400)
-          .json({ message: "Scope ID is missing in request" });
-      }
-
-      const hasPermission = await rbacService.checkPermission(
+      const hasPermission = await rbacService.authorize(
         session.user.id,
-        scopeType,
-        scopeId,
         requiredPermission,
+        context
       );
 
       if (!hasPermission) {

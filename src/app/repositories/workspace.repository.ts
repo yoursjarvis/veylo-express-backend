@@ -19,22 +19,20 @@ export const workspaceRepository = {
     });
   },
 
-  findOrgMember(orgId: string, userId: string, roles: string[]) {
+  findOrgMember(orgId: string, userId: string) {
     return prisma.member.findFirst({
       where: {
         organizationId: orgId,
         userId,
-        role: { in: roles },
       },
     });
   },
 
-  findWorkspaceMember(workspaceId: string, userId: string, role?: string) {
+  findWorkspaceMember(workspaceId: string, userId: string) {
     return prisma.workspaceMember.findFirst({
       where: {
         workspaceId,
         userId,
-        ...(role ? { role } : {}),
       },
     });
   },
@@ -42,14 +40,12 @@ export const workspaceRepository = {
   findWorkspaceMemberWithOrg(
     workspaceId: string,
     userId: string,
-    role: string,
     orgId: string,
   ) {
     return prisma.workspaceMember.findFirst({
       where: {
         workspaceId,
         userId,
-        role,
         workspace: { organizationId: orgId },
       },
     });
@@ -70,7 +66,6 @@ export const workspaceRepository = {
               members: {
                 some: {
                   userId,
-                  role: { in: ["owner", "admin"] },
                 },
               },
             },
@@ -100,7 +95,6 @@ export const workspaceRepository = {
         members: {
           create: {
             userId: data.creatorUserId,
-            role: "admin",
           },
         },
       },
@@ -124,7 +118,6 @@ export const workspaceRepository = {
     const orgAdmins = await prisma.member.findMany({
       where: {
         organizationId,
-        role: { in: ["owner", "admin"] },
       },
       select: { userId: true },
     });
@@ -138,7 +131,7 @@ export const workspaceRepository = {
 
     if (workspaces.length === 0) return;
 
-    const createData: { workspaceId: string; userId: string; role: string }[] =
+    const createData: { workspaceId: string; userId: string }[] =
       [];
 
     for (const admin of orgAdmins) {
@@ -146,7 +139,6 @@ export const workspaceRepository = {
         createData.push({
           workspaceId: workspace.id,
           userId: admin.userId,
-          role: "admin",
         });
       }
     }
@@ -187,11 +179,11 @@ export const workspaceRepository = {
     });
   },
 
-  upsertWorkspaceMember(workspaceId: string, userId: string, role: string) {
+  upsertWorkspaceMember(workspaceId: string, userId: string) {
     return prisma.workspaceMember.upsert({
       where: { workspaceId_userId: { workspaceId, userId } },
       update: {},
-      create: { workspaceId, userId, role },
+      create: { workspaceId, userId },
     });
   },
 

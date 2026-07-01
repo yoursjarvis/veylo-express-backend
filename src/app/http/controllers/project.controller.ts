@@ -72,6 +72,22 @@ export const projectController = {
     return ok(res, "Projects fetched successfully", projects);
   }),
 
+  getOrgProjects: asyncHandler(async (req: Request, res: Response) => {
+    const organizationId = req.params.organizationId as string;
+    const ctx = await resolveSession(req);
+    
+    // For organization-level project listing, we can either check if they are org admins
+    // or just return projects they have access to. 
+    // Here we'll just check if they are members of the org.
+    // The service handles returning projects they are members of or all if admin.
+    const projects = await projectService.getOrgProjects(
+      organizationId,
+      ctx.userId,
+    );
+
+    return ok(res, "Projects fetched successfully", projects);
+  }),
+
   getProject: asyncHandler(async (req: Request, res: Response) => {
     const projectId = req.params.id as string;
     await verifyProjectAccess(req, projectId);

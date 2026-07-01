@@ -8,7 +8,6 @@ export const orgMembersRepository = {
       where: {
         organizationId,
         userId,
-        role: { in: ["owner", "admin"] },
       },
     });
   },
@@ -91,9 +90,7 @@ export const orgMembersRepository = {
       organizationId: params.activeOrgId,
     };
 
-    if (params.role) {
-      where.role = params.role;
-    }
+
 
     if (params.search || params.status) {
       where.user = userWhere;
@@ -115,6 +112,31 @@ export const orgMembersRepository = {
             banReason: true,
             isActive: true,
             lastLoginAt: true,
+            _count: {
+              select: {
+                roleAssignments: {
+                  where: {
+                    role: {
+                      organizationId: params.activeOrgId,
+                    },
+                  },
+                },
+              },
+            },
+            roleAssignments: {
+              where: {
+                role: {
+                  organizationId: params.activeOrgId,
+                },
+              },
+              include: {
+                role: {
+                  select: {
+                    name: true,
+                  },
+                },
+              },
+            },
           },
         },
       },

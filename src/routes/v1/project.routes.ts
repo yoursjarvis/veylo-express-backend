@@ -17,6 +17,11 @@ projectRoutes.get(
   requireAuth,
   projectController.getProjects,
 );
+projectRoutes.get(
+  "/organizations/:organizationId/projects",
+  requireAuth,
+  projectController.getOrgProjects,
+);
 projectRoutes.get("/project-templates", projectController.getProjectTemplates);
 projectRoutes.get(
   "/project-templates/:slug",

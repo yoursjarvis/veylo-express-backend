@@ -66,31 +66,14 @@ export async function verifyWorkspaceAdmin(
   workspaceId: string,
 ): Promise<WorkspaceAdminContext> {
   const { activeOrgId, userId } = await resolveSession(req);
+  const { rbacService } = await import("@/app/services/rbac.service");
 
-  // Check Org Admin/Owner — they always have workspace access
-  const callerOrgMember = await prisma.member.findFirst({
-    where: {
-      organizationId: activeOrgId,
-      userId,
-      role: { in: ["owner", "admin"] },
-    },
+  const isAllowed = await rbacService.authorize(userId, "workspace:update", {
+    organizationId: activeOrgId,
+    workspaceId,
   });
 
-  if (callerOrgMember) {
-    return { activeOrgId, userId };
-  }
-
-  // Check Workspace Admin
-  const callerWorkspaceMember = await prisma.workspaceMember.findFirst({
-    where: {
-      workspaceId,
-      userId,
-      role: "admin",
-      workspace: { organizationId: activeOrgId },
-    },
-  });
-
-  if (!callerWorkspaceMember) {
+  if (!isAllowed) {
     throw new ForbiddenException(
       "Forbidden: You must be an organization or workspace admin",
     );
@@ -99,15 +82,6 @@ export async function verifyWorkspaceAdmin(
   return { activeOrgId, userId };
 }
 
-/**
- * Verifies the caller has any access to the project:
- *   1. Org Owner/Admin
- *   2. Workspace Admin
- *   3. Project Member
- *
- * Returns { activeOrgId, userId, project } on success.
- * Throws Unauthorized, Forbidden, or NotFound on failure.
- */
 export async function verifyProjectAccess(
   req: Request,
   projectId: string,
@@ -121,42 +95,15 @@ export async function verifyProjectAccess(
   if (!project) {
     throw new NotFoundException("Project not found");
   }
-
-  // 1. Org Admin/Owner — always has access
-  const callerOrgMember = await prisma.member.findFirst({
-    where: {
-      organizationId: activeOrgId,
-      userId,
-      role: { in: ["owner", "admin"] },
-    },
+  
+  const { rbacService } = await import("@/app/services/rbac.service");
+  const isAllowed = await rbacService.authorize(userId, "project:read", {
+    organizationId: activeOrgId,
+    workspaceId: project.workspaceId,
+    projectId,
   });
 
-  if (callerOrgMember) {
-    return { activeOrgId, userId, project };
-  }
-
-  // 2. Workspace Admin
-  const callerWorkspaceMember = await prisma.workspaceMember.findFirst({
-    where: {
-      workspaceId: project.workspaceId,
-      userId,
-      role: "admin",
-      workspace: { organizationId: activeOrgId },
-    },
-  });
-
-  if (callerWorkspaceMember) {
-    return { activeOrgId, userId, project };
-  }
-
-  // 3. Direct Project Member
-  const projectMember = await prisma.projectMember.findUnique({
-    where: {
-      projectId_userId: { projectId, userId },
-    },
-  });
-
-  if (!projectMember) {
+  if (!isAllowed) {
     throw new ForbiddenException(
       "Forbidden: You must be a project member or workspace/org admin",
     );
@@ -165,12 +112,6 @@ export async function verifyProjectAccess(
   return { activeOrgId, userId, project };
 }
 
-/**
- * Verifies the caller is an Org Owner/Admin OR a Workspace Admin for the
- * workspace that owns this project.
- *
- * Use this for destructive/admin actions on a project (update, delete, manage members).
- */
 export async function verifyProjectAdmin(
   req: Request,
   projectId: string,
@@ -183,6 +124,20 @@ export async function verifyProjectAdmin(
     throw new NotFoundException("Project not found");
   }
 
-  const ctx = await verifyWorkspaceAdmin(req, project.workspaceId);
-  return { ...ctx, project };
+  const { activeOrgId, userId } = await resolveSession(req);
+  const { rbacService } = await import("@/app/services/rbac.service");
+  
+  const isAllowed = await rbacService.authorize(userId, "project:update", {
+    organizationId: activeOrgId,
+    workspaceId: project.workspaceId,
+    projectId,
+  });
+
+  if (!isAllowed) {
+    throw new ForbiddenException(
+      "Forbidden: You must be a project admin or workspace/org admin",
+    );
+  }
+
+  return { activeOrgId, userId, project };
 }

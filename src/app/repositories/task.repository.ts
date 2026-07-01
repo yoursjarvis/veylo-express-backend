@@ -257,7 +257,6 @@ export const taskRepository = {
       where: {
         organizationId,
         userId,
-        role: { in: ["owner", "admin"] },
       },
     });
   },
@@ -267,7 +266,6 @@ export const taskRepository = {
       where: {
         workspaceId,
         userId,
-        role: "admin",
       },
     });
   },

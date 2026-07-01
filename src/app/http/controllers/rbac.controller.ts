@@ -14,6 +14,29 @@ export const rbacController = {
     return res.status(200).json({ data: permissions });
   }),
 
+  getMyPermissions: asyncHandler(async (req: Request, res: Response) => {
+    const { auth } = await import("@/lib/auth/auth");
+    const { betterAuthHeaders } = await import("@/lib/auth/node-headers");
+    const session = await auth.api.getSession({
+      headers: betterAuthHeaders(req),
+    });
+
+    if (!session?.user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const { organizationId, workspaceId, projectId, taskId } = req.query;
+    
+    const context: any = {};
+    if (organizationId) context.organizationId = organizationId;
+    if (workspaceId) context.workspaceId = workspaceId;
+    if (projectId) context.projectId = projectId;
+    if (taskId) context.taskId = taskId;
+
+    const permissions = await rbacService.getPermissionsForContext(session.user.id, context);
+    return res.status(200).json({ data: permissions });
+  }),
+
   getOrganizationRoles: asyncHandler(async (req: Request, res: Response) => {
     const { orgId } = req.params;
     const roles = await rbacService.getOrganizationRoles(orgId as string);
@@ -21,19 +44,40 @@ export const rbacController = {
   }),
 
   createRole: asyncHandler(async (req: Request, res: Response) => {
+    const { auth } = await import("@/lib/auth/auth");
+    const { betterAuthHeaders } = await import("@/lib/auth/node-headers");
+    const session = await auth.api.getSession({
+      headers: betterAuthHeaders(req),
+    });
+    if (!session?.user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
     const validatedData = createRoleSchema.parse(req.body);
-    const role = await rbacService.createRole(validatedData);
+    const role = await rbacService.createRole(validatedData, session.user.id);
     return res
       .status(201)
       .json({ message: "Role created successfully", data: role });
   }),
 
   updateRolePermissions: asyncHandler(async (req: Request, res: Response) => {
+    const { auth } = await import("@/lib/auth/auth");
+    const { betterAuthHeaders } = await import("@/lib/auth/node-headers");
+    const session = await auth.api.getSession({
+      headers: betterAuthHeaders(req),
+    });
+    if (!session?.user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
     const { roleId } = req.params;
     const validatedData = updateRoleSchema.parse(req.body);
     const role = await rbacService.updateRole(
       roleId as string,
+      validatedData.name,
       validatedData.permissionIds,
+      validatedData.bypassPermissions,
+      session.user.id
     );
     return res
       .status(200)
@@ -60,5 +104,18 @@ export const rbacController = {
     return res
       .status(200)
       .json({ message: "Role assignment removed successfully" });
+  }),
+
+  getUserAssignments: asyncHandler(async (req: Request, res: Response) => {
+    const { userId, scopeType, scopeId } = req.query;
+    if (!userId || !scopeType || !scopeId) {
+      return res.status(400).json({ message: "userId, scopeType, and scopeId are required" });
+    }
+    const assignments = await rbacService.getUserAssignments(
+      userId as string,
+      scopeType as string,
+      scopeId as string
+    );
+    return res.status(200).json({ data: assignments });
   }),
 };

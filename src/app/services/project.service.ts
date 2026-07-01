@@ -165,6 +165,15 @@ export const projectService = {
     return projectRepository.getProjects(workspaceId, canSeeAll, userId);
   },
 
+  async getOrgProjects(organizationId: string, userId: string) {
+    const { rbacService } = await import("@/app/services/rbac.service");
+    // Check if user has permission to read all projects in the org
+    const canSeeAll = await rbacService.authorize(userId, "project:read", {
+      organizationId,
+    });
+    return projectRepository.getOrgProjects(organizationId, canSeeAll, userId);
+  },
+
   async getProject(projectId: string) {
     const projectDetails = await projectRepository.getProjectDetails(projectId);
     if (!projectDetails) {
@@ -209,7 +218,7 @@ export const projectService = {
 
     const members = await Promise.all(
       userIds.map((userId) =>
-        projectRepository.upsertProjectMember(projectId, userId, "member"),
+        projectRepository.upsertProjectMember(projectId, userId),
       ),
     );
 
