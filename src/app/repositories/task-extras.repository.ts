@@ -20,6 +20,7 @@ export const taskExtrasRepository = {
     order: number;
     projectId: string;
     organizationId: string;
+    color?: string;
   }) {
     return prisma.taskStatus.create({
       data,

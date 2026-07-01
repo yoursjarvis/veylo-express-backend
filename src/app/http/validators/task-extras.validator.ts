@@ -4,12 +4,14 @@ export const statusSchema = z.object({
   name: z.string().min(1, "Status name is required"),
   category: z.enum(["backlog", "todo", "in_progress", "done"]),
   order: z.number().int().optional().default(0),
+  color: z.string().optional(),
 });
 
 export const statusUpdateSchema = z.object({
   name: z.string().min(1, "Status name is required").optional(),
   category: z.enum(["backlog", "todo", "in_progress", "done"]).optional(),
   order: z.number().int().optional(),
+  color: z.string().optional(),
 });
 
 export const subtaskSchema = z.object({

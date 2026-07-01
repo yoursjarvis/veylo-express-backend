@@ -36,8 +36,8 @@ model User {
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
-  twoFactorEnabled Boolean? @map("two_factor_enabled")
-  notificationPreferences String? @default("[]") @map("notification_preferences")
+  twoFactorEnabled        Boolean? @map("two_factor_enabled")
+  notificationPreferences String?  @default("[]") @map("notification_preferences")
 
   sessions              Session[]
   accounts              Account[]
@@ -180,10 +180,10 @@ model Workspace {
   createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  organization Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  members      WorkspaceMember[]
-  projects     Project[]
-  checklistTemplates  ChecklistTemplate[]
+  organization       Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  members            WorkspaceMember[]
+  projects           Project[]
+  checklistTemplates ChecklistTemplate[]
 
   @@map("workspaces")
 }
@@ -241,9 +241,9 @@ model Media {
   createdAt            DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt            DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  parentMedia          Media?   @relation("MediaVersions", fields: [parentMediaId], references: [id], onDelete: Cascade)
-  versions             Media[]  @relation("MediaVersions")
-  annotations          Annotation[]
+  parentMedia Media?       @relation("MediaVersions", fields: [parentMediaId], references: [id], onDelete: Cascade)
+  versions    Media[]      @relation("MediaVersions")
+  annotations Annotation[]
 
   @@index([modelType, modelId])
   @@map("media")
@@ -258,8 +258,8 @@ model Annotation {
   content   String   @db.Text
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
-  media     Media    @relation(fields: [mediaId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  media Media @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([mediaId])
   @@map("annotations")
@@ -429,6 +429,7 @@ model TaskStatus {
   projectId      String   @map("project_id") @db.Uuid
   organizationId String   @map("organization_id") @db.Uuid
   name           String // e.g. "To Do", "In Progress", "Code Review"
+  color          String? // custom hex color
   category       String // backlog, todo, in_progress, done
   order          Int      @default(0) // Order of columns on Kanban boards
   createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
@@ -753,18 +754,18 @@ model WorkflowTransition {
 }
 
 model AutomationRule {
-  id          String   @id @default(uuid(7)) @db.Uuid
-  projectId   String   @map("project_id") @db.Uuid
-  name        String
-  trigger     String   // task_status_changed, subtasks_all_done
-  triggerVal  String?  @map("trigger_val")
-  action      String   // close_parent, assign_to_creator, etc.
-  actionVal   String?  @map("action_val")
-  isActive    Boolean  @default(true) @map("is_active")
-  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  id         String   @id @default(uuid(7)) @db.Uuid
+  projectId  String   @map("project_id") @db.Uuid
+  name       String
+  trigger    String // task_status_changed, subtasks_all_done
+  triggerVal String?  @map("trigger_val")
+  action     String // close_parent, assign_to_creator, etc.
+  actionVal  String?  @map("action_val")
+  isActive   Boolean  @default(true) @map("is_active")
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@map("automation_rules")
 }
@@ -777,8 +778,8 @@ model WorkLog {
   loggedAt    DateTime @default(now()) @map("logged_at")
   description String?  @db.Text
 
-  task        Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([taskId])
   @@index([userId])
@@ -789,17 +790,15 @@ model ChecklistTemplate {
   id             String   @id @default(uuid(7)) @db.Uuid
   name           String
   description    String?  @db.Text
-  items          Json     // Array of strings (checklist items / subtask titles)
+  items          Json // Array of strings (checklist items / subtask titles)
   workspaceId    String   @map("workspace_id") @db.Uuid
   organizationId String   @map("organization_id") @db.Uuid
   createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt      DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  workspace      Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  workspace    Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   @@index([workspaceId])
   @@map("checklist_templates")
 }
-
-
