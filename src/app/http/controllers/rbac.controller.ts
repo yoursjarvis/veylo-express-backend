@@ -108,13 +108,13 @@ export const rbacController = {
 
   getUserAssignments: asyncHandler(async (req: Request, res: Response) => {
     const { userId, scopeType, scopeId } = req.query;
-    if (!userId || !scopeType || !scopeId) {
-      return res.status(400).json({ message: "userId, scopeType, and scopeId are required" });
+    if (!userId) {
+      return res.status(400).json({ message: "userId is required" });
     }
     const assignments = await rbacService.getUserAssignments(
       userId as string,
-      scopeType as string,
-      scopeId as string
+      scopeType as string | undefined,
+      scopeId as string | undefined
     );
     return res.status(200).json({ data: assignments });
   }),

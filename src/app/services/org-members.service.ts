@@ -17,6 +17,7 @@ export const orgMembersService = {
     activeOrgId: string,
     sessionUserId: string,
     targetUserId?: string,
+    action: string = "update",
   ) {
     const callerMember = await orgMembersRepository.findCallerMember(
       activeOrgId,
@@ -40,7 +41,7 @@ export const orgMembersService = {
       }
 
       const { rbacService } = await import("@/app/services/rbac.service");
-      const isAllowed = await rbacService.authorize(callerMember.userId, "member:update", {
+      const isAllowed = await rbacService.authorize(callerMember.userId, `member:${action}`, {
         organizationId: activeOrgId,
       });
 
@@ -123,6 +124,113 @@ export const orgMembersService = {
 
       return { success: false, fallback: { token, session: newSession } };
     }
+  },
+
+  async setPassword(
+    activeOrgId: string,
+    sessionUserId: string,
+    targetUserId: string,
+    password: string,
+    headers: HeadersInit,
+  ) {
+    await this.verifyAdminAccess(activeOrgId, sessionUserId, targetUserId, "change_password");
+
+    const setUserPassword = (auth.api as Record<string, unknown>)
+      .setUserPassword as (options: {
+      body: { userId: string; newPassword: string };
+      headers: HeadersInit;
+    }) => Promise<unknown>;
+
+    await setUserPassword({
+      body: { userId: targetUserId, newPassword: password },
+      headers,
+    });
+  },
+
+  async getSessions(
+    activeOrgId: string,
+    sessionUserId: string,
+    targetUserId: string,
+  ) {
+    await this.verifyAdminAccess(activeOrgId, sessionUserId, targetUserId, "update");
+    return prisma.session.findMany({
+      where: { userId: targetUserId },
+      orderBy: { lastActiveAt: "desc" },
+    });
+  },
+
+  async revokeSession(
+    activeOrgId: string,
+    sessionUserId: string,
+    targetUserId: string,
+    sessionId: string,
+    headers: HeadersInit,
+  ) {
+    await this.verifyAdminAccess(activeOrgId, sessionUserId, targetUserId, "update");
+    await prisma.session.deleteMany({
+      where: {
+        id: sessionId,
+        userId: targetUserId,
+      },
+    });
+  },
+
+  async updatePhoto(
+    activeOrgId: string,
+    sessionUserId: string,
+    targetUserId: string,
+    file: {
+      buffer: Buffer;
+      originalname: string;
+      mimetype: string;
+      size: number;
+    },
+  ) {
+    await this.verifyAdminAccess(activeOrgId, sessionUserId, targetUserId, "update");
+
+    const { mediaService } = await import("@/app/services/media.service");
+    const result = await mediaService.uploadAvatar(targetUserId, {
+      buffer: file.buffer,
+      originalname: file.originalname,
+      mimetype: file.mimetype,
+      size: file.size,
+    });
+    
+    return result.url;
+  },
+
+  async updateProfile(
+    activeOrgId: string,
+    sessionUserId: string,
+    targetUserId: string,
+    data: { firstName: string; lastName: string; email: string }
+  ) {
+    await this.verifyAdminAccess(activeOrgId, sessionUserId);
+
+    // Verify user belongs to org
+    const member = await prisma.member.findFirst({
+      where: {
+        userId: targetUserId,
+        organizationId: activeOrgId,
+      },
+    });
+
+    if (!member) {
+      throw new NotFoundException("User is not a member of this organization");
+    }
+
+    const { firstName, lastName, email } = data;
+    const name = `${firstName} ${lastName}`.trim();
+
+    await prisma.user.update({
+      where: { id: targetUserId },
+      data: {
+        firstName,
+        lastName,
+        name,
+        email,
+      },
+    });
   },
 
   async getMembers(

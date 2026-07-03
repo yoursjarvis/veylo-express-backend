@@ -278,12 +278,12 @@ export const rbacRepository = {
     });
   },
 
-  async getUserAssignments(userId: string, scopeType: string, scopeId: string) {
+  async getUserAssignments(userId: string, scopeType?: string, scopeId?: string) {
     return prisma.userRoleAssignment.findMany({
       where: {
         userId,
-        scopeType,
-        scopeId,
+        ...(scopeType && { scopeType }),
+        ...(scopeId && { scopeId }),
       },
       include: {
         role: true,

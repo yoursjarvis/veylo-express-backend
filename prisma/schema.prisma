@@ -686,13 +686,13 @@ model Permission {
 }
 
 model Role {
-  id              String   @id @default(uuid(7)) @db.Uuid
-  organizationId  String?  @map("organization_id") @db.Uuid
+  id                String   @id @default(uuid(7)) @db.Uuid
+  organizationId    String?  @map("organization_id") @db.Uuid
   name              String
   isSystemDefault   Boolean  @default(false) @map("is_system_default")
   bypassPermissions Boolean  @default(false) @map("bypass_permissions")
-  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   organization        Organization?        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   permissions         RolePermission[]

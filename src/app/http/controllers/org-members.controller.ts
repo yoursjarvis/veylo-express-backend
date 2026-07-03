@@ -87,18 +87,83 @@ export const orgMembersController = {
     const { password } = req.body;
     const { activeOrgId, sessionUserId } = await getActiveOrgAndSession(req);
 
-    await orgMembersService.verifyAdminAccess(activeOrgId, sessionUserId, id);
-
     if (!password || password.length < 6) {
       return res
         .status(400)
         .json({ message: "Password must be at least 6 characters" });
     }
 
-    return res.status(501).json({
-      message:
-        "Direct password setting requires global admin role. Please use the password reset flow.",
-    });
+    await orgMembersService.setPassword(
+      activeOrgId,
+      sessionUserId,
+      id,
+      password,
+      betterAuthHeaders(req),
+    );
+
+    return ok(res, "Password updated successfully");
+  }),
+
+  getSessions: asyncHandler(async (req: Request, res: Response) => {
+    const id = req.params.id as string;
+    const { activeOrgId, sessionUserId } = await getActiveOrgAndSession(req);
+
+    const sessions = await orgMembersService.getSessions(
+      activeOrgId,
+      sessionUserId,
+      id,
+    );
+
+    return ok(res, "Sessions fetched", sessions);
+  }),
+
+  revokeSession: asyncHandler(async (req: Request, res: Response) => {
+    const id = req.params.id as string;
+    const sessionId = req.params.sessionId as string;
+    const { activeOrgId, sessionUserId } = await getActiveOrgAndSession(req);
+
+    await orgMembersService.revokeSession(
+      activeOrgId,
+      sessionUserId,
+      id,
+      sessionId,
+      betterAuthHeaders(req),
+    );
+
+    return ok(res, "Session revoked successfully");
+  }),
+
+  updatePhoto: asyncHandler(async (req: Request, res: Response) => {
+    const id = req.params.id as string;
+    const { activeOrgId, sessionUserId } = await getActiveOrgAndSession(req);
+
+    if (!req.file) {
+      return res.status(400).json({ message: "No photo uploaded" });
+    }
+
+    const photoUrl = await orgMembersService.updatePhoto(
+      activeOrgId,
+      sessionUserId,
+      id,
+      req.file,
+    );
+
+    return ok(res, "Photo updated successfully", { url: photoUrl });
+  }),
+
+  updateProfile: asyncHandler(async (req: Request, res: Response) => {
+    const id = req.params.id as string;
+    const { activeOrgId, sessionUserId } = await getActiveOrgAndSession(req);
+    const { firstName, lastName, email } = req.body;
+
+    await orgMembersService.updateProfile(
+      activeOrgId,
+      sessionUserId,
+      id,
+      { firstName, lastName, email }
+    );
+
+    return ok(res, "Profile updated successfully");
   }),
 
   bulkInvite: asyncHandler(async (req: Request, res: Response) => {

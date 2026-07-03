@@ -34,6 +34,37 @@ orgRoutes.post(
   orgMembersController.impersonateUser,
 );
 
+orgRoutes.get(
+  "/members/:id/sessions",
+  requireAuth,
+  orgMembersController.getSessions,
+);
+
+orgRoutes.delete(
+  "/members/:id/sessions/:sessionId",
+  requireAuth,
+  orgMembersController.revokeSession,
+);
+
+orgRoutes.put(
+  "/members/:id/password",
+  requireAuth,
+  orgMembersController.setPassword,
+);
+
+orgRoutes.put(
+  "/members/:id/photo",
+  requireAuth,
+  upload.single("photo"),
+  orgMembersController.updatePhoto,
+);
+
+orgRoutes.put(
+  "/members/:id",
+  requireAuth,
+  orgMembersController.updateProfile,
+);
+
 orgRoutes.post(
   "/members/invite-bulk",
   requireAuth,

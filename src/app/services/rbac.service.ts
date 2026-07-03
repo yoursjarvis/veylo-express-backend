@@ -102,7 +102,7 @@ export const rbacService = {
     return rbacRepository.removeRolesFromUser(data);
   },
 
-  async getUserAssignments(userId: string, scopeType: string, scopeId: string) {
+  async getUserAssignments(userId: string, scopeType?: string, scopeId?: string) {
     return rbacRepository.getUserAssignments(userId, scopeType, scopeId);
   },
 
