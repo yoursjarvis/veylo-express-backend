@@ -138,7 +138,7 @@ export const rbacRepository = {
 
   async updateRole(roleId: string, data: { name?: string, permissionIds?: string[], bypassPermissions?: boolean }) {
     return prisma.$transaction(async (tx) => {
-      const updateData: any = {};
+      const updateData: Record<string, boolean | string> = {};
       if (data.bypassPermissions !== undefined) {
         updateData.bypassPermissions = data.bypassPermissions;
       }
