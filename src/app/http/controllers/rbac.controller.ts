@@ -27,11 +27,11 @@ export const rbacController = {
 
     const { organizationId, workspaceId, projectId, taskId } = req.query;
     
-    const context: any = {};
-    if (organizationId) context.organizationId = organizationId;
-    if (workspaceId) context.workspaceId = workspaceId;
-    if (projectId) context.projectId = projectId;
-    if (taskId) context.taskId = taskId;
+    const context: Record<string, string> = {};
+    if (organizationId) context.organizationId = organizationId as string;
+    if (workspaceId) context.workspaceId = workspaceId as string;
+    if (projectId) context.projectId = projectId as string;
+    if (taskId) context.taskId = taskId as string;
 
     const permissions = await rbacService.getPermissionsForContext(session.user.id, context);
     return res.status(200).json({ data: permissions });

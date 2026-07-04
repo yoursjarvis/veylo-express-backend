@@ -435,7 +435,7 @@ export const taskService = {
       "task_attachments",
     );
     const attachmentsWithUrls = attachments.map(
-      (a: { id: string; [key: string]: unknown }) => ({
+      (a: { id: string; disk: string; modelType: string; collectionName: string; fileName: string; [key: string]: unknown }) => ({
         ...a,
         url: mediaService.generateUrl(a),
       }),

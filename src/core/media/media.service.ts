@@ -133,7 +133,7 @@ export class MediaService {
     return this.generateUrl(media);
   }
 
-  generateUrl(media: any): string | null {
+  generateUrl(media: { disk: string; modelType: string; collectionName: string; fileName: string }): string | null {
     if (media.disk === "local") {
       const baseUrl = config("storage.disks.local.publicUrl");
       return `${baseUrl}/${media.modelType}/${media.collectionName}/${media.fileName}`;

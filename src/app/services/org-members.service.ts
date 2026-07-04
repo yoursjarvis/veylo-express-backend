@@ -164,7 +164,7 @@ export const orgMembersService = {
     sessionUserId: string,
     targetUserId: string,
     sessionId: string,
-    headers: HeadersInit,
+    _headers: HeadersInit,
   ) {
     await this.verifyAdminAccess(activeOrgId, sessionUserId, targetUserId, "update");
     await prisma.session.deleteMany({
