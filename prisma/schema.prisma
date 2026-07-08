@@ -58,6 +58,7 @@ model User {
   workLogs              WorkLog[]
   annotations           Annotation[]
   ownedOrganizations    Organization[]       @relation("OrgOwner")
+  auditLogs             AuditLog[]
 
   @@index([email], map: "idx_users_email")
   @@index([isActive], map: "idx_users_is_active")
@@ -137,6 +138,7 @@ model Organization {
   logo                String?
   ownerId             String                  @map("owner_id") @db.Uuid
   createdAt           DateTime                @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime                @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt           DateTime?               @map("deleted_at") @db.Timestamptz(6)
   metadata            Json?
 
@@ -159,6 +161,7 @@ model Organization {
   workflowTransitions WorkflowTransition[]
   checklistTemplates  ChecklistTemplate[]
   objectives          Objective[]
+  auditLogs           AuditLog[]
 
   @@map("organizations")
 }
@@ -168,6 +171,7 @@ model Member {
   organizationId String   @map("organization_id") @db.Uuid
   userId         String   @map("user_id") @db.Uuid
   createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -189,6 +193,7 @@ model Workspace {
   members            WorkspaceMember[]
   projects           Project[]
   checklistTemplates ChecklistTemplate[]
+  auditLogs          AuditLog[]
 
   @@map("workspaces")
 }
@@ -198,6 +203,7 @@ model WorkspaceMember {
   workspaceId String   @map("workspace_id") @db.Uuid
   userId      String   @map("user_id") @db.Uuid
   createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -264,6 +270,7 @@ model Annotation {
   content   String   @db.Text
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   media Media @relation(fields: [mediaId], references: [id], onDelete: Cascade)
   user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -280,6 +287,7 @@ model TwoFactor {
   user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   verified    Boolean
   deletedAt   DateTime? @map("deleted_at") @db.Timestamptz(6)
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   @@map("two_factors")
 }
@@ -326,6 +334,7 @@ model ProjectMember {
   projectId String   @map("project_id") @db.Uuid
   userId    String   @map("user_id") @db.Uuid
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -445,6 +454,7 @@ model TaskStatus {
   order          Int      @default(0) // Order of columns on Kanban boards
   deletedAt      DateTime? @map("deleted_at") @db.Timestamptz(6)
   createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   project                 Project              @relation(fields: [projectId], references: [id], onDelete: Cascade)
   organization            Organization         @relation(fields: [organizationId], references: [id])
@@ -469,6 +479,7 @@ model Sprint {
   completedAt    DateTime? @map("completed_at") @db.Timestamptz(6)
   deletedAt      DateTime? @map("deleted_at") @db.Timestamptz(6)
   createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   project      Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
   organization Organization @relation(fields: [organizationId], references: [id])
@@ -488,6 +499,7 @@ model CustomFieldDefinition {
   options        Json? // Array of options if type is select
   deletedAt      DateTime? @map("deleted_at") @db.Timestamptz(6)
   createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   project      Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
   organization Organization @relation(fields: [organizationId], references: [id])
@@ -527,6 +539,7 @@ model CommentReaction {
   userId    String   @map("user_id") @db.Uuid
   emoji     String   @db.VarChar(50)
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   comment Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -544,6 +557,7 @@ model TaskActivity {
   oldValue       String?  @db.Text
   newValue       String?  @db.Text
   createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   task         Task         @relation(fields: [taskId], references: [id], onDelete: Cascade)
   user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -562,6 +576,7 @@ model SlackWebhook {
   isActive  Boolean  @default(true) @map("is_active")
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
@@ -581,6 +596,7 @@ model Notification {
   isRead         Boolean  @default(false) @map("is_read")
   deletedAt      DateTime? @map("deleted_at") @db.Timestamptz(6)
   createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   recipient    User         @relation("NotificationRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
   sender       User?        @relation("NotificationSender", fields: [senderId], references: [id], onDelete: SetNull)
@@ -599,6 +615,7 @@ model TaskDependency {
   blockedTaskId  String   @map("blocked_task_id") @db.Uuid
   dependencyType String   @default("blocks") // blocks
   createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   blockingTask Task @relation("BlockingTasks", fields: [blockingTaskId], references: [id], onDelete: Cascade)
   blockedTask  Task @relation("BlockedTasks", fields: [blockedTaskId], references: [id], onDelete: Cascade)
@@ -655,6 +672,7 @@ model Label {
   color          String // hex color
   deletedAt      DateTime? @map("deleted_at") @db.Timestamptz(6)
   createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   project      Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
   organization Organization @relation(fields: [organizationId], references: [id])
@@ -666,10 +684,11 @@ model Label {
 }
 
 model TaskLabel {
-  taskId  String @map("task_id") @db.Uuid
-  labelId String @map("label_id") @db.Uuid
-  task    Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  label   Label  @relation(fields: [labelId], references: [id], onDelete: Cascade)
+  taskId    String   @map("task_id") @db.Uuid
+  labelId   String   @map("label_id") @db.Uuid
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  label     Label    @relation(fields: [labelId], references: [id], onDelete: Cascade)
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   @@id([taskId, labelId])
   @@map("task_labels")
@@ -697,12 +716,14 @@ model Milestone {
 }
 
 model Permission {
-  id          String   @id @default(uuid(7)) @db.Uuid
+  id          String    @id @default(uuid(7)) @db.Uuid
   resource    String
   action      String
-  module      String   @default("PROJECT_MANAGEMENT")
+  module      String    @default("PROJECT_MANAGEMENT")
   description String?
-  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  deletedAt   DateTime? @map("deleted_at") @db.Timestamptz(6)
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   roles RolePermission[]
 
@@ -731,22 +752,25 @@ model Role {
 }
 
 model RolePermission {
-  roleId       String @map("role_id") @db.Uuid
-  permissionId String @map("permission_id") @db.Uuid
+  roleId       String   @map("role_id") @db.Uuid
+  permissionId String   @map("permission_id") @db.Uuid
 
-  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  role       Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
   permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   @@id([roleId, permissionId])
   @@map("role_permissions")
 }
 
 model UserRoleAssignment {
-  id        String @id @default(uuid(7)) @db.Uuid
-  userId    String @map("user_id") @db.Uuid
-  roleId    String @map("role_id") @db.Uuid
-  scopeType String @map("scope_type") // e.g. ORGANIZATION, PROJECT
-  scopeId   String @map("scope_id") @db.Uuid // ID of the organization or project
+  id        String   @id @default(uuid(7)) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  roleId    String   @map("role_id") @db.Uuid
+  scopeType String   @map("scope_type") // e.g. ORGANIZATION, PROJECT
+  scopeId   String   @map("scope_id") @db.Uuid // ID of the organization or project
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
@@ -766,6 +790,7 @@ model WorkflowTransition {
   requiredRoleId String?  @map("required_role_id") @db.Uuid
   deletedAt      DateTime? @map("deleted_at") @db.Timestamptz(6)
   createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   project      Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
   organization Organization @relation(fields: [organizationId], references: [id])
@@ -803,6 +828,7 @@ model WorkLog {
   hoursLogged Float    @map("hours_logged")
   loggedAt    DateTime @default(now()) @map("logged_at")
   deletedAt   DateTime? @map("deleted_at") @db.Timestamptz(6)
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   description String?  @db.Text
 
   task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
@@ -867,5 +893,31 @@ model KeyResult {
 
   @@index([objectiveId], map: "idx_key_results_objective_id")
   @@map("key_results")
+}
+
+model AuditLog {
+  id             String   @id @default(uuid(7)) @db.Uuid
+  workspaceId    String?  @map("workspace_id") @db.Uuid
+  organizationId String   @map("organization_id") @db.Uuid
+  userId         String   @map("user_id") @db.Uuid
+  action         String
+  entityType     String   @map("entity_type")
+  entityId       String?  @map("entity_id")
+  entityName     String?  @map("entity_name")
+  description    String   @db.Text
+  metadata       Json?
+  ipAddress      String?  @map("ip_address")
+  userAgent      String?  @map("user_agent")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  workspace    Workspace?   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([workspaceId])
+  @@index([organizationId])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("audit_logs")
 }
 

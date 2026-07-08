@@ -156,18 +156,17 @@ export const orgMembersController = {
     const { activeOrgId, sessionUserId } = await getActiveOrgAndSession(req);
     const { firstName, lastName, email } = req.body;
 
-    await orgMembersService.updateProfile(
-      activeOrgId,
-      sessionUserId,
-      id,
-      { firstName, lastName, email }
-    );
+    await orgMembersService.updateProfile(activeOrgId, sessionUserId, id, {
+      firstName,
+      lastName,
+      email,
+    });
 
     return ok(res, "Profile updated successfully");
   }),
 
   bulkInvite: asyncHandler(async (req: Request, res: Response) => {
-    const { activeOrgId } = await getActiveOrgAndSession(req);
+    const { activeOrgId, sessionUserId } = await getActiveOrgAndSession(req);
 
     if (!req.file) {
       return res.status(400).json({ message: "No file uploaded" });
@@ -175,6 +174,7 @@ export const orgMembersController = {
 
     const results = await orgMembersService.bulkInvite(
       activeOrgId,
+      sessionUserId,
       req.file,
       betterAuthHeaders(req),
     );
@@ -190,7 +190,12 @@ export const orgMembersController = {
       return res.status(400).json({ message: "Email is required" });
     }
 
-    await orgMembersService.verifyAdminAccess(activeOrgId, sessionUserId);
+    await orgMembersService.verifyAdminAccess(
+      activeOrgId,
+      sessionUserId,
+      undefined,
+      "invite",
+    );
 
     try {
       const result = await orgMembersService.inviteMember(

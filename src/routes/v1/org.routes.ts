@@ -1,5 +1,6 @@
 import { Router } from "express";
 
+import { auditLogController } from "@/app/http/controllers/audit-log.controller";
 import { orgMembersController } from "@/app/http/controllers/org-members.controller";
 import { orgController } from "@/app/http/controllers/org.controller";
 import { requireAuth } from "@/app/http/middlewares/require-auth.middleware";
@@ -59,11 +60,7 @@ orgRoutes.put(
   orgMembersController.updatePhoto,
 );
 
-orgRoutes.put(
-  "/members/:id",
-  requireAuth,
-  orgMembersController.updateProfile,
-);
+orgRoutes.put("/members/:id", requireAuth, orgMembersController.updateProfile);
 
 orgRoutes.post(
   "/members/invite-bulk",
@@ -95,4 +92,16 @@ orgRoutes.post(
 orgRoutes.get(
   "/invitations/:id/public",
   orgMembersController.getInvitationPublic,
+);
+
+orgRoutes.get(
+  "/audit-logs",
+  requireAuth,
+  auditLogController.getOrgLogs,
+);
+
+orgRoutes.post(
+  "/audit-logs/export",
+  requireAuth,
+  auditLogController.exportOrgLogs,
 );

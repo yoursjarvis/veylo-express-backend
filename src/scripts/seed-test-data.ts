@@ -74,7 +74,9 @@ async function main() {
       const ownerFirstName = faker.person.firstName();
       const ownerLastName = faker.person.lastName();
       const ownerName = `${ownerFirstName} ${ownerLastName}`;
-      const ownerEmail = faker.internet.email({ firstName: ownerFirstName, lastName: ownerLastName }).toLowerCase();
+      const ownerEmail = faker.internet
+        .email({ firstName: ownerFirstName, lastName: ownerLastName })
+        .toLowerCase();
 
       const ownerUser = await prisma.user.create({
         data: {

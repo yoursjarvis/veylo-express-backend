@@ -55,7 +55,8 @@ export const milestoneService = {
   },
 
   async restoreMilestone(milestoneId: string) {
-    const milestone = await milestoneRepository.findByIdWithTrashed(milestoneId);
+    const milestone =
+      await milestoneRepository.findByIdWithTrashed(milestoneId);
     if (!milestone) {
       throw new NotFoundException("Milestone not found");
     }
@@ -63,7 +64,8 @@ export const milestoneService = {
   },
 
   async forceDeleteMilestone(milestoneId: string) {
-    const milestone = await milestoneRepository.findByIdWithTrashed(milestoneId);
+    const milestone =
+      await milestoneRepository.findByIdWithTrashed(milestoneId);
     if (!milestone) {
       throw new NotFoundException("Milestone not found");
     }

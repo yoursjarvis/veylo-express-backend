@@ -1,23 +1,33 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 
-let envValue = "test";
-
-const { configMock } = vi.hoisted(() => ({
-  configMock: vi.fn().mockImplementation((key: string) => {
-    if (key === "app.env") return envValue;
-    return undefined;
-  }),
-}));
+const { configMock, envState } = vi.hoisted(() => {
+  const state = { envValue: "test" };
+  return {
+    envState: state,
+    configMock: vi.fn().mockImplementation((key: string) => {
+      if (key === "app.env") return state.envValue;
+      return undefined;
+    }),
+  };
+});
 
 vi.mock("../../src/utils/config", () => ({
   config: configMock,
 }));
 
+vi.mock("rate-limiter-flexible", async () => {
+  const actual = await vi.importActual<any>("rate-limiter-flexible");
+  return {
+    ...actual,
+    RateLimiterRedis: actual.RateLimiterMemory,
+  };
+});
+
 import { rateLimit } from "../../src/app/http/middlewares/rate-limit.middleware";
 
 describe("rate-limit middleware", () => {
   beforeEach(() => {
-    envValue = "test";
+    envState.envValue = "test";
     vi.useFakeTimers();
   });
 
@@ -25,7 +35,7 @@ describe("rate-limit middleware", () => {
     vi.useRealTimers();
   });
 
-  it("UT-RL-01: bypasses rate limiting entirely when env is test", () => {
+  it("UT-RL-01: bypasses rate limiting entirely when env is test", async () => {
     const middleware = rateLimit({
       keyPrefix: "test:prefix",
       windowMs: 1000,
@@ -42,15 +52,15 @@ describe("rate-limit middleware", () => {
 
     // Call 5 times - in "test" env, it should always call next()
     for (let i = 0; i < 5; i++) {
-      middleware(req, res, next);
+      await middleware(req, res, next);
     }
 
     expect(next).toHaveBeenCalledTimes(5);
     expect(res.status).not.toHaveBeenCalled();
   });
 
-  it("UT-RL-02: blocks requests (returns 429) when limit is exceeded in non-test env", () => {
-    envValue = "development"; // Enable rate limiting
+  it("UT-RL-02: blocks requests (returns 429) when limit is exceeded in non-test env", async () => {
+    envState.envValue = "development"; // Enable rate limiting
 
     const middleware = rateLimit({
       keyPrefix: "dev:prefix",
@@ -68,15 +78,15 @@ describe("rate-limit middleware", () => {
     const next = vi.fn();
 
     // 1st request - allowed
-    middleware(req, res, next);
+    await middleware(req, res, next);
     expect(next).toHaveBeenCalledTimes(1);
 
     // 2nd request - allowed
-    middleware(req, res, next);
+    await middleware(req, res, next);
     expect(next).toHaveBeenCalledTimes(2);
 
     // 3rd request - blocked
-    middleware(req, res, next);
+    await middleware(req, res, next);
     expect(next).toHaveBeenCalledTimes(2); // still 2
     expect(res.status).toHaveBeenCalledWith(429);
     expect(res.setHeader).toHaveBeenCalledWith(
@@ -89,8 +99,8 @@ describe("rate-limit middleware", () => {
     });
   });
 
-  it("UT-RL-03: resets request count and allows requests after windowMs expires", () => {
-    envValue = "production";
+  it("UT-RL-03: resets request count and allows requests after windowMs expires", async () => {
+    envState.envValue = "production";
 
     const middleware = rateLimit({
       keyPrefix: "prod:prefix",
@@ -108,11 +118,11 @@ describe("rate-limit middleware", () => {
     const next = vi.fn();
 
     // 1st request - allowed
-    middleware(req, res, next);
+    await middleware(req, res, next);
     expect(next).toHaveBeenCalledTimes(1);
 
     // 2nd request - blocked immediately
-    middleware(req, res, next);
+    await middleware(req, res, next);
     expect(next).toHaveBeenCalledTimes(1); // blocked
     expect(res.status).toHaveBeenCalledWith(429);
 
@@ -120,7 +130,7 @@ describe("rate-limit middleware", () => {
     vi.advanceTimersByTime(2100);
 
     // 3rd request - allowed again after window expiry
-    middleware(req, res, next);
+    await middleware(req, res, next);
     expect(next).toHaveBeenCalledTimes(2); // allowed
   });
 });

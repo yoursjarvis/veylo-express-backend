@@ -1,4 +1,5 @@
 import { rbacRepository } from "@/app/repositories/rbac.repository";
+import prisma from "@/lib/prisma";
 import { BadRequestException } from "@/utils/app-error";
 
 export const rbacService = {
@@ -10,12 +11,15 @@ export const rbacService = {
     return rbacRepository.getRolesByOrganization(organizationId);
   },
 
-  async createRole(data: {
-    name: string;
-    organizationId: string;
-    permissionIds: string[];
-    bypassPermissions?: boolean;
-  }, userId: string) {
+  async createRole(
+    data: {
+      name: string;
+      organizationId: string;
+      permissionIds: string[];
+      bypassPermissions?: boolean;
+    },
+    userId: string,
+  ) {
     const existingRoles = await rbacRepository.getRolesByOrganization(
       data.organizationId,
     );
@@ -30,9 +34,14 @@ export const rbacService = {
     }
 
     if (data.bypassPermissions) {
-      const isOwner = await rbacRepository.isOrganizationOwner(userId, data.organizationId);
+      const isOwner = await rbacRepository.isOrganizationOwner(
+        userId,
+        data.organizationId,
+      );
       if (!isOwner) {
-        throw new BadRequestException("Only the organization owner can grant bypass permissions.");
+        throw new BadRequestException(
+          "Only the organization owner can grant bypass permissions.",
+        );
       }
     }
 
@@ -43,26 +52,41 @@ export const rbacService = {
     });
 
     if (data.permissionIds.length > 0) {
-      return rbacRepository.updateRole(role.id, { permissionIds: data.permissionIds });
+      return rbacRepository.updateRole(role.id, {
+        permissionIds: data.permissionIds,
+      });
     }
 
     return role;
   },
 
-  async updateRole(roleId: string, name?: string, permissionIds?: string[], bypassPermissions?: boolean, userId?: string) {
+  async updateRole(
+    roleId: string,
+    name?: string,
+    permissionIds?: string[],
+    bypassPermissions?: boolean,
+    userId?: string,
+  ) {
     if (bypassPermissions !== undefined) {
       if (!userId) {
-        throw new BadRequestException("User ID is required to update bypass permissions.");
+        throw new BadRequestException(
+          "User ID is required to update bypass permissions.",
+        );
       }
       const role = await rbacRepository.getRoleById(roleId);
       if (role && role.organizationId) {
-        const isOwner = await rbacRepository.isOrganizationOwner(userId, role.organizationId);
+        const isOwner = await rbacRepository.isOrganizationOwner(
+          userId,
+          role.organizationId,
+        );
         if (!isOwner) {
-          throw new BadRequestException("Only the organization owner can modify bypass permissions.");
+          throw new BadRequestException(
+            "Only the organization owner can modify bypass permissions.",
+          );
         }
       }
     }
-    
+
     if (name) {
       const existingRole = await rbacRepository.getRoleById(roleId);
       if (existingRole && existingRole.name.toLowerCase() === "owner") {
@@ -70,7 +94,11 @@ export const rbacService = {
       }
     }
 
-    return rbacRepository.updateRole(roleId, { name, permissionIds, bypassPermissions });
+    return rbacRepository.updateRole(roleId, {
+      name,
+      permissionIds,
+      bypassPermissions,
+    });
   },
 
   async deleteRole(roleId: string) {
@@ -87,7 +115,8 @@ export const rbacService = {
   async assignRole(data: {
     userId: string;
     roleIds: string[];
-    scopeType: "ORGANIZATION" | "PROJECT";
+    scopeType:
+      "SYSTEM" | "ORGANIZATION" | "WORKSPACE" | "DEPARTMENT" | "PROJECT";
     scopeId: string;
   }) {
     return rbacRepository.assignRolesToUser(data);
@@ -96,14 +125,62 @@ export const rbacService = {
   async removeRole(data: {
     userId: string;
     roleIds: string[];
-    scopeType: "ORGANIZATION" | "PROJECT";
+    scopeType:
+      "SYSTEM" | "ORGANIZATION" | "WORKSPACE" | "DEPARTMENT" | "PROJECT";
     scopeId: string;
   }) {
     return rbacRepository.removeRolesFromUser(data);
   },
 
-  async getUserAssignments(userId: string, scopeType?: string, scopeId?: string) {
+  async getUserAssignments(
+    userId: string,
+    scopeType?: string,
+    scopeId?: string,
+  ) {
     return rbacRepository.getUserAssignments(userId, scopeType, scopeId);
+  },
+
+  async getUserPermissionsInScopes(
+    userId: string,
+    scopes: { type: string; id: string }[],
+  ): Promise<string[]> {
+    if (scopes.length === 0) return [];
+
+    const assignments =
+      (await prisma.userRoleAssignment?.findMany({
+        where: {
+          userId,
+          OR: scopes.map((s) => ({
+            scopeType: s.type,
+            scopeId: s.id,
+          })),
+          role: {
+            deletedAt: null,
+          },
+        },
+        include: {
+          role: {
+            include: {
+              permissions: {
+                include: {
+                  permission: true,
+                },
+              },
+            },
+          },
+        },
+      })) || [];
+
+    const permissions = new Set<string>();
+    assignments.forEach((assignment) => {
+      assignment.role.permissions.forEach((rp) => {
+        if (rp.permission && rp.permission.deletedAt === null) {
+          permissions.add(`${rp.permission.resource}:${rp.permission.action}`);
+        }
+      });
+    });
+
+    return Array.from(permissions);
   },
 
   async checkPermission(
@@ -128,15 +205,28 @@ export const rbacService = {
       workspaceId?: string;
       projectId?: string;
       taskId?: string;
-    }
+    },
   ): Promise<boolean> {
-    // 1. Relationship-based override for Tasks
-    if (context.taskId && requiredPermission.startsWith("task:")) {
-      const taskRepository = (await import("@/app/repositories/task.repository")).taskRepository;
-      const task = await taskRepository.findTaskDetails(context.taskId);
+    const { isCreator, scopes, resolvedTaskId } =
+      await resolveContextAndCreator(userId, context);
+
+    // 1. Organization Creator Override: bypass all checks
+    if (isCreator) {
+      return true;
+    }
+
+    // 2. Relationship-based override for Tasks
+    if (resolvedTaskId && requiredPermission.startsWith("task:")) {
+      const taskRepository = (
+        await import("@/app/repositories/task.repository")
+      ).taskRepository;
+      const task = await taskRepository.findTaskDetails(resolvedTaskId);
       if (task) {
-        if (task.creatorId === userId || task.assigneeId === userId || task.reporterId === userId) {
-          // If related to task, grant basic task permissions
+        if (
+          task.creatorId === userId ||
+          task.assigneeId === userId ||
+          task.reporterId === userId
+        ) {
           const allowedTaskActions = ["read", "update", "comment"];
           const action = requiredPermission.split(":")[1];
           if (allowedTaskActions.includes(action)) {
@@ -146,29 +236,22 @@ export const rbacService = {
       }
     }
 
-    // 2. Scoped Role Resolution (Union of all applicable scopes)
-    const scopes = [];
-    if (context.organizationId) scopes.push({ type: "ORGANIZATION", id: context.organizationId });
-    if (context.workspaceId) scopes.push({ type: "WORKSPACE", id: context.workspaceId });
-    if (context.projectId) scopes.push({ type: "PROJECT", id: context.projectId });
-
     if (scopes.length === 0) {
-      return false; // No scope context provided
+      return false;
     }
-    
+
     // 3. Bypass Role Check
     const hasBypass = await rbacRepository.hasBypassRole(userId, scopes);
     if (hasBypass) {
       return true;
     }
 
-    const allPermissions = new Set<string>();
-    for (const scope of scopes) {
-      const perms = await rbacRepository.getUserPermissionsInScope(userId, scope.type, scope.id);
-      perms.forEach(p => allPermissions.add(p));
-    }
-
-    return allPermissions.has(requiredPermission);
+    // 4. Union of all permissions in active scopes
+    const allPermissions = await this.getUserPermissionsInScopes(
+      userId,
+      scopes,
+    );
+    return allPermissions.includes(requiredPermission);
   },
 
   async getPermissionsForContext(
@@ -178,40 +261,45 @@ export const rbacService = {
       workspaceId?: string;
       projectId?: string;
       taskId?: string;
-    }
+    },
   ): Promise<string[]> {
-    const allPermissions = new Set<string>();
+    const { isCreator, scopes, resolvedTaskId, resolvedOrgId } =
+      await resolveContextAndCreator(userId, context);
 
-    const scopes = [];
-    if (context.organizationId) scopes.push({ type: "ORGANIZATION", id: context.organizationId });
-    if (context.workspaceId) scopes.push({ type: "WORKSPACE", id: context.workspaceId });
-    if (context.projectId) scopes.push({ type: "PROJECT", id: context.projectId });
+    if (isCreator) {
+      return ["*", "*owner"];
+    }
 
     // 1. Bypass Role Check
     const hasBypass = await rbacRepository.hasBypassRole(userId, scopes);
     let isOwner = false;
-    if (context.organizationId) {
-      isOwner = await rbacRepository.isOrganizationOwner(userId, context.organizationId);
+    if (resolvedOrgId) {
+      isOwner = await rbacRepository.isOrganizationOwner(userId, resolvedOrgId);
     }
-    
+
     if (hasBypass) {
       return isOwner ? ["*", "*owner"] : ["*"];
     }
 
+    const allPermissions = new Set<string>();
     if (isOwner) {
       allPermissions.add("*owner");
     }
 
-    for (const scope of scopes) {
-      const perms = await rbacRepository.getUserPermissionsInScope(userId, scope.type, scope.id);
-      perms.forEach(p => allPermissions.add(p));
-    }
+    const perms = await this.getUserPermissionsInScopes(userId, scopes);
+    perms.forEach((p) => allPermissions.add(p));
 
-    if (context.taskId) {
-      const taskRepository = (await import("@/app/repositories/task.repository")).taskRepository;
-      const task = await taskRepository.findTaskDetails(context.taskId);
+    if (resolvedTaskId) {
+      const taskRepository = (
+        await import("@/app/repositories/task.repository")
+      ).taskRepository;
+      const task = await taskRepository.findTaskDetails(resolvedTaskId);
       if (task) {
-        if (task.creatorId === userId || task.assigneeId === userId || task.reporterId === userId) {
+        if (
+          task.creatorId === userId ||
+          task.assigneeId === userId ||
+          task.reporterId === userId
+        ) {
           allPermissions.add("task:read");
           allPermissions.add("task:update");
           allPermissions.add("task:comment");
@@ -220,5 +308,90 @@ export const rbacService = {
     }
 
     return Array.from(allPermissions);
-  }
+  },
 };
+
+async function resolveContextAndCreator(
+  userId: string,
+  context: {
+    organizationId?: string;
+    workspaceId?: string;
+    projectId?: string;
+    taskId?: string;
+  },
+) {
+  let resolvedOrgId = context.organizationId;
+  let resolvedWorkspaceId = context.workspaceId;
+  let resolvedProjectId = context.projectId;
+  let resolvedTaskId = context.taskId;
+
+  // 1. Resolve hierarchy upwards from taskId
+  if (resolvedTaskId) {
+    const task = await prisma.task?.findUnique({
+      where: { id: resolvedTaskId },
+      select: { projectId: true, organizationId: true },
+    });
+    if (task) {
+      resolvedProjectId = task.projectId;
+      resolvedOrgId = task.organizationId;
+    }
+  }
+
+  // 2. Resolve hierarchy upwards from projectId
+  if (resolvedProjectId) {
+    const project = await prisma.project?.findUnique({
+      where: { id: resolvedProjectId },
+      select: { workspaceId: true, organizationId: true },
+    });
+    if (project) {
+      resolvedWorkspaceId = project.workspaceId;
+      resolvedOrgId = project.organizationId;
+    }
+  }
+
+  // 3. Resolve hierarchy upwards from workspaceId
+  if (resolvedWorkspaceId && !resolvedOrgId) {
+    const workspace = await prisma.workspace?.findUnique({
+      where: { id: resolvedWorkspaceId },
+      select: { organizationId: true },
+    });
+    if (workspace) {
+      resolvedOrgId = workspace.organizationId;
+    }
+  }
+
+  // 4. Check if the user is the creator (ownerId) of the resolved organization
+  let isCreator = false;
+  if (resolvedOrgId) {
+    const org = await prisma.organization?.findUnique({
+      where: { id: resolvedOrgId },
+      select: { ownerId: true },
+    });
+    if (org && org.ownerId === userId) {
+      isCreator = true;
+    }
+  }
+
+  // 5. Gather all active scopes
+  const scopes: Array<{ type: string; id: string }> = [];
+  if (resolvedOrgId) scopes.push({ type: "ORGANIZATION", id: resolvedOrgId });
+  if (resolvedWorkspaceId)
+    scopes.push({ type: "WORKSPACE", id: resolvedWorkspaceId });
+  if (resolvedProjectId)
+    scopes.push({ type: "PROJECT", id: resolvedProjectId });
+
+  // Add SYSTEM scope check
+  scopes.push({
+    type: "SYSTEM",
+    id: "00000000-0000-0000-0000-0000-000000000000",
+  });
+
+  return {
+    isCreator,
+    scopes,
+    resolvedOrgId,
+    resolvedWorkspaceId,
+    resolvedProjectId,
+    resolvedTaskId,
+  };
+}

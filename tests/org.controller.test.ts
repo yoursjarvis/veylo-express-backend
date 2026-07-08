@@ -27,11 +27,26 @@ const { mockGetSession, prismaMock, mockMediaService } = vi.hoisted(() => ({
     workspace: {
       create: vi.fn(),
     },
+    role: {
+      upsert: vi.fn(),
+      findFirst: vi.fn().mockResolvedValue({ id: "role-owner", name: "owner" }),
+    },
+    permission: {
+      findMany: vi.fn().mockResolvedValue([]),
+    },
+    rolePermission: {
+      upsert: vi.fn(),
+    },
+    userRoleAssignment: {
+      findFirst: vi.fn(),
+      create: vi.fn(),
+    },
     $transaction: vi.fn().mockImplementation((cb) => cb(prismaMock)),
   },
   mockMediaService: {
     addMedia: vi.fn(),
     getUrl: vi.fn(),
+    generateUrl: vi.fn().mockReturnValue("http://s3/logo.png"),
   },
 }));
 
@@ -116,9 +131,9 @@ describe("orgController", () => {
       });
       prismaMock.user.findUnique.mockResolvedValueOnce({ id: "u1" });
       prismaMock.session.findUnique.mockResolvedValueOnce({ id: "s1" });
-      prismaMock.member.findFirst.mockResolvedValueOnce({
-        id: "mem1",
-        role: "owner",
+      prismaMock.userRoleAssignment.findFirst.mockResolvedValueOnce({
+        id: "assignment1",
+        role: { name: "owner" },
       });
 
       const req: any = {
@@ -138,7 +153,7 @@ describe("orgController", () => {
       });
       prismaMock.user.findUnique.mockResolvedValueOnce({ id: "u1" });
       prismaMock.session.findUnique.mockResolvedValueOnce({ id: "s1" });
-      prismaMock.member.findFirst.mockResolvedValueOnce(null);
+      prismaMock.userRoleAssignment.findFirst.mockResolvedValueOnce(null);
       prismaMock.organization.findUnique.mockResolvedValueOnce({
         id: "org1",
         slug: "slug1",
@@ -161,7 +176,7 @@ describe("orgController", () => {
       });
       prismaMock.user.findUnique.mockResolvedValueOnce({ id: "u1" });
       prismaMock.session.findUnique.mockResolvedValueOnce({ id: "s1" });
-      prismaMock.member.findFirst.mockResolvedValueOnce(null);
+      prismaMock.userRoleAssignment.findFirst.mockResolvedValueOnce(null);
       prismaMock.organization.findUnique.mockResolvedValueOnce(null);
 
       const createdOrg = {
@@ -185,7 +200,7 @@ describe("orgController", () => {
       await (orgController.setupOrganization as any)(req, res);
 
       expect(prismaMock.organization.create).toHaveBeenCalledWith({
-        data: { name: "New Org", slug: "new-org", logo: null },
+        data: { name: "New Org", slug: "new-org", logo: null, ownerId: "u1" },
       });
       expect(prismaMock.workspace.create).toHaveBeenCalledWith({
         data: { name: "New Ws", slug: "new-ws", organizationId: "org-new" },
@@ -207,7 +222,7 @@ describe("orgController", () => {
       });
       prismaMock.user.findUnique.mockResolvedValueOnce({ id: "u1" });
       prismaMock.session.findUnique.mockResolvedValueOnce({ id: "s1" });
-      prismaMock.member.findFirst.mockResolvedValueOnce(null);
+      prismaMock.userRoleAssignment.findFirst.mockResolvedValueOnce(null);
       prismaMock.organization.findUnique.mockResolvedValueOnce(null);
 
       const createdOrg = {

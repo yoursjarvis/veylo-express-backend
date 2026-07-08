@@ -66,19 +66,19 @@ export const orgRepository = {
       });
 
       await rbacRepository.seedOrgDefaultRoles(tx, org.id);
-      
+
       const ownerRole = await tx.role.findFirst({
-        where: { organizationId: org.id, name: "owner" }
+        where: { organizationId: org.id, name: "owner" },
       });
-      
+
       if (ownerRole) {
         await tx.userRoleAssignment.create({
           data: {
             userId: data.userId,
             roleId: ownerRole.id,
             scopeType: "ORGANIZATION",
-            scopeId: org.id
-          }
+            scopeId: org.id,
+          },
         });
       }
 

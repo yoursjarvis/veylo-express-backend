@@ -191,7 +191,8 @@ export const projectService = {
   },
 
   async restoreProject(projectId: string) {
-    const project = await projectRepository.findProjectByIdWithTrashed(projectId);
+    const project =
+      await projectRepository.findProjectByIdWithTrashed(projectId);
     if (!project) {
       throw new NotFoundException("Project not found");
     }
@@ -199,7 +200,8 @@ export const projectService = {
   },
 
   async forceDeleteProject(projectId: string) {
-    const project = await projectRepository.findProjectByIdWithTrashed(projectId);
+    const project =
+      await projectRepository.findProjectByIdWithTrashed(projectId);
     if (!project) {
       throw new NotFoundException("Project not found");
     }
@@ -304,7 +306,8 @@ export const projectService = {
   },
 
   async restoreVaultService(serviceId: string) {
-    const service = await projectRepository.findVaultServiceByIdWithTrashed(serviceId);
+    const service =
+      await projectRepository.findVaultServiceByIdWithTrashed(serviceId);
     if (!service) {
       throw new NotFoundException("Vault service not found");
     }
@@ -312,7 +315,8 @@ export const projectService = {
   },
 
   async forceDeleteVaultService(serviceId: string) {
-    const service = await projectRepository.findVaultServiceByIdWithTrashed(serviceId);
+    const service =
+      await projectRepository.findVaultServiceByIdWithTrashed(serviceId);
     if (!service) {
       throw new NotFoundException("Vault service not found");
     }
@@ -494,7 +498,8 @@ export const projectService = {
   },
 
   async restoreAutomationRule(ruleId: string) {
-    const existing = await projectRepository.findAutomationRuleByIdWithTrashed(ruleId);
+    const existing =
+      await projectRepository.findAutomationRuleByIdWithTrashed(ruleId);
     if (!existing) {
       throw new NotFoundException("Automation rule not found");
     }
@@ -502,7 +507,8 @@ export const projectService = {
   },
 
   async forceDeleteAutomationRule(ruleId: string) {
-    const existing = await projectRepository.findAutomationRuleByIdWithTrashed(ruleId);
+    const existing =
+      await projectRepository.findAutomationRuleByIdWithTrashed(ruleId);
     if (!existing) {
       throw new NotFoundException("Automation rule not found");
     }

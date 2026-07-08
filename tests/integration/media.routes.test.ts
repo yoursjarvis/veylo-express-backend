@@ -15,14 +15,6 @@ vi.mock("../../src/lib/auth/auth", async () => {
   };
 });
 
-vi.mock("../../src/lib/prisma", async () => {
-  const { prismaMock } = await import("../helpers/db");
-  return {
-    default: prismaMock,
-    basePrisma: prismaMock,
-  };
-});
-
 vi.mock("../../src/app/http/middlewares/rate-limit.middleware", () => ({
   rateLimit: () => (req: any, res: any, next: any) => next(),
 }));
@@ -40,9 +32,11 @@ vi.mock("../../src/core/media", () => ({
   mediaService: mockMediaService,
 }));
 
-// Now safely import helpers for use inside test assertions
+import { rbacService } from "@/app/services/rbac.service";
+import prisma from "@/lib/prisma";
+
 import { setMockUser } from "../helpers/auth";
-import { prismaMock } from "../helpers/db";
+const prismaMock = prisma as any;
 import { createUser, createProject } from "../helpers/factories";
 
 describe("Media API Endpoint Integration Tests (/api/v1/media)", () => {
@@ -136,6 +130,7 @@ describe("Media API Endpoint Integration Tests (/api/v1/media)", () => {
     });
 
     it("returns 403 Forbidden when member is not an owner or admin", async () => {
+      vi.mocked(rbacService.authorize).mockResolvedValueOnce(false);
       prismaMock.member.findFirst.mockResolvedValueOnce(null);
 
       const res = await request(app)
@@ -194,6 +189,7 @@ describe("Media API Endpoint Integration Tests (/api/v1/media)", () => {
     });
 
     it("returns 403 Forbidden when member is not workspace admin or org owner/admin", async () => {
+      vi.mocked(rbacService.authorize).mockResolvedValueOnce(false);
       prismaMock.workspaceMember.findFirst.mockResolvedValueOnce(null);
       prismaMock.member.findFirst.mockResolvedValueOnce(null);
 
@@ -255,6 +251,7 @@ describe("Media API Endpoint Integration Tests (/api/v1/media)", () => {
     });
 
     it("returns 403 Forbidden when user does not have permission", async () => {
+      vi.mocked(rbacService.authorize).mockResolvedValueOnce(false);
       const mockProject = createProject({
         id: "proj-123",
         workspaceId: "ws-123",

@@ -75,7 +75,8 @@ export const milestoneController = {
   restoreMilestone: asyncHandler(async (req: Request, res: Response) => {
     const milestoneId = req.params.id as string;
 
-    const milestone = await milestoneRepository.findByIdWithTrashed(milestoneId);
+    const milestone =
+      await milestoneRepository.findByIdWithTrashed(milestoneId);
     if (!milestone) {
       throw new NotFoundException("Milestone not found");
     }
@@ -90,7 +91,8 @@ export const milestoneController = {
   forceDeleteMilestone: asyncHandler(async (req: Request, res: Response) => {
     const milestoneId = req.params.id as string;
 
-    const milestone = await milestoneRepository.findByIdWithTrashed(milestoneId);
+    const milestone =
+      await milestoneRepository.findByIdWithTrashed(milestoneId);
     if (!milestone) {
       throw new NotFoundException("Milestone not found");
     }

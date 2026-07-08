@@ -1,24 +1,26 @@
-import { Request, Response, NextFunction } from "express";
+import { NextFunction, Request, Response } from "express";
 
 import { rbacService } from "@/app/services/rbac.service";
 import { auth } from "@/lib/auth/auth";
 import { betterAuthHeaders } from "@/lib/auth/node-headers";
 
-type ContextExtractor = (req: Request) => {
-  organizationId?: string;
-  workspaceId?: string;
-  projectId?: string;
-  taskId?: string;
-} | Promise<{
-  organizationId?: string;
-  workspaceId?: string;
-  projectId?: string;
-  taskId?: string;
-}>;
+type ContextExtractor = (req: Request) =>
+  | {
+      organizationId?: string;
+      workspaceId?: string;
+      projectId?: string;
+      taskId?: string;
+    }
+  | Promise<{
+      organizationId?: string;
+      workspaceId?: string;
+      projectId?: string;
+      taskId?: string;
+    }>;
 
 export const requirePermission = (
   requiredPermission: string,
-  contextExtractor: ContextExtractor
+  contextExtractor: ContextExtractor,
 ) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -35,7 +37,7 @@ export const requirePermission = (
       const hasPermission = await rbacService.authorize(
         session.user.id,
         requiredPermission,
-        context
+        context,
       );
 
       if (!hasPermission) {

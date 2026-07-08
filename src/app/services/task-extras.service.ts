@@ -58,7 +58,8 @@ export const taskExtrasService = {
   },
 
   async restoreStatus(statusId: string) {
-    const status = await taskExtrasRepository.findStatusByIdWithTrashed(statusId);
+    const status =
+      await taskExtrasRepository.findStatusByIdWithTrashed(statusId);
     if (!status) {
       throw new NotFoundException("Status not found");
     }
@@ -66,7 +67,8 @@ export const taskExtrasService = {
   },
 
   async forceDeleteStatus(statusId: string) {
-    const status = await taskExtrasRepository.findStatusByIdWithTrashed(statusId);
+    const status =
+      await taskExtrasRepository.findStatusByIdWithTrashed(statusId);
     if (!status) {
       throw new NotFoundException("Status not found");
     }
@@ -210,14 +212,17 @@ export const taskExtrasService = {
 
     if (!isAuthor) {
       const { rbacService } = await import("@/app/services/rbac.service");
-      const { taskRepository } = await import("@/app/repositories/task.repository");
-      
-      const project = await taskRepository.findProjectById(comment.task.projectId);
+      const { taskRepository } =
+        await import("@/app/repositories/task.repository");
+
+      const project = await taskRepository.findProjectById(
+        comment.task.projectId,
+      );
       const isAllowed = await rbacService.authorize(userId, "task:update", {
         organizationId: activeOrgId,
         workspaceId: project?.workspaceId,
         projectId: comment.task.projectId,
-        taskId: comment.id 
+        taskId: comment.id,
       });
 
       if (!isAllowed) {
@@ -231,7 +236,8 @@ export const taskExtrasService = {
   },
 
   async restoreComment(commentId: string) {
-    const comment = await taskExtrasRepository.findCommentByIdWithTrashed(commentId);
+    const comment =
+      await taskExtrasRepository.findCommentByIdWithTrashed(commentId);
     if (!comment) {
       throw new NotFoundException("Comment not found");
     }
@@ -239,7 +245,8 @@ export const taskExtrasService = {
   },
 
   async forceDeleteComment(commentId: string) {
-    const comment = await taskExtrasRepository.findCommentByIdWithTrashed(commentId);
+    const comment =
+      await taskExtrasRepository.findCommentByIdWithTrashed(commentId);
     if (!comment) {
       throw new NotFoundException("Comment not found");
     }
@@ -303,7 +310,8 @@ export const taskExtrasService = {
   },
 
   async restoreCustomField(fieldId: string) {
-    const field = await taskExtrasRepository.findCustomFieldByIdWithTrashed(fieldId);
+    const field =
+      await taskExtrasRepository.findCustomFieldByIdWithTrashed(fieldId);
     if (!field) {
       throw new NotFoundException("Custom field not found");
     }
@@ -311,7 +319,8 @@ export const taskExtrasService = {
   },
 
   async forceDeleteCustomField(fieldId: string) {
-    const field = await taskExtrasRepository.findCustomFieldByIdWithTrashed(fieldId);
+    const field =
+      await taskExtrasRepository.findCustomFieldByIdWithTrashed(fieldId);
     if (!field) {
       throw new NotFoundException("Custom field not found");
     }

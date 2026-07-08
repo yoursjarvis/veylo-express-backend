@@ -15,22 +15,17 @@ vi.mock("../../src/lib/auth/auth", async () => {
   };
 });
 
-vi.mock("../../src/lib/prisma", async () => {
-  const { prismaMock } = await import("../helpers/db");
-  return {
-    default: prismaMock,
-    basePrisma: prismaMock,
-  };
-});
-
 vi.mock("../../src/app/http/middlewares/rate-limit.middleware", () => ({
   rateLimit: () => (req: any, res: any, next: any) => next(),
 }));
 
-// Now safely import helpers for use inside test assertions
+import prisma from "@/lib/prisma";
+
 import { setMockUser, clearMockUser } from "../helpers/auth";
-import { prismaMock } from "../helpers/db";
+const prismaMock = prisma as any;
 import { createUser, createWorkspace } from "../helpers/factories";
+
+import { rbacService } from "@/app/services/rbac.service";
 
 describe("Workspace API Endpoint Integration Tests (/api/v1/workspaces)", () => {
   beforeEach(() => {
@@ -143,7 +138,6 @@ describe("Workspace API Endpoint Integration Tests (/api/v1/workspaces)", () => 
           members: {
             create: {
               userId: "user-123",
-              role: "admin",
             },
           },
         },
@@ -198,6 +192,7 @@ describe("Workspace API Endpoint Integration Tests (/api/v1/workspaces)", () => 
     });
 
     it("INT-WS-POST-05: returns 403 Forbidden if user is a standard member (not org admin/owner)", async () => {
+      vi.mocked(rbacService.authorize).mockResolvedValueOnce(false);
       prismaMock.member.findFirst.mockResolvedValueOnce(null); // Not admin or owner
 
       const res = await request(app)

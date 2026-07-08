@@ -8,7 +8,7 @@ const __dirname = path.dirname(__filename);
 const args = process.argv.slice(2);
 
 const seeders: Record<string, string> = {
-  "--seed-permissions": "seed-permissions.ts",
+  "--seed-permissions": "../database/seeders/seed-permissions.ts",
   "--seed-templates": "seed-templates.ts",
   "--seed-test": "seed-test-data.ts",
 };
@@ -43,7 +43,7 @@ async function main() {
   } else {
     // Run all seeders in sequence
     console.log("No specific seeder flag provided. Running all seeders...");
-    await runSeeder("seed-permissions.ts");
+    await runSeeder("../database/seeders/seed-permissions.ts");
     await runSeeder("seed-templates.ts");
     await runSeeder("seed-test-data.ts");
   }

@@ -34,6 +34,12 @@ const {
       findMany: vi.fn(),
       findFirst: vi.fn(),
     },
+    userRoleAssignment: {
+      findFirst: vi.fn(),
+    },
+    organization: {
+      findUnique: vi.fn(),
+    },
   },
 }));
 
@@ -71,6 +77,8 @@ vi.mock("xlsx", () => ({
   },
 }));
 
+import { rbacService } from "@/app/services/rbac.service";
+
 import { orgMembersController } from "../src/app/http/controllers/org-members.controller";
 
 function createRes() {
@@ -84,6 +92,10 @@ function createRes() {
 describe("orgMembersController", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    prismaMock.organization.findUnique.mockResolvedValue({
+      id: "org1",
+      ownerId: "org-owner-id",
+    });
   });
 
   describe("verifyOrgAdmin helpers validation", () => {
@@ -117,7 +129,11 @@ describe("orgMembersController", () => {
         user: { id: "u1" },
         session: { activeOrganizationId: "org1" },
       });
-      prismaMock.member.findFirst.mockResolvedValueOnce(null); // not admin/owner
+      prismaMock.member.findFirst.mockResolvedValueOnce({
+        id: "caller-mem",
+        role: "member",
+      }); // not admin/owner
+      vi.mocked(rbacService.authorize).mockResolvedValueOnce(false);
 
       const req: any = { params: { id: "target-user" }, body: {} };
       const res = createRes();
@@ -150,8 +166,11 @@ describe("orgMembersController", () => {
         session: { activeOrganizationId: "org1" },
       });
       prismaMock.member.findFirst
-        .mockResolvedValueOnce({ id: "caller-mem", role: "admin" }) // caller is admin
-        .mockResolvedValueOnce({ id: "target-mem", role: "admin" }); // target is admin
+        .mockResolvedValueOnce({ id: "caller-mem" }) // caller is member
+        .mockResolvedValueOnce({ id: "target-mem" }); // target is member
+      prismaMock.userRoleAssignment.findFirst
+        .mockResolvedValueOnce({ role: { name: "admin" } }) // caller is admin
+        .mockResolvedValueOnce({ role: { name: "admin" } }); // target is admin
 
       const req: any = { params: { id: "target-user" }, body: {} };
       const res = createRes();

@@ -95,7 +95,7 @@ export async function verifyProjectAccess(
   if (!project) {
     throw new NotFoundException("Project not found");
   }
-  
+
   const { rbacService } = await import("@/app/services/rbac.service");
   const isAllowed = await rbacService.authorize(userId, "project:read", {
     organizationId: activeOrgId,
@@ -126,7 +126,7 @@ export async function verifyProjectAdmin(
 
   const { activeOrgId, userId } = await resolveSession(req);
   const { rbacService } = await import("@/app/services/rbac.service");
-  
+
   const isAllowed = await rbacService.authorize(userId, "project:update", {
     organizationId: activeOrgId,
     workspaceId: project.workspaceId,

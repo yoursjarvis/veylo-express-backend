@@ -415,13 +415,13 @@ export const taskService = {
 
     if (task.isPrivate && userId) {
       const project = await taskRepository.findProjectById(task.projectId);
-      
+
       const { rbacService } = await import("@/app/services/rbac.service");
       const isAllowed = await rbacService.authorize(userId, "task:read", {
         organizationId: task.organizationId,
         workspaceId: project?.workspaceId,
         projectId: task.projectId,
-        taskId: task.id
+        taskId: task.id,
       });
 
       if (!isAllowed) {
@@ -435,7 +435,14 @@ export const taskService = {
       "task_attachments",
     );
     const attachmentsWithUrls = attachments.map(
-      (a: { id: string; disk: string; modelType: string; collectionName: string; fileName: string; [key: string]: unknown }) => ({
+      (a: {
+        id: string;
+        disk: string;
+        modelType: string;
+        collectionName: string;
+        fileName: string;
+        [key: string]: unknown;
+      }) => ({
         ...a,
         url: mediaService.generateUrl(a),
       }),

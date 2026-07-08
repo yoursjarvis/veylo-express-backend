@@ -80,7 +80,8 @@ export const taskExtrasController = {
   restoreStatus: asyncHandler(async (req: Request, res: Response) => {
     const statusId = req.params.id as string;
 
-    const status = await taskExtrasRepository.findStatusByIdWithTrashed(statusId);
+    const status =
+      await taskExtrasRepository.findStatusByIdWithTrashed(statusId);
     if (!status) {
       throw new NotFoundException("Status not found");
     }
@@ -95,7 +96,8 @@ export const taskExtrasController = {
   forceDeleteStatus: asyncHandler(async (req: Request, res: Response) => {
     const statusId = req.params.id as string;
 
-    const status = await taskExtrasRepository.findStatusByIdWithTrashed(statusId);
+    const status =
+      await taskExtrasRepository.findStatusByIdWithTrashed(statusId);
     if (!status) {
       throw new NotFoundException("Status not found");
     }
@@ -222,7 +224,8 @@ export const taskExtrasController = {
   restoreComment: asyncHandler(async (req: Request, res: Response) => {
     const commentId = req.params.id as string;
 
-    const comment = await taskExtrasRepository.findCommentByIdWithTrashed(commentId);
+    const comment =
+      await taskExtrasRepository.findCommentByIdWithTrashed(commentId);
     if (!comment) {
       throw new NotFoundException("Comment not found");
     }
@@ -237,7 +240,8 @@ export const taskExtrasController = {
   forceDeleteComment: asyncHandler(async (req: Request, res: Response) => {
     const commentId = req.params.id as string;
 
-    const comment = await taskExtrasRepository.findCommentByIdWithTrashed(commentId);
+    const comment =
+      await taskExtrasRepository.findCommentByIdWithTrashed(commentId);
     if (!comment) {
       throw new NotFoundException("Comment not found");
     }
@@ -313,7 +317,8 @@ export const taskExtrasController = {
   restoreCustomField: asyncHandler(async (req: Request, res: Response) => {
     const fieldId = req.params.id as string;
 
-    const field = await taskExtrasRepository.findCustomFieldByIdWithTrashed(fieldId);
+    const field =
+      await taskExtrasRepository.findCustomFieldByIdWithTrashed(fieldId);
     if (!field) {
       throw new NotFoundException("Custom field not found");
     }
@@ -328,7 +333,8 @@ export const taskExtrasController = {
   forceDeleteCustomField: asyncHandler(async (req: Request, res: Response) => {
     const fieldId = req.params.id as string;
 
-    const field = await taskExtrasRepository.findCustomFieldByIdWithTrashed(fieldId);
+    const field =
+      await taskExtrasRepository.findCustomFieldByIdWithTrashed(fieldId);
     if (!field) {
       throw new NotFoundException("Custom field not found");
     }

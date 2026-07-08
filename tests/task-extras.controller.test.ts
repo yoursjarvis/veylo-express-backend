@@ -29,6 +29,7 @@ const { mockVerifyProjectAccess, prismaMock, mockNotificationService } =
       },
       project: {
         update: vi.fn().mockResolvedValue({ taskSequence: 2 }),
+        findUnique: vi.fn(),
       },
       subtask: {
         create: vi.fn(),
