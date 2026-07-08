@@ -120,6 +120,24 @@ export const projectController = {
     return ok(res, "Project deleted successfully");
   }),
 
+  restoreProject: asyncHandler(async (req: Request, res: Response) => {
+    const projectId = req.params.id as string;
+    await verifyProjectAdmin(req, projectId);
+
+    await projectService.restoreProject(projectId);
+
+    return ok(res, "Project restored successfully");
+  }),
+
+  forceDeleteProject: asyncHandler(async (req: Request, res: Response) => {
+    const projectId = req.params.id as string;
+    await verifyProjectAdmin(req, projectId);
+
+    await projectService.forceDeleteProject(projectId);
+
+    return ok(res, "Project permanently deleted");
+  }),
+
   // PROJECT MEMBERS
   getProjectMembers: asyncHandler(async (req: Request, res: Response) => {
     const projectId = req.params.id as string;
@@ -187,6 +205,28 @@ export const projectController = {
     return ok(res, "Vault service and its secrets deleted successfully");
   }),
 
+  restoreVaultService: asyncHandler(async (req: Request, res: Response) => {
+    const projectId = req.params.id as string;
+    await verifyProjectAccess(req, projectId);
+
+    const serviceId = req.params.serviceId as string;
+
+    await projectService.restoreVaultService(serviceId);
+
+    return ok(res, "Vault service restored successfully");
+  }),
+
+  forceDeleteVaultService: asyncHandler(async (req: Request, res: Response) => {
+    const projectId = req.params.id as string;
+    await verifyProjectAccess(req, projectId);
+
+    const serviceId = req.params.serviceId as string;
+
+    await projectService.forceDeleteVaultService(serviceId);
+
+    return ok(res, "Vault service permanently deleted");
+  }),
+
   addOrUpdateVaultItem: asyncHandler(async (req: Request, res: Response) => {
     const projectId = req.params.id as string;
     await verifyProjectAccess(req, projectId);
@@ -227,6 +267,28 @@ export const projectController = {
     await projectService.deleteVaultItem(itemId);
 
     return ok(res, "Vault item deleted successfully");
+  }),
+
+  restoreVaultItem: asyncHandler(async (req: Request, res: Response) => {
+    const projectId = req.params.id as string;
+    await verifyProjectAccess(req, projectId);
+
+    const itemId = req.params.itemId as string;
+
+    await projectService.restoreVaultItem(itemId);
+
+    return ok(res, "Vault item restored successfully");
+  }),
+
+  forceDeleteVaultItem: asyncHandler(async (req: Request, res: Response) => {
+    const projectId = req.params.id as string;
+    await verifyProjectAccess(req, projectId);
+
+    const itemId = req.params.itemId as string;
+
+    await projectService.forceDeleteVaultItem(itemId);
+
+    return ok(res, "Vault item permanently deleted");
   }),
 
   // FILE UPLOAD AND MANAGEMENT
@@ -301,5 +363,25 @@ export const projectController = {
     await projectService.deleteAutomationRule(ruleId);
 
     return ok(res, "Automation rule deleted successfully");
+  }),
+
+  restoreAutomationRule: asyncHandler(async (req: Request, res: Response) => {
+    const projectId = req.params.id as string;
+    await verifyProjectAdmin(req, projectId);
+    const ruleId = req.params.ruleId as string;
+
+    await projectService.restoreAutomationRule(ruleId);
+
+    return ok(res, "Automation rule restored successfully");
+  }),
+
+  forceDeleteAutomationRule: asyncHandler(async (req: Request, res: Response) => {
+    const projectId = req.params.id as string;
+    await verifyProjectAdmin(req, projectId);
+    const ruleId = req.params.ruleId as string;
+
+    await projectService.forceDeleteAutomationRule(ruleId);
+
+    return ok(res, "Automation rule permanently deleted");
   }),
 };

@@ -114,6 +114,24 @@ export const workspaceRepository = {
     });
   },
 
+  findWorkspaceByIdWithTrashed(id: string) {
+    return prisma.workspace.findUniqueWithTrashed({
+      where: { id },
+    });
+  },
+
+  restoreWorkspace(id: string) {
+    return prisma.workspace.restore({
+      where: { id },
+    });
+  },
+
+  forceDeleteWorkspace(id: string) {
+    return prisma.workspace.forceDelete({
+      where: { id },
+    });
+  },
+
   async syncOrgAdminsToWorkspaces(organizationId: string) {
     const orgAdmins = await prisma.member.findMany({
       where: {

@@ -768,4 +768,24 @@ export const taskService = {
 
     await logActivity(taskId, userId, "deleted", task.title, null);
   },
+
+  async restoreTask(taskId: string, userId: string) {
+    const task = await taskRepository.findTaskByIdWithTrashed(taskId);
+    if (!task) {
+      throw new NotFoundException("Task not found");
+    }
+
+    await taskRepository.restoreTask(taskId);
+
+    await logActivity(taskId, userId, "restored", null, task.title);
+  },
+
+  async forceDeleteTask(taskId: string, _userId: string) {
+    const task = await taskRepository.findTaskByIdWithTrashed(taskId);
+    if (!task) {
+      throw new NotFoundException("Task not found");
+    }
+
+    await taskRepository.forceDeleteTask(taskId);
+  },
 };

@@ -71,4 +71,34 @@ export const milestoneController = {
 
     return ok(res, "Milestone deleted successfully");
   }),
+
+  restoreMilestone: asyncHandler(async (req: Request, res: Response) => {
+    const milestoneId = req.params.id as string;
+
+    const milestone = await milestoneRepository.findByIdWithTrashed(milestoneId);
+    if (!milestone) {
+      throw new NotFoundException("Milestone not found");
+    }
+
+    await verifyProjectAccess(req, milestone.projectId);
+
+    await milestoneService.restoreMilestone(milestoneId);
+
+    return ok(res, "Milestone restored successfully");
+  }),
+
+  forceDeleteMilestone: asyncHandler(async (req: Request, res: Response) => {
+    const milestoneId = req.params.id as string;
+
+    const milestone = await milestoneRepository.findByIdWithTrashed(milestoneId);
+    if (!milestone) {
+      throw new NotFoundException("Milestone not found");
+    }
+
+    await verifyProjectAccess(req, milestone.projectId);
+
+    await milestoneService.forceDeleteMilestone(milestoneId);
+
+    return ok(res, "Milestone permanently deleted");
+  }),
 };

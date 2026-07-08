@@ -17,6 +17,18 @@ workspaceRoutes.delete(
   workspaceController.deleteWorkspace,
 );
 
+workspaceRoutes.post(
+  "/:id/restore",
+  requireAuth,
+  workspaceController.restoreWorkspace,
+);
+
+workspaceRoutes.delete(
+  "/:id/force",
+  requireAuth,
+  workspaceController.forceDeleteWorkspace,
+);
+
 workspaceRoutes.get(
   "/:id/members",
   requireAuth,

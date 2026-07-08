@@ -5,7 +5,7 @@ interface PermissionSeed {
   module: string;
   resource: string;
   action: string;
-  description: string;
+  description?: string;
 }
 
 const masterPermissions: PermissionSeed[] = [
@@ -33,6 +33,12 @@ const masterPermissions: PermissionSeed[] = [
     resource: "workspace",
     action: "delete",
     description: "Soft delete a workspace",
+  },
+  {
+    module: "Workspace",
+    resource: "workspace",
+    action: "restore",
+    description: "Restore deleted a workspace and associated data",
   },
   {
     module: "Workspace",
@@ -77,6 +83,12 @@ const masterPermissions: PermissionSeed[] = [
     resource: "project",
     action: "delete",
     description: "Soft delete projects and their associated data",
+  },
+  {
+    module: "Projects",
+    resource: "project",
+    action: "restore",
+    description: "Restored deleted projects and their associated data",
   },
   {
     module: "Projects",
@@ -129,6 +141,12 @@ const masterPermissions: PermissionSeed[] = [
   {
     module: "Project Vault",
     resource: "project-vault",
+    action: "restore",
+    description: "Restored delete services from the project vault",
+  },
+  {
+    module: "Project Vault",
+    resource: "project-vault",
     action: "force-delete",
     description: "Permanently delete services from the project vault",
   },
@@ -155,6 +173,12 @@ const masterPermissions: PermissionSeed[] = [
     resource: "project-custom-field",
     action: "delete",
     description: "Soft delete custom fields from the project",
+  },
+  {
+    module: "Project Custom Field",
+    resource: "project-custom-field",
+    action: "restore",
+    description: "Restored deleted custom fields from the project",
   },
   {
     module: "Project Custom Field",
@@ -189,6 +213,12 @@ const masterPermissions: PermissionSeed[] = [
   {
     module: "Project Status",
     resource: "project-status",
+    action: "restore",
+    description: "Restored deleted statuses from the project",
+  },
+  {
+    module: "Project Status",
+    resource: "project-status",
     action: "force-delete",
     description: "Permanently delete statuses from the project",
   },
@@ -215,6 +245,12 @@ const masterPermissions: PermissionSeed[] = [
     resource: "project-label",
     action: "delete",
     description: "Soft delete labels from the project",
+  },
+  {
+    module: "Project Label",
+    resource: "project-label",
+    action: "restore",
+    description: "Restored deleted labels from the project",
   },
   {
     module: "Project Label",
@@ -249,6 +285,12 @@ const masterPermissions: PermissionSeed[] = [
   {
     module: "Project Webhook",
     resource: "project-webhook",
+    action: "restore",
+    description: "Restored deleted webhook configurations from the project",
+  },
+  {
+    module: "Project Webhook",
+    resource: "project-webhook",
     action: "force-delete",
     description: "Permanently delete webhook configurations from the project",
   },
@@ -279,10 +321,88 @@ const masterPermissions: PermissionSeed[] = [
   {
     module: "Project Automation",
     resource: "project-automation",
+    action: "restore",
+    description: "Restored deleted automation rules from the project",
+  },
+  {
+    module: "Project Automation",
+    resource: "project-automation",
     action: "force-delete",
     description: "Permanently delete automation rules from the project",
   },
+  {
+    module: "Project Epic",
+    resource: "project-epic",
+    action: "read",
+    description: "View the epic settings page in the project",
+  },
+  {
+    module: "Project Epic",
+    resource: "project-epic",
+    action: "create",
+    description: "Create new epics in the project",
+  },
+  {
+    module: "Project Epic",
+    resource: "project-epic",
+    action: "update",
+    description: "Edit epics in the project",
+  },
+  {
+    module: "Project Epic",
+    resource: "project-epic",
+    action: "delete",
+    description: "Soft delete epics from the project",
+  },
+  {
+    module: "Project Epic",
+    resource: "project-epic",
+    action: "restore",
+    description: "Restored deleted epics from the project",
+  },
+  {
+    module: "Project Epic",
+    resource: "project-epic",
+    action: "force-delete",
+    description: "Permanently delete epics from the project",
+  },
 
+  {
+    module: "Project Milestone",
+    resource: "project-milestone",
+    action: "read",
+    description: "View the milestones page in the project",
+  },
+  {
+    module: "Project Milestone",
+    resource: "project-milestone",
+    action: "create",
+    description: "Create new milestones in the project",
+  },
+  {
+    module: "Project Milestone",
+    resource: "project-milestone",
+    action: "update",
+    description: "Edit milestones in the project",
+  },
+  {
+    module: "Project Milestone",
+    resource: "project-milestone",
+    action: "delete",
+    description: "Soft delete milestones from the project",
+  },
+  {
+    module: "Project Milestone",
+    resource: "project-milestone",
+    action: "restore",
+    description: "Restored deleted milestones from the project",
+  },
+  {
+    module: "Project Milestone",
+    resource: "project-milestone",
+    action: "force-delete",
+    description: "Permanently delete milestones from the project",
+  },
   // Task Module
   {
     module: "Tasks",
@@ -311,6 +431,12 @@ const masterPermissions: PermissionSeed[] = [
   {
     module: "Tasks",
     resource: "task",
+    action: "restore",
+    description: "Stored delete tasks from the project",
+  },
+  {
+    module: "Tasks",
+    resource: "task",
     action: "force-delete",
     description: "Permanently delete tasks from the project",
   },
@@ -319,6 +445,18 @@ const masterPermissions: PermissionSeed[] = [
     resource: "task",
     action: "comment",
     description: "Add and edit task comments",
+  },
+  {
+    module: "Tasks",
+    resource: "task",
+    action: "delete-own-comment",
+    description: "Delete their onw task comments",
+  },
+  {
+    module: "Tasks",
+    resource: "task",
+    action: "delete-any-once-comment",
+    description: "Delete any once task comments",
   },
 
   // Member Module
@@ -357,6 +495,43 @@ const masterPermissions: PermissionSeed[] = [
     resource: "member",
     action: "change-password",
     description: "Change a member's password",
+  },
+  // goals or okrs module
+  {
+    module: "Gaol & Okrs",
+    resource: "goal-okrs",
+    action: "read",
+    description: "View projects and their metadata",
+  },
+  {
+    module: "Gaol & Okrs",
+    resource: "goal-okrs",
+    action: "create",
+    description: "Create new projects within the organization",
+  },
+  {
+    module: "Gaol & Okrs",
+    resource: "goal-okrs",
+    action: "update",
+    description: "Edit project names, descriptions, and icons",
+  },
+  {
+    module: "Gaol & Okrs",
+    resource: "goal-okrs",
+    action: "delete",
+    description: "Soft delete goal & okrs",
+  },
+  {
+    module: "Gaol & Okrs",
+    resource: "goal-okrs",
+    action: "restore",
+    description: "Restored deleted goal & okrs",
+  },
+  {
+    module: "Gaol & Okrs",
+    resource: "goal-okrs",
+    action: "force-delete",
+    description: "Permanently delete goal & okrs",
   },
 ];
 

@@ -202,4 +202,22 @@ export const workspaceService = {
 
     return workspaceRepository.deleteWorkspaceMember(workspaceId, targetUserId);
   },
+
+  async restoreWorkspace(
+    activeOrgId: string | null | undefined,
+    userId: string,
+    workspaceId: string,
+  ) {
+    await verifyWorkspaceAction(activeOrgId, userId, workspaceId, "workspace:update");
+    return workspaceRepository.restoreWorkspace(workspaceId);
+  },
+
+  async forceDeleteWorkspace(
+    activeOrgId: string | null | undefined,
+    userId: string,
+    workspaceId: string,
+  ) {
+    await verifyWorkspaceAction(activeOrgId, userId, workspaceId, "workspace:delete");
+    return workspaceRepository.forceDeleteWorkspace(workspaceId);
+  },
 };

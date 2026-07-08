@@ -88,6 +88,40 @@ export const workspaceController = {
     return ok(res, "Workspace soft-deleted successfully");
   }),
 
+  restoreWorkspace: asyncHandler(async (req: Request, res: Response) => {
+    const id = req.params.id as string;
+    const session = await auth.api.getSession({
+      headers: betterAuthHeaders(req),
+    });
+
+    if (!session?.user) {
+      throw new UnauthorizedException();
+    }
+
+    const activeOrgId = session.session.activeOrganizationId;
+
+    await workspaceService.restoreWorkspace(activeOrgId, session.user.id, id);
+
+    return ok(res, "Workspace restored successfully");
+  }),
+
+  forceDeleteWorkspace: asyncHandler(async (req: Request, res: Response) => {
+    const id = req.params.id as string;
+    const session = await auth.api.getSession({
+      headers: betterAuthHeaders(req),
+    });
+
+    if (!session?.user) {
+      throw new UnauthorizedException();
+    }
+
+    const activeOrgId = session.session.activeOrganizationId;
+
+    await workspaceService.forceDeleteWorkspace(activeOrgId, session.user.id, id);
+
+    return ok(res, "Workspace permanently deleted");
+  }),
+
   getWorkspaceMembers: asyncHandler(async (req: Request, res: Response) => {
     const workspaceId = req.params.id as string;
     const session = await auth.api.getSession({

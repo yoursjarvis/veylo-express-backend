@@ -54,6 +54,7 @@ export const orgRepository = {
           name: data.name,
           slug: data.slug,
           logo: null,
+          ownerId: data.userId,
         },
       });
 

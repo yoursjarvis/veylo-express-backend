@@ -58,4 +58,22 @@ export const labelRepository = {
       where: { id },
     });
   },
+
+  async findByIdWithTrashed(id: string) {
+    return prisma.label.findUniqueWithTrashed({
+      where: { id },
+    });
+  },
+
+  async restore(id: string) {
+    return prisma.label.restore({
+      where: { id },
+    });
+  },
+
+  async forceDelete(id: string) {
+    return prisma.label.forceDelete({
+      where: { id },
+    });
+  },
 };

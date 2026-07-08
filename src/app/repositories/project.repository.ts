@@ -359,4 +359,76 @@ export const projectRepository = {
       where: { id: ruleId },
     });
   },
+
+  findProjectByIdWithTrashed(projectId: string) {
+    return prisma.project.findUniqueWithTrashed({
+      where: { id: projectId },
+    });
+  },
+
+  restoreProject(projectId: string) {
+    return prisma.project.restore({
+      where: { id: projectId },
+    });
+  },
+
+  forceDeleteProject(projectId: string) {
+    return prisma.project.forceDelete({
+      where: { id: projectId },
+    });
+  },
+
+  findVaultServiceByIdWithTrashed(serviceId: string) {
+    return prisma.vaultService.findUniqueWithTrashed({
+      where: { id: serviceId },
+    });
+  },
+
+  restoreVaultService(serviceId: string) {
+    return prisma.vaultService.restore({
+      where: { id: serviceId },
+    });
+  },
+
+  forceDeleteVaultService(serviceId: string) {
+    return prisma.vaultService.forceDelete({
+      where: { id: serviceId },
+    });
+  },
+
+  findVaultItemByIdWithTrashed(itemId: string) {
+    return prisma.vaultItem.findUniqueWithTrashed({
+      where: { id: itemId },
+    });
+  },
+
+  restoreVaultItem(itemId: string) {
+    return prisma.vaultItem.restore({
+      where: { id: itemId },
+    });
+  },
+
+  forceDeleteVaultItem(itemId: string) {
+    return prisma.vaultItem.forceDelete({
+      where: { id: itemId },
+    });
+  },
+
+  findAutomationRuleByIdWithTrashed(ruleId: string) {
+    return prisma.automationRule.findUniqueWithTrashed({
+      where: { id: ruleId },
+    });
+  },
+
+  restoreAutomationRule(ruleId: string) {
+    return prisma.automationRule.restore({
+      where: { id: ruleId },
+    });
+  },
+
+  forceDeleteAutomationRule(ruleId: string) {
+    return prisma.automationRule.forceDelete({
+      where: { id: ruleId },
+    });
+  },
 };

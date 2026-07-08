@@ -1,4 +1,5 @@
 import { milestoneRepository } from "@/app/repositories/milestone.repository";
+import { NotFoundException } from "@/utils/app-error";
 
 export const milestoneService = {
   async createMilestone(
@@ -51,5 +52,21 @@ export const milestoneService = {
 
   async deleteMilestone(milestoneId: string) {
     await milestoneRepository.delete(milestoneId);
+  },
+
+  async restoreMilestone(milestoneId: string) {
+    const milestone = await milestoneRepository.findByIdWithTrashed(milestoneId);
+    if (!milestone) {
+      throw new NotFoundException("Milestone not found");
+    }
+    return milestoneRepository.restore(milestoneId);
+  },
+
+  async forceDeleteMilestone(milestoneId: string) {
+    const milestone = await milestoneRepository.findByIdWithTrashed(milestoneId);
+    if (!milestone) {
+      throw new NotFoundException("Milestone not found");
+    }
+    return milestoneRepository.forceDelete(milestoneId);
   },
 };

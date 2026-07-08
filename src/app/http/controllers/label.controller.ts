@@ -65,4 +65,34 @@ export const labelController = {
 
     return ok(res, "Label deleted successfully");
   }),
+
+  restoreLabel: asyncHandler(async (req: Request, res: Response) => {
+    const labelId = req.params.id as string;
+
+    const label = await labelRepository.findByIdWithTrashed(labelId);
+    if (!label) {
+      throw new NotFoundException("Label not found");
+    }
+
+    await verifyProjectAccess(req, label.projectId);
+
+    await labelService.restoreLabel(labelId);
+
+    return ok(res, "Label restored successfully");
+  }),
+
+  forceDeleteLabel: asyncHandler(async (req: Request, res: Response) => {
+    const labelId = req.params.id as string;
+
+    const label = await labelRepository.findByIdWithTrashed(labelId);
+    if (!label) {
+      throw new NotFoundException("Label not found");
+    }
+
+    await verifyProjectAccess(req, label.projectId);
+
+    await labelService.forceDeleteLabel(labelId);
+
+    return ok(res, "Label permanently deleted");
+  }),
 };

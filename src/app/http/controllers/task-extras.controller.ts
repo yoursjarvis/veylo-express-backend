@@ -77,6 +77,36 @@ export const taskExtrasController = {
     return ok(res, "Status deleted successfully");
   }),
 
+  restoreStatus: asyncHandler(async (req: Request, res: Response) => {
+    const statusId = req.params.id as string;
+
+    const status = await taskExtrasRepository.findStatusByIdWithTrashed(statusId);
+    if (!status) {
+      throw new NotFoundException("Status not found");
+    }
+
+    await verifyProjectAccess(req, status.projectId);
+
+    await taskExtrasService.restoreStatus(statusId);
+
+    return ok(res, "Status restored successfully");
+  }),
+
+  forceDeleteStatus: asyncHandler(async (req: Request, res: Response) => {
+    const statusId = req.params.id as string;
+
+    const status = await taskExtrasRepository.findStatusByIdWithTrashed(statusId);
+    if (!status) {
+      throw new NotFoundException("Status not found");
+    }
+
+    await verifyProjectAccess(req, status.projectId);
+
+    await taskExtrasService.forceDeleteStatus(statusId);
+
+    return ok(res, "Status permanently deleted");
+  }),
+
   // --- SUBTASK CHECKLIST ---
   createSubtask: asyncHandler(async (req: Request, res: Response) => {
     const taskId = req.params.taskId as string;
@@ -189,6 +219,36 @@ export const taskExtrasController = {
     return ok(res, "Comment deleted successfully");
   }),
 
+  restoreComment: asyncHandler(async (req: Request, res: Response) => {
+    const commentId = req.params.id as string;
+
+    const comment = await taskExtrasRepository.findCommentByIdWithTrashed(commentId);
+    if (!comment) {
+      throw new NotFoundException("Comment not found");
+    }
+
+    await verifyProjectAccess(req, comment.task.projectId);
+
+    await taskExtrasService.restoreComment(commentId);
+
+    return ok(res, "Comment restored successfully");
+  }),
+
+  forceDeleteComment: asyncHandler(async (req: Request, res: Response) => {
+    const commentId = req.params.id as string;
+
+    const comment = await taskExtrasRepository.findCommentByIdWithTrashed(commentId);
+    if (!comment) {
+      throw new NotFoundException("Comment not found");
+    }
+
+    await verifyProjectAccess(req, comment.task.projectId);
+
+    await taskExtrasService.forceDeleteComment(commentId);
+
+    return ok(res, "Comment permanently deleted");
+  }),
+
   updateComment: asyncHandler(async (req: Request, res: Response) => {
     const commentId = req.params.id as string;
 
@@ -248,6 +308,36 @@ export const taskExtrasController = {
     await taskExtrasService.deleteCustomField(fieldId);
 
     return ok(res, "Custom field deleted successfully");
+  }),
+
+  restoreCustomField: asyncHandler(async (req: Request, res: Response) => {
+    const fieldId = req.params.id as string;
+
+    const field = await taskExtrasRepository.findCustomFieldByIdWithTrashed(fieldId);
+    if (!field) {
+      throw new NotFoundException("Custom field not found");
+    }
+
+    await verifyProjectAccess(req, field.projectId);
+
+    await taskExtrasService.restoreCustomField(fieldId);
+
+    return ok(res, "Custom field restored successfully");
+  }),
+
+  forceDeleteCustomField: asyncHandler(async (req: Request, res: Response) => {
+    const fieldId = req.params.id as string;
+
+    const field = await taskExtrasRepository.findCustomFieldByIdWithTrashed(fieldId);
+    if (!field) {
+      throw new NotFoundException("Custom field not found");
+    }
+
+    await verifyProjectAccess(req, field.projectId);
+
+    await taskExtrasService.forceDeleteCustomField(fieldId);
+
+    return ok(res, "Custom field permanently deleted");
   }),
 
   getReactionUsers: asyncHandler(async (req: Request, res: Response) => {

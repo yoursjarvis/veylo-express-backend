@@ -60,4 +60,22 @@ export const epicRepository = {
       where: { id },
     });
   },
+
+  async findByIdWithTrashed(id: string) {
+    return prisma.epic.findUniqueWithTrashed({
+      where: { id },
+    });
+  },
+
+  async restore(id: string) {
+    return prisma.epic.restore({
+      where: { id },
+    });
+  },
+
+  async forceDelete(id: string) {
+    return prisma.epic.forceDelete({
+      where: { id },
+    });
+  },
 };

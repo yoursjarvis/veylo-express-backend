@@ -1,5 +1,5 @@
 import { sprintRepository } from "@/app/repositories/sprint.repository";
-import { BadRequestException } from "@/utils/app-error";
+import { BadRequestException, NotFoundException } from "@/utils/app-error";
 
 export const sprintService = {
   async createSprint(
@@ -131,5 +131,21 @@ export const sprintService = {
 
   async deleteSprint(sprintId: string) {
     await sprintRepository.delete(sprintId);
+  },
+
+  async restoreSprint(sprintId: string) {
+    const sprint = await sprintRepository.findByIdWithTrashed(sprintId);
+    if (!sprint) {
+      throw new NotFoundException("Sprint not found");
+    }
+    return sprintRepository.restore(sprintId);
+  },
+
+  async forceDeleteSprint(sprintId: string) {
+    const sprint = await sprintRepository.findByIdWithTrashed(sprintId);
+    if (!sprint) {
+      throw new NotFoundException("Sprint not found");
+    }
+    return sprintRepository.forceDelete(sprintId);
   },
 };

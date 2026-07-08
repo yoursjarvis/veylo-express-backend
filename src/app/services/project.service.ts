@@ -190,6 +190,22 @@ export const projectService = {
     return projectRepository.deleteProject(projectId);
   },
 
+  async restoreProject(projectId: string) {
+    const project = await projectRepository.findProjectByIdWithTrashed(projectId);
+    if (!project) {
+      throw new NotFoundException("Project not found");
+    }
+    return projectRepository.restoreProject(projectId);
+  },
+
+  async forceDeleteProject(projectId: string) {
+    const project = await projectRepository.findProjectByIdWithTrashed(projectId);
+    if (!project) {
+      throw new NotFoundException("Project not found");
+    }
+    return projectRepository.forceDeleteProject(projectId);
+  },
+
   // PROJECT MEMBERS
   getProjectMembers(projectId: string) {
     return projectRepository.getProjectMembers(projectId);
@@ -287,6 +303,22 @@ export const projectService = {
     return projectRepository.deleteVaultService(serviceId);
   },
 
+  async restoreVaultService(serviceId: string) {
+    const service = await projectRepository.findVaultServiceByIdWithTrashed(serviceId);
+    if (!service) {
+      throw new NotFoundException("Vault service not found");
+    }
+    return projectRepository.restoreVaultService(serviceId);
+  },
+
+  async forceDeleteVaultService(serviceId: string) {
+    const service = await projectRepository.findVaultServiceByIdWithTrashed(serviceId);
+    if (!service) {
+      throw new NotFoundException("Vault service not found");
+    }
+    return projectRepository.forceDeleteVaultService(serviceId);
+  },
+
   async addOrUpdateVaultItem(
     serviceId: string,
     data: { key: string; value: string; note?: string | null },
@@ -337,6 +369,22 @@ export const projectService = {
 
   deleteVaultItem(itemId: string) {
     return projectRepository.deleteVaultItem(itemId);
+  },
+
+  async restoreVaultItem(itemId: string) {
+    const item = await projectRepository.findVaultItemByIdWithTrashed(itemId);
+    if (!item) {
+      throw new NotFoundException("Vault item not found");
+    }
+    return projectRepository.restoreVaultItem(itemId);
+  },
+
+  async forceDeleteVaultItem(itemId: string) {
+    const item = await projectRepository.findVaultItemByIdWithTrashed(itemId);
+    if (!item) {
+      throw new NotFoundException("Vault item not found");
+    }
+    return projectRepository.forceDeleteVaultItem(itemId);
   },
 
   // FILE UPLOAD AND MANAGEMENT
@@ -443,5 +491,21 @@ export const projectService = {
       throw new NotFoundException("Automation rule not found");
     }
     return projectRepository.deleteAutomationRule(ruleId);
+  },
+
+  async restoreAutomationRule(ruleId: string) {
+    const existing = await projectRepository.findAutomationRuleByIdWithTrashed(ruleId);
+    if (!existing) {
+      throw new NotFoundException("Automation rule not found");
+    }
+    return projectRepository.restoreAutomationRule(ruleId);
+  },
+
+  async forceDeleteAutomationRule(ruleId: string) {
+    const existing = await projectRepository.findAutomationRuleByIdWithTrashed(ruleId);
+    if (!existing) {
+      throw new NotFoundException("Automation rule not found");
+    }
+    return projectRepository.forceDeleteAutomationRule(ruleId);
   },
 };

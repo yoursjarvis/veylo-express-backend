@@ -57,6 +57,22 @@ export const taskExtrasService = {
     await taskExtrasRepository.deleteStatus(statusId);
   },
 
+  async restoreStatus(statusId: string) {
+    const status = await taskExtrasRepository.findStatusByIdWithTrashed(statusId);
+    if (!status) {
+      throw new NotFoundException("Status not found");
+    }
+    return taskExtrasRepository.restoreStatus(statusId);
+  },
+
+  async forceDeleteStatus(statusId: string) {
+    const status = await taskExtrasRepository.findStatusByIdWithTrashed(statusId);
+    if (!status) {
+      throw new NotFoundException("Status not found");
+    }
+    return taskExtrasRepository.forceDeleteStatus(statusId);
+  },
+
   // --- SUBTASKS ---
   async createSubtask(
     taskId: string,
@@ -214,6 +230,22 @@ export const taskExtrasService = {
     await taskExtrasRepository.deleteComment(comment.id);
   },
 
+  async restoreComment(commentId: string) {
+    const comment = await taskExtrasRepository.findCommentByIdWithTrashed(commentId);
+    if (!comment) {
+      throw new NotFoundException("Comment not found");
+    }
+    return taskExtrasRepository.restoreComment(commentId);
+  },
+
+  async forceDeleteComment(commentId: string) {
+    const comment = await taskExtrasRepository.findCommentByIdWithTrashed(commentId);
+    if (!comment) {
+      throw new NotFoundException("Comment not found");
+    }
+    return taskExtrasRepository.forceDeleteComment(commentId);
+  },
+
   async updateComment(
     commentId: string,
     validatedData: { content: string },
@@ -268,6 +300,22 @@ export const taskExtrasService = {
 
   async deleteCustomField(fieldId: string) {
     await taskExtrasRepository.deleteCustomField(fieldId);
+  },
+
+  async restoreCustomField(fieldId: string) {
+    const field = await taskExtrasRepository.findCustomFieldByIdWithTrashed(fieldId);
+    if (!field) {
+      throw new NotFoundException("Custom field not found");
+    }
+    return taskExtrasRepository.restoreCustomField(fieldId);
+  },
+
+  async forceDeleteCustomField(fieldId: string) {
+    const field = await taskExtrasRepository.findCustomFieldByIdWithTrashed(fieldId);
+    if (!field) {
+      throw new NotFoundException("Custom field not found");
+    }
+    return taskExtrasRepository.forceDeleteCustomField(fieldId);
   },
 
   // --- REACTION USERS & TOGGLING ---

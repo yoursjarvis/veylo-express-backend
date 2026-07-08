@@ -44,4 +44,22 @@ export const milestoneRepository = {
       where: { id },
     });
   },
+
+  async findByIdWithTrashed(id: string) {
+    return prisma.milestone.findUniqueWithTrashed({
+      where: { id },
+    });
+  },
+
+  async restore(id: string) {
+    return prisma.milestone.restore({
+      where: { id },
+    });
+  },
+
+  async forceDelete(id: string) {
+    return prisma.milestone.forceDelete({
+      where: { id },
+    });
+  },
 };
