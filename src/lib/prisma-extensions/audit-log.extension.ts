@@ -37,10 +37,12 @@ export const auditLogExtension = Prisma.defineExtension((client) => {
       $allModels: {
         async $allOperations({ model, operation, args, query }) {
           // 1. Skip if model is not tracked, or is AuditLog itself (avoid recursion), or is a read operation
+          // Also skip Session update/upsert operations to prevent database pollution
           if (
             model === "AuditLog" ||
             !modelMapping[model] ||
-            !mutationOperations.includes(operation)
+            !mutationOperations.includes(operation) ||
+            (model === "Session" && (operation.startsWith("update") || operation === "upsert"))
           ) {
             return query(args);
           }

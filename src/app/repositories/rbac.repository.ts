@@ -621,6 +621,10 @@ export const rbacRepository = {
         });
       }
 
+      if (data.scopeType === "ORGANIZATION") {
+        await syncMemberRolesToBetterAuth(data.userId, data.scopeId, tx);
+      }
+
       return tx.userRoleAssignment.findMany({
         where: {
           userId: data.userId,
@@ -637,7 +641,7 @@ export const rbacRepository = {
     scopeType: string;
     scopeId: string;
   }) {
-    return prisma.userRoleAssignment.deleteMany({
+    const res = await prisma.userRoleAssignment.deleteMany({
       where: {
         userId: data.userId,
         scopeType: data.scopeType,
@@ -645,6 +649,12 @@ export const rbacRepository = {
         roleId: { in: data.roleIds },
       },
     });
+
+    if (data.scopeType === "ORGANIZATION") {
+      await syncMemberRolesToBetterAuth(data.userId, data.scopeId);
+    }
+
+    return res;
   },
 
   async getUserAssignments(
@@ -750,3 +760,41 @@ export const rbacRepository = {
     return !!ownerAssignment;
   },
 };
+
+async function syncMemberRolesToBetterAuth(
+  userId: string,
+  orgId: string,
+  tx?: any,
+) {
+  const db = tx || prisma;
+
+  // Find all active ORGANIZATION scope role assignments for this user and org
+  const assignments = await db.userRoleAssignment.findMany({
+    where: {
+      userId,
+      scopeType: "ORGANIZATION",
+      scopeId: orgId,
+      role: {
+        deletedAt: null,
+      },
+    },
+    include: {
+      role: true,
+    },
+  });
+
+  const roleNames = assignments
+    .map((a: any) => a.role.name.toLowerCase())
+    .join(",");
+
+  // Update the Better Auth member record
+  await db.member.updateMany({
+    where: {
+      userId,
+      organizationId: orgId,
+    },
+    data: {
+      role: roleNames || "member",
+    },
+  });
+}

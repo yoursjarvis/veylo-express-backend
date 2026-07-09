@@ -209,7 +209,8 @@ export const orgMembersController = {
       return ok(res, "Invitation sent successfully", result);
     } catch (error) {
       const err = error as Error & { status?: number | string; code?: string };
-      logger.error({ error: err, email }, "[ORG_MEMBERS] inviteMember failed");
+      // Trigger tsx restart again for prisma client
+      logger.error({ error: err.stack, email }, "[ORG_MEMBERS] inviteMember failed");
       let statusCode = 500;
       if (err.status) {
         if (typeof err.status === "number") {
