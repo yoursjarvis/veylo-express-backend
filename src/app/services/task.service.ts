@@ -60,6 +60,7 @@ export const taskService = {
       type: "task" | "bug" | "feature" | "subtask";
       priority: "low" | "medium" | "high" | "urgent";
       estimate?: number | null;
+      startDate?: string | null;
       dueDate?: string | null;
       assigneeId?: string | null;
       reporterId?: string | null;
@@ -133,6 +134,7 @@ export const taskService = {
       type: data.type,
       priority: data.priority,
       estimate: data.estimate,
+      startDate: data.startDate ? new Date(data.startDate) : null,
       dueDate: data.dueDate ? new Date(data.dueDate) : null,
       creatorId: userId,
       assigneeId: data.assigneeId ?? null,
@@ -467,6 +469,7 @@ export const taskService = {
       type?: "task" | "bug" | "feature" | "subtask";
       priority?: "low" | "medium" | "high" | "urgent";
       estimate?: number | null;
+      startDate?: string | null;
       dueDate?: string | null;
       assigneeId?: string | null;
       reporterId?: string | null;
@@ -708,6 +711,9 @@ export const taskService = {
     if (data.type !== undefined) updateData.type = data.type;
     if (data.dueDate !== undefined) {
       updateData.dueDate = data.dueDate ? new Date(data.dueDate) : null;
+    }
+    if (data.startDate !== undefined) {
+      updateData.startDate = data.startDate ? new Date(data.startDate) : null;
     }
     if (data.customFields !== undefined)
       updateData.customFields = data.customFields;

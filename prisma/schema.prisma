@@ -414,6 +414,7 @@ model Task {
   type           String    @default("task") // task, bug, feature, story
   priority       String    @default("medium") // low, medium, high, urgent
   estimate       Float? // Story points or hours
+  startDate      DateTime? @map("start_date") @db.Timestamptz(6)
   dueDate        DateTime? @map("due_date") @db.Timestamptz(6)
   creatorId      String    @map("creator_id") @db.Uuid
   assigneeId     String?   @map("assignee_id") @db.Uuid

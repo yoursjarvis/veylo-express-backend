@@ -13,6 +13,7 @@ export const taskCreateSchema = z.object({
     .optional()
     .default("medium"),
   estimate: z.number().optional().nullable(),
+  startDate: z.string().datetime().optional().nullable(),
   dueDate: z.string().datetime().optional().nullable(),
   assigneeId: z.uuid().optional().nullable(),
   reporterId: z.uuid().optional().nullable(),
@@ -34,6 +35,7 @@ export const taskUpdateSchema = z.object({
   priority: z.enum(["low", "medium", "high", "urgent"]).optional(),
   estimate: z.number().optional().nullable(),
   dueDate: z.iso.datetime().optional().nullable(),
+  startDate: z.iso.datetime().optional().nullable(),
   assigneeId: z.uuid().optional().nullable(),
   reporterId: z.uuid().optional().nullable(),
   position: z.number().optional(),

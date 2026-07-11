@@ -157,6 +157,7 @@ export const taskRepository = {
         },
         epic: true,
         milestone: true,
+        sprint: true,
         labels: {
           include: {
             label: true,
@@ -173,6 +174,20 @@ export const taskRepository = {
             },
           },
           orderBy: [{ position: "asc" }, { createdAt: "desc" }],
+        },
+        blockedByDependencies: {
+          include: {
+            blockingTask: {
+              select: { id: true, title: true, taskKey: true, statusId: true },
+            },
+          },
+        },
+        blockingDependencies: {
+          include: {
+            blockedTask: {
+              select: { id: true, title: true, taskKey: true, statusId: true },
+            },
+          },
         },
       },
       orderBy: [{ position: "asc" }, { createdAt: "desc" }],
