@@ -1,4 +1,5 @@
 import { epicRepository } from "@/app/repositories/epic.repository";
+import { NotFoundException } from "@/utils/app-error";
 
 export const epicService = {
   async createEpic(
@@ -70,5 +71,21 @@ export const epicService = {
 
   async deleteEpic(epicId: string) {
     await epicRepository.delete(epicId);
+  },
+
+  async restoreEpic(epicId: string) {
+    const epic = await epicRepository.findByIdWithTrashed(epicId);
+    if (!epic) {
+      throw new NotFoundException("Epic not found");
+    }
+    return epicRepository.restore(epicId);
+  },
+
+  async forceDeleteEpic(epicId: string) {
+    const epic = await epicRepository.findByIdWithTrashed(epicId);
+    if (!epic) {
+      throw new NotFoundException("Epic not found");
+    }
+    return epicRepository.forceDelete(epicId);
   },
 };

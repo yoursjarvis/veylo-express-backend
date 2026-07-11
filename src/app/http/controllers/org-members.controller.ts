@@ -156,18 +156,17 @@ export const orgMembersController = {
     const { activeOrgId, sessionUserId } = await getActiveOrgAndSession(req);
     const { firstName, lastName, email } = req.body;
 
-    await orgMembersService.updateProfile(
-      activeOrgId,
-      sessionUserId,
-      id,
-      { firstName, lastName, email }
-    );
+    await orgMembersService.updateProfile(activeOrgId, sessionUserId, id, {
+      firstName,
+      lastName,
+      email,
+    });
 
     return ok(res, "Profile updated successfully");
   }),
 
   bulkInvite: asyncHandler(async (req: Request, res: Response) => {
-    const { activeOrgId } = await getActiveOrgAndSession(req);
+    const { activeOrgId, sessionUserId } = await getActiveOrgAndSession(req);
 
     if (!req.file) {
       return res.status(400).json({ message: "No file uploaded" });
@@ -175,6 +174,7 @@ export const orgMembersController = {
 
     const results = await orgMembersService.bulkInvite(
       activeOrgId,
+      sessionUserId,
       req.file,
       betterAuthHeaders(req),
     );
@@ -190,7 +190,12 @@ export const orgMembersController = {
       return res.status(400).json({ message: "Email is required" });
     }
 
-    await orgMembersService.verifyAdminAccess(activeOrgId, sessionUserId);
+    await orgMembersService.verifyAdminAccess(
+      activeOrgId,
+      sessionUserId,
+      undefined,
+      "invite",
+    );
 
     try {
       const result = await orgMembersService.inviteMember(
@@ -204,7 +209,8 @@ export const orgMembersController = {
       return ok(res, "Invitation sent successfully", result);
     } catch (error) {
       const err = error as Error & { status?: number | string; code?: string };
-      logger.error({ error: err, email }, "[ORG_MEMBERS] inviteMember failed");
+      // Trigger tsx restart again for prisma client
+      logger.error({ error: err.stack, email }, "[ORG_MEMBERS] inviteMember failed");
       let statusCode = 500;
       if (err.status) {
         if (typeof err.status === "number") {
@@ -332,6 +338,53 @@ export const orgMembersController = {
       }
       return res.status(statusCode).json({
         message: err.message || "Failed to revoke invitation",
+        code: err.code,
+      });
+    }
+  }),
+
+  resendInvitation: asyncHandler(async (req: Request, res: Response) => {
+    const { activeOrgId, sessionUserId } = await getActiveOrgAndSession(req);
+    const id = req.params.id as string;
+
+    try {
+      const result = await orgMembersService.resendInvitation(
+        activeOrgId,
+        sessionUserId,
+        id,
+        betterAuthHeaders(req),
+      );
+
+      return ok(res, "Invitation resent successfully", result);
+    } catch (error) {
+      const err = error as Error & { status?: number | string; code?: string };
+      logger.error({ error: err, id }, "[ORG_MEMBERS] resendInvitation failed");
+      let statusCode = 500;
+      if (err.status) {
+        if (typeof err.status === "number") {
+          statusCode = err.status;
+        } else if (typeof err.status === "string") {
+          const parsed = parseInt(err.status, 10);
+          if (!isNaN(parsed)) {
+            statusCode = parsed;
+          } else {
+            const statusMap: Record<string, number> = {
+              BAD_REQUEST: 400,
+              UNAUTHORIZED: 401,
+              FORBIDDEN: 403,
+              NOT_FOUND: 404,
+              CONFLICT: 409,
+              UNPROCESSABLE_ENTITY: 422,
+              INTERNAL_SERVER_ERROR: 500,
+            };
+            if (err.status in statusMap) {
+              statusCode = statusMap[err.status];
+            }
+          }
+        }
+      }
+      return res.status(statusCode).json({
+        message: err.message || "Failed to resend invitation",
         code: err.code,
       });
     }

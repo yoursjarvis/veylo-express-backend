@@ -59,6 +59,24 @@ export const taskExtrasRepository = {
     });
   },
 
+  async findStatusByIdWithTrashed(id: string) {
+    return prisma.taskStatus.findUniqueWithTrashed({
+      where: { id },
+    });
+  },
+
+  async restoreStatus(id: string) {
+    return prisma.taskStatus.restore({
+      where: { id },
+    });
+  },
+
+  async forceDeleteStatus(id: string) {
+    return prisma.taskStatus.forceDelete({
+      where: { id },
+    });
+  },
+
   // --- SUBTASKS ---
   async createSubtask(data: {
     title: string;
@@ -148,6 +166,25 @@ export const taskExtrasRepository = {
     });
   },
 
+  async findCommentByIdWithTrashed(id: string) {
+    return prisma.comment.findUniqueWithTrashed({
+      where: { id },
+      include: { task: true },
+    });
+  },
+
+  async restoreComment(id: string) {
+    return prisma.comment.restore({
+      where: { id },
+    });
+  },
+
+  async forceDeleteComment(id: string) {
+    return prisma.comment.forceDelete({
+      where: { id },
+    });
+  },
+
   async updateComment(id: string, content: string) {
     return prisma.comment.update({
       where: { id },
@@ -211,6 +248,24 @@ export const taskExtrasRepository = {
 
   async deleteCustomField(id: string) {
     return prisma.customFieldDefinition.delete({
+      where: { id },
+    });
+  },
+
+  async findCustomFieldByIdWithTrashed(id: string) {
+    return prisma.customFieldDefinition.findUniqueWithTrashed({
+      where: { id },
+    });
+  },
+
+  async restoreCustomField(id: string) {
+    return prisma.customFieldDefinition.restore({
+      where: { id },
+    });
+  },
+
+  async forceDeleteCustomField(id: string) {
+    return prisma.customFieldDefinition.forceDelete({
       where: { id },
     });
   },

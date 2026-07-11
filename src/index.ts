@@ -50,4 +50,4 @@ if (SSL_KEY && SSL_CRT && fs.existsSync(SSL_KEY) && fs.existsSync(SSL_CRT)) {
     }
   });
 }
-// Trigger tsx watch reload
+// Trigger tsx watch reload - updated env config

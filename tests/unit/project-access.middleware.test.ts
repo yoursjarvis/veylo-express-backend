@@ -6,6 +6,7 @@ import {
   verifyProjectAccess,
   verifyProjectAdmin,
 } from "@/app/http/middlewares/project-access.middleware";
+import { rbacService } from "@/app/services/rbac.service";
 import {
   UnauthorizedException,
   ForbiddenException,
@@ -17,17 +18,7 @@ const { getSessionMock, prismaMock, betterAuthHeadersMock } = vi.hoisted(
   () => ({
     getSessionMock: vi.fn(),
     prismaMock: {
-      member: {
-        findFirst: vi.fn(),
-        findMany: vi.fn(),
-      },
-      workspaceMember: {
-        findFirst: vi.fn(),
-      },
       project: {
-        findUnique: vi.fn(),
-      },
-      projectMember: {
         findUnique: vi.fn(),
       },
     },
@@ -54,6 +45,7 @@ vi.mock("../../src/lib/auth/node-headers", () => ({
 describe("project-access middleware utilities", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(rbacService.authorize).mockResolvedValue(true);
   });
 
   describe("resolveSession", () => {
@@ -92,23 +84,18 @@ describe("project-access middleware utilities", () => {
         user: { id: "user-1" },
         session: { activeOrganizationId: "org-1" },
       });
-      prismaMock.member.findFirst.mockResolvedValueOnce({
-        id: "mem-1",
-        role: "admin",
-      });
 
       const req: any = {};
       const ctx = await verifyWorkspaceAdmin(req, "ws-1");
 
       expect(ctx).toEqual({ activeOrgId: "org-1", userId: "user-1" });
-      expect(prismaMock.member.findFirst).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: {
-            organizationId: "org-1",
-            userId: "user-1",
-            role: { in: ["owner", "admin"] },
-          },
-        }),
+      expect(rbacService.authorize).toHaveBeenCalledWith(
+        "user-1",
+        "workspace:update",
+        {
+          organizationId: "org-1",
+          workspaceId: "ws-1",
+        },
       );
     });
 
@@ -117,25 +104,18 @@ describe("project-access middleware utilities", () => {
         user: { id: "user-1" },
         session: { activeOrganizationId: "org-1" },
       });
-      prismaMock.member.findFirst.mockResolvedValueOnce(null); // not org admin
-      prismaMock.workspaceMember.findFirst.mockResolvedValueOnce({
-        id: "ws-mem-1",
-        role: "admin",
-      });
 
       const req: any = {};
       const ctx = await verifyWorkspaceAdmin(req, "ws-1");
 
       expect(ctx).toEqual({ activeOrgId: "org-1", userId: "user-1" });
-      expect(prismaMock.workspaceMember.findFirst).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: {
-            workspaceId: "ws-1",
-            userId: "user-1",
-            role: "admin",
-            workspace: { organizationId: "org-1" },
-          },
-        }),
+      expect(rbacService.authorize).toHaveBeenCalledWith(
+        "user-1",
+        "workspace:update",
+        {
+          organizationId: "org-1",
+          workspaceId: "ws-1",
+        },
       );
     });
 
@@ -144,8 +124,7 @@ describe("project-access middleware utilities", () => {
         user: { id: "user-1" },
         session: { activeOrganizationId: "org-1" },
       });
-      prismaMock.member.findFirst.mockResolvedValueOnce(null);
-      prismaMock.workspaceMember.findFirst.mockResolvedValueOnce(null);
+      vi.mocked(rbacService.authorize).mockResolvedValueOnce(false);
 
       const req: any = {};
       await expect(verifyWorkspaceAdmin(req, "ws-1")).rejects.toThrow(
@@ -175,15 +154,20 @@ describe("project-access middleware utilities", () => {
       });
       const project = { id: "proj-1", workspaceId: "ws-1" };
       prismaMock.project.findUnique.mockResolvedValueOnce(project);
-      prismaMock.member.findFirst.mockResolvedValueOnce({
-        id: "mem-1",
-        role: "owner",
-      });
 
       const req: any = {};
       const ctx = await verifyProjectAccess(req, "proj-1");
 
       expect(ctx).toEqual({ activeOrgId: "org-1", userId: "user-1", project });
+      expect(rbacService.authorize).toHaveBeenCalledWith(
+        "user-1",
+        "project:read",
+        {
+          organizationId: "org-1",
+          workspaceId: "ws-1",
+          projectId: "proj-1",
+        },
+      );
     });
 
     it("UT-PA-06: returns context if project exists and user is Workspace Admin", async () => {
@@ -193,16 +177,20 @@ describe("project-access middleware utilities", () => {
       });
       const project = { id: "proj-1", workspaceId: "ws-1" };
       prismaMock.project.findUnique.mockResolvedValueOnce(project);
-      prismaMock.member.findFirst.mockResolvedValueOnce(null);
-      prismaMock.workspaceMember.findFirst.mockResolvedValueOnce({
-        id: "ws-mem-1",
-        role: "admin",
-      });
 
       const req: any = {};
       const ctx = await verifyProjectAccess(req, "proj-1");
 
       expect(ctx).toEqual({ activeOrgId: "org-1", userId: "user-1", project });
+      expect(rbacService.authorize).toHaveBeenCalledWith(
+        "user-1",
+        "project:read",
+        {
+          organizationId: "org-1",
+          workspaceId: "ws-1",
+          projectId: "proj-1",
+        },
+      );
     });
 
     it("UT-PA-07: returns context if project exists and user is direct Project Member", async () => {
@@ -212,17 +200,20 @@ describe("project-access middleware utilities", () => {
       });
       const project = { id: "proj-1", workspaceId: "ws-1" };
       prismaMock.project.findUnique.mockResolvedValueOnce(project);
-      prismaMock.member.findFirst.mockResolvedValueOnce(null);
-      prismaMock.workspaceMember.findFirst.mockResolvedValueOnce(null);
-      prismaMock.projectMember.findUnique.mockResolvedValueOnce({
-        projectId: "proj-1",
-        userId: "user-1",
-      });
 
       const req: any = {};
       const ctx = await verifyProjectAccess(req, "proj-1");
 
       expect(ctx).toEqual({ activeOrgId: "org-1", userId: "user-1", project });
+      expect(rbacService.authorize).toHaveBeenCalledWith(
+        "user-1",
+        "project:read",
+        {
+          organizationId: "org-1",
+          workspaceId: "ws-1",
+          projectId: "proj-1",
+        },
+      );
     });
 
     it("UT-PA-08: throws ForbiddenException if user has no project access", async () => {
@@ -232,9 +223,7 @@ describe("project-access middleware utilities", () => {
       });
       const project = { id: "proj-1", workspaceId: "ws-1" };
       prismaMock.project.findUnique.mockResolvedValueOnce(project);
-      prismaMock.member.findFirst.mockResolvedValueOnce(null);
-      prismaMock.workspaceMember.findFirst.mockResolvedValueOnce(null);
-      prismaMock.projectMember.findUnique.mockResolvedValueOnce(null);
+      vi.mocked(rbacService.authorize).mockResolvedValueOnce(false);
 
       const req: any = {};
       await expect(verifyProjectAccess(req, "proj-1")).rejects.toThrow(
@@ -259,15 +248,20 @@ describe("project-access middleware utilities", () => {
       });
       const project = { id: "proj-1", workspaceId: "ws-1" };
       prismaMock.project.findUnique.mockResolvedValueOnce(project);
-      prismaMock.member.findFirst.mockResolvedValueOnce({
-        id: "mem-1",
-        role: "admin",
-      });
 
       const req: any = {};
       const ctx = await verifyProjectAdmin(req, "proj-1");
 
       expect(ctx).toEqual({ activeOrgId: "org-1", userId: "admin-1", project });
+      expect(rbacService.authorize).toHaveBeenCalledWith(
+        "admin-1",
+        "project:update",
+        {
+          organizationId: "org-1",
+          workspaceId: "ws-1",
+          projectId: "proj-1",
+        },
+      );
     });
   });
 });

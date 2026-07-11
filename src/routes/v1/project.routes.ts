@@ -39,6 +39,16 @@ projectRoutes.delete(
   requireAuth,
   projectController.deleteProject,
 );
+projectRoutes.post(
+  "/projects/:id/restore",
+  requireAuth,
+  projectController.restoreProject,
+);
+projectRoutes.delete(
+  "/projects/:id/force",
+  requireAuth,
+  projectController.forceDeleteProject,
+);
 
 // Project Members
 projectRoutes.get(
@@ -73,6 +83,16 @@ projectRoutes.delete(
   requireAuth,
   projectController.deleteVaultService,
 );
+projectRoutes.post(
+  "/projects/:id/vault/services/:serviceId/restore",
+  requireAuth,
+  projectController.restoreVaultService,
+);
+projectRoutes.delete(
+  "/projects/:id/vault/services/:serviceId/force",
+  requireAuth,
+  projectController.forceDeleteVaultService,
+);
 
 // Vault Items
 projectRoutes.post(
@@ -89,6 +109,16 @@ projectRoutes.delete(
   "/projects/:id/vault/items/:itemId",
   requireAuth,
   projectController.deleteVaultItem,
+);
+projectRoutes.post(
+  "/projects/:id/vault/items/:itemId/restore",
+  requireAuth,
+  projectController.restoreVaultItem,
+);
+projectRoutes.delete(
+  "/projects/:id/vault/items/:itemId/force",
+  requireAuth,
+  projectController.forceDeleteVaultItem,
 );
 
 // Project Files
@@ -129,4 +159,14 @@ projectRoutes.delete(
   "/projects/:id/automation-rules/:ruleId",
   requireAuth,
   projectController.deleteAutomationRule,
+);
+projectRoutes.post(
+  "/projects/:id/automation-rules/:ruleId/restore",
+  requireAuth,
+  projectController.restoreAutomationRule,
+);
+projectRoutes.delete(
+  "/projects/:id/automation-rules/:ruleId/force",
+  requireAuth,
+  projectController.forceDeleteAutomationRule,
 );

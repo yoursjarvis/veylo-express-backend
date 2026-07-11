@@ -14,7 +14,9 @@ import {
   vaultItemSchema,
   updateVaultItemSchema,
 } from "@/app/http/validators/project.validator";
+import { auditLogService } from "@/app/services/audit-log.service";
 import { projectService } from "@/app/services/project.service";
+import prisma from "@/lib/prisma";
 import { BadRequestException } from "@/utils/app-error";
 import { ok } from "@/utils/http-response";
 
@@ -30,6 +32,26 @@ export const projectController = {
       activeOrgId,
       validatedData,
     );
+
+    const { auth } = await import("@/lib/auth/auth");
+    const { betterAuthHeaders } = await import("@/lib/auth/node-headers");
+    const session = await auth.api.getSession({
+      headers: betterAuthHeaders(req),
+    });
+
+    if (session?.user) {
+      await auditLogService.log({
+        workspaceId,
+        organizationId: activeOrgId,
+        userId: session.user.id,
+        action: "CREATE_PROJECT",
+        entityType: "PROJECT",
+        entityId: project.id,
+        entityName: project.title,
+        description: `User "${session.user.name}" created project "${project.title}".`,
+        req,
+      });
+    }
 
     return ok(res, "Project created successfully", project);
   }),
@@ -75,9 +97,9 @@ export const projectController = {
   getOrgProjects: asyncHandler(async (req: Request, res: Response) => {
     const organizationId = req.params.organizationId as string;
     const ctx = await resolveSession(req);
-    
+
     // For organization-level project listing, we can either check if they are org admins
-    // or just return projects they have access to. 
+    // or just return projects they have access to.
     // Here we'll just check if they are members of the org.
     // The service handles returning projects they are members of or all if admin.
     const projects = await projectService.getOrgProjects(
@@ -108,6 +130,27 @@ export const projectController = {
       validatedData,
     );
 
+    const { auth } = await import("@/lib/auth/auth");
+    const { betterAuthHeaders } = await import("@/lib/auth/node-headers");
+    const session = await auth.api.getSession({
+      headers: betterAuthHeaders(req),
+    });
+
+    if (session?.user) {
+      await auditLogService.log({
+        workspaceId: updatedProject.workspaceId,
+        organizationId: updatedProject.organizationId,
+        userId: session.user.id,
+        action: "UPDATE_PROJECT",
+        entityType: "PROJECT",
+        entityId: updatedProject.id,
+        entityName: updatedProject.title,
+        description: `User "${session.user.name}" updated settings for project "${updatedProject.title}".`,
+        metadata: validatedData,
+        req,
+      });
+    }
+
     return ok(res, "Project updated successfully", updatedProject);
   }),
 
@@ -115,9 +158,87 @@ export const projectController = {
     const projectId = req.params.id as string;
     await verifyProjectAdmin(req, projectId);
 
-    await projectService.deleteProject(projectId);
+    const deletedProject = await projectService.deleteProject(projectId);
+
+    const { auth } = await import("@/lib/auth/auth");
+    const { betterAuthHeaders } = await import("@/lib/auth/node-headers");
+    const session = await auth.api.getSession({
+      headers: betterAuthHeaders(req),
+    });
+
+    if (session?.user) {
+      await auditLogService.log({
+        workspaceId: deletedProject.workspaceId,
+        organizationId: deletedProject.organizationId,
+        userId: session.user.id,
+        action: "DELETE_PROJECT",
+        entityType: "PROJECT",
+        entityId: deletedProject.id,
+        entityName: deletedProject.title,
+        description: `User "${session.user.name}" soft-deleted project "${deletedProject.title}".`,
+        req,
+      });
+    }
 
     return ok(res, "Project deleted successfully");
+  }),
+
+  restoreProject: asyncHandler(async (req: Request, res: Response) => {
+    const projectId = req.params.id as string;
+    await verifyProjectAdmin(req, projectId);
+
+    const restoredProject = await projectService.restoreProject(projectId);
+
+    const { auth } = await import("@/lib/auth/auth");
+    const { betterAuthHeaders } = await import("@/lib/auth/node-headers");
+    const session = await auth.api.getSession({
+      headers: betterAuthHeaders(req),
+    });
+
+    if (session?.user) {
+      await auditLogService.log({
+        workspaceId: restoredProject.workspaceId,
+        organizationId: restoredProject.organizationId,
+        userId: session.user.id,
+        action: "RESTORE_PROJECT",
+        entityType: "PROJECT",
+        entityId: restoredProject.id,
+        entityName: restoredProject.title,
+        description: `User "${session.user.name}" restored project "${restoredProject.title}".`,
+        req,
+      });
+    }
+
+    return ok(res, "Project restored successfully");
+  }),
+
+  forceDeleteProject: asyncHandler(async (req: Request, res: Response) => {
+    const projectId = req.params.id as string;
+    await verifyProjectAdmin(req, projectId);
+
+    const deletedProject = await projectService.forceDeleteProject(projectId);
+
+    const { auth } = await import("@/lib/auth/auth");
+    const { betterAuthHeaders } = await import("@/lib/auth/node-headers");
+    const session = await auth.api.getSession({
+      headers: betterAuthHeaders(req),
+    });
+
+    if (session?.user) {
+      await auditLogService.log({
+        workspaceId: deletedProject.workspaceId,
+        organizationId: deletedProject.organizationId,
+        userId: session.user.id,
+        action: "FORCE_DELETE_PROJECT",
+        entityType: "PROJECT",
+        entityId: deletedProject.id,
+        entityName: deletedProject.title,
+        description: `User "${session.user.name}" permanently deleted project "${deletedProject.title}".`,
+        req,
+      });
+    }
+
+    return ok(res, "Project permanently deleted");
   }),
 
   // PROJECT MEMBERS
@@ -142,15 +263,62 @@ export const projectController = {
       userId,
     );
 
+    const { auth } = await import("@/lib/auth/auth");
+    const { betterAuthHeaders } = await import("@/lib/auth/node-headers");
+    const session = await auth.api.getSession({
+      headers: betterAuthHeaders(req),
+    });
+
+    if (session?.user) {
+      await auditLogService.log({
+        workspaceId: project.workspaceId,
+        organizationId: project.organizationId,
+        userId: session.user.id,
+        action: "ADD_PROJECT_MEMBERS",
+        entityType: "PROJECT",
+        entityId: project.id,
+        entityName: project.title,
+        description: `User "${session.user.name}" added ${userIds.length} members to project "${project.title}".`,
+        metadata: { addedUserIds: userIds },
+        req,
+      });
+    }
+
     return ok(res, "Members assigned to project", members);
   }),
 
   removeProjectMember: asyncHandler(async (req: Request, res: Response) => {
     const projectId = req.params.id as string;
     const userId = req.params.userId as string;
-    await verifyProjectAdmin(req, projectId);
+    const { project } = await verifyProjectAdmin(req, projectId);
 
     await projectService.removeProjectMember(projectId, userId);
+
+    const targetUser = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { name: true },
+    });
+
+    const { auth } = await import("@/lib/auth/auth");
+    const { betterAuthHeaders } = await import("@/lib/auth/node-headers");
+    const session = await auth.api.getSession({
+      headers: betterAuthHeaders(req),
+    });
+
+    if (session?.user && targetUser) {
+      await auditLogService.log({
+        workspaceId: project.workspaceId,
+        organizationId: project.organizationId,
+        userId: session.user.id,
+        action: "REMOVE_PROJECT_MEMBER",
+        entityType: "PROJECT",
+        entityId: project.id,
+        entityName: project.title,
+        description: `User "${session.user.name}" removed member "${targetUser.name}" from project "${project.title}".`,
+        metadata: { removedUserId: userId },
+        req,
+      });
+    }
 
     return ok(res, "Member removed from project");
   }),
@@ -185,6 +353,28 @@ export const projectController = {
     await projectService.deleteVaultService(serviceId);
 
     return ok(res, "Vault service and its secrets deleted successfully");
+  }),
+
+  restoreVaultService: asyncHandler(async (req: Request, res: Response) => {
+    const projectId = req.params.id as string;
+    await verifyProjectAccess(req, projectId);
+
+    const serviceId = req.params.serviceId as string;
+
+    await projectService.restoreVaultService(serviceId);
+
+    return ok(res, "Vault service restored successfully");
+  }),
+
+  forceDeleteVaultService: asyncHandler(async (req: Request, res: Response) => {
+    const projectId = req.params.id as string;
+    await verifyProjectAccess(req, projectId);
+
+    const serviceId = req.params.serviceId as string;
+
+    await projectService.forceDeleteVaultService(serviceId);
+
+    return ok(res, "Vault service permanently deleted");
   }),
 
   addOrUpdateVaultItem: asyncHandler(async (req: Request, res: Response) => {
@@ -227,6 +417,28 @@ export const projectController = {
     await projectService.deleteVaultItem(itemId);
 
     return ok(res, "Vault item deleted successfully");
+  }),
+
+  restoreVaultItem: asyncHandler(async (req: Request, res: Response) => {
+    const projectId = req.params.id as string;
+    await verifyProjectAccess(req, projectId);
+
+    const itemId = req.params.itemId as string;
+
+    await projectService.restoreVaultItem(itemId);
+
+    return ok(res, "Vault item restored successfully");
+  }),
+
+  forceDeleteVaultItem: asyncHandler(async (req: Request, res: Response) => {
+    const projectId = req.params.id as string;
+    await verifyProjectAccess(req, projectId);
+
+    const itemId = req.params.itemId as string;
+
+    await projectService.forceDeleteVaultItem(itemId);
+
+    return ok(res, "Vault item permanently deleted");
   }),
 
   // FILE UPLOAD AND MANAGEMENT
@@ -302,4 +514,26 @@ export const projectController = {
 
     return ok(res, "Automation rule deleted successfully");
   }),
+
+  restoreAutomationRule: asyncHandler(async (req: Request, res: Response) => {
+    const projectId = req.params.id as string;
+    await verifyProjectAdmin(req, projectId);
+    const ruleId = req.params.ruleId as string;
+
+    await projectService.restoreAutomationRule(ruleId);
+
+    return ok(res, "Automation rule restored successfully");
+  }),
+
+  forceDeleteAutomationRule: asyncHandler(
+    async (req: Request, res: Response) => {
+      const projectId = req.params.id as string;
+      await verifyProjectAdmin(req, projectId);
+      const ruleId = req.params.ruleId as string;
+
+      await projectService.forceDeleteAutomationRule(ruleId);
+
+      return ok(res, "Automation rule permanently deleted");
+    },
+  ),
 };

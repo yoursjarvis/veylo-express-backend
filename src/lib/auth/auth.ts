@@ -13,8 +13,6 @@ import prisma, { basePrisma } from "@/lib/prisma";
 import { redis } from "@/lib/redis";
 import { config } from "@/utils/config";
 
-
-
 function resolveTrustedOrigins(): string[] {
   const origins = config("app.origins");
   const trusted = [...origins];
@@ -162,13 +160,14 @@ export const auth = betterAuth({
                 data: {
                   organizationId: inv.organizationId,
                   userId: user.id,
+                  role: inv.role || "member",
                 },
               });
 
               // Assign org role via UserRoleAssignment
               const roleName = (inv.role || "member").toLowerCase();
               const orgRole = await prisma.role.findFirst({
-                where: { organizationId: inv.organizationId, name: roleName }
+                where: { organizationId: inv.organizationId, name: roleName },
               });
               if (orgRole) {
                 await prisma.userRoleAssignment.create({
@@ -176,8 +175,8 @@ export const auth = betterAuth({
                     userId: user.id,
                     roleId: orgRole.id,
                     scopeType: "ORGANIZATION",
-                    scopeId: inv.organizationId
-                  }
+                    scopeId: inv.organizationId,
+                  },
                 });
               }
 
@@ -192,9 +191,12 @@ export const auth = betterAuth({
                           userId: user.id,
                         },
                       });
-                      
+
                       const projectRole = await prisma.role.findFirst({
-                        where: { organizationId: inv.organizationId, name: "member" }
+                        where: {
+                          organizationId: inv.organizationId,
+                          name: "member",
+                        },
                       });
                       if (projectRole) {
                         await prisma.userRoleAssignment.create({
@@ -202,8 +204,8 @@ export const auth = betterAuth({
                             userId: user.id,
                             roleId: projectRole.id,
                             scopeType: "PROJECT",
-                            scopeId: projectId
-                          }
+                            scopeId: projectId,
+                          },
                         });
                       }
                     } catch (err) {

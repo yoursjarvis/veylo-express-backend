@@ -80,4 +80,34 @@ export const epicController = {
 
     return ok(res, "Epic deleted successfully");
   }),
+
+  restoreEpic: asyncHandler(async (req: Request, res: Response) => {
+    const epicId = req.params.id as string;
+
+    const epic = await epicRepository.findByIdWithTrashed(epicId);
+    if (!epic) {
+      throw new NotFoundException("Epic not found");
+    }
+
+    await verifyProjectAccess(req, epic.projectId);
+
+    await epicService.restoreEpic(epicId);
+
+    return ok(res, "Epic restored successfully");
+  }),
+
+  forceDeleteEpic: asyncHandler(async (req: Request, res: Response) => {
+    const epicId = req.params.id as string;
+
+    const epic = await epicRepository.findByIdWithTrashed(epicId);
+    if (!epic) {
+      throw new NotFoundException("Epic not found");
+    }
+
+    await verifyProjectAccess(req, epic.projectId);
+
+    await epicService.forceDeleteEpic(epicId);
+
+    return ok(res, "Epic permanently deleted");
+  }),
 };

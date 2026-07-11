@@ -21,8 +21,14 @@ export const errorMiddleware = (
         message: e.message,
       })),
     );
-  } else if (err instanceof AppError) {
-    error = err;
+  } else if (
+    err instanceof AppError ||
+    (err &&
+      typeof err === "object" &&
+      "statusCode" in err &&
+      "errorCode" in err)
+  ) {
+    error = err as AppError;
   } else {
     error = new AppError(
       err instanceof Error ? err.message : "Internal Server Error",

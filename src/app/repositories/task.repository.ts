@@ -233,6 +233,24 @@ export const taskRepository = {
     });
   },
 
+  findTaskByIdWithTrashed(taskId: string) {
+    return prisma.task.findUniqueWithTrashed({
+      where: { id: taskId },
+    });
+  },
+
+  restoreTask(taskId: string) {
+    return prisma.task.restore({
+      where: { id: taskId },
+    });
+  },
+
+  forceDeleteTask(taskId: string) {
+    return prisma.task.forceDelete({
+      where: { id: taskId },
+    });
+  },
+
   createTaskActivity(data: {
     taskId: string;
     userId: string;

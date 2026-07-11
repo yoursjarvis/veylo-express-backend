@@ -32,17 +32,23 @@ const testData: Record<EmailTemplateName, Record<string, unknown>> = {
   },
   notification: {
     title: "New Project Assigned",
-    message: "You have been assigned to the project Veylo Redesign. Please review the tasks and start working on it.",
+    message:
+      "You have been assigned to the project Veylo Redesign. Please review the tasks and start working on it.",
   },
 };
 
 const handleEmailPreview = (req: Request, res: Response) => {
   const appEnv = config("app.env") as string;
   if (appEnv !== "local" && appEnv !== "development") {
-    return res.status(403).send("Forbidden: Email preview is only available in local or development environments.");
+    return res
+      .status(403)
+      .send(
+        "Forbidden: Email preview is only available in local or development environments.",
+      );
   }
 
-  const templateName = (req.query.template || Object.keys(req.query)[0]) as EmailTemplateName;
+  const templateName = (req.query.template ||
+    Object.keys(req.query)[0]) as EmailTemplateName;
 
   if (!templateName) {
     const templates = Object.keys(testData) as EmailTemplateName[];
@@ -140,7 +146,11 @@ const handleEmailPreview = (req: Request, res: Response) => {
   }
 
   if (!testData[templateName]) {
-    return res.status(404).send(`Template "${templateName}" not found. Available templates: ${Object.keys(testData).join(", ")}`);
+    return res
+      .status(404)
+      .send(
+        `Template "${templateName}" not found. Available templates: ${Object.keys(testData).join(", ")}`,
+      );
   }
 
   try {
@@ -148,7 +158,9 @@ const handleEmailPreview = (req: Request, res: Response) => {
     res.setHeader("Content-Type", "text/html");
     return res.send(rendered.html);
   } catch (error) {
-    return res.status(500).send(`Error rendering template: ${(error as Error).message}`);
+    return res
+      .status(500)
+      .send(`Error rendering template: ${(error as Error).message}`);
   }
 };
 

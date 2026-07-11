@@ -1,0 +1,2608 @@
+{
+  "numTotalTestSuites": 141,
+  "numPassedTestSuites": 95,
+  "numFailedTestSuites": 46,
+  "numPendingTestSuites": 0,
+  "numTotalTests": 209,
+  "numPassedTests": 166,
+  "numFailedTests": 43,
+  "numPendingTests": 0,
+  "numTodoTests": 0,
+  "snapshot": {
+    "added": 0,
+    "failure": false,
+    "filesAdded": 0,
+    "filesRemoved": 0,
+    "filesRemovedList": [],
+    "filesUnmatched": 0,
+    "filesUpdated": 0,
+    "matched": 0,
+    "total": 0,
+    "unchecked": 0,
+    "uncheckedKeysByFile": [],
+    "unmatched": 0,
+    "updated": 0,
+    "didUpdate": false
+  },
+  "startTime": 1783518397354,
+  "success": false,
+  "testResults": [
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["authController"],
+          "fullName": "authController signup: validates input, calls service, and returns ok",
+          "status": "passed",
+          "title": "signup: validates input, calls service, and returns ok",
+          "duration": 11.22954599999997,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["authController"],
+          "fullName": "authController login: validates input, calls service, and returns ok",
+          "status": "passed",
+          "title": "login: validates input, calls service, and returns ok",
+          "duration": 3.0134879999999953,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["authController"],
+          "fullName": "authController logout: calls service and returns ok",
+          "status": "passed",
+          "title": "logout: calls service and returns ok",
+          "duration": 1.9747669999999857,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["authController"],
+          "fullName": "authController logoutAll: calls service and returns ok",
+          "status": "passed",
+          "title": "logoutAll: calls service and returns ok",
+          "duration": 1.8821810000000028,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["authController"],
+          "fullName": "authController me: returns user and session when present",
+          "status": "passed",
+          "title": "me: returns user and session when present",
+          "duration": 1.9639960000000087,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["authController"],
+          "fullName": "authController me: returns nulls when service returns nothing",
+          "status": "passed",
+          "title": "me: returns nulls when service returns nothing",
+          "duration": 1.578125,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["authController"],
+          "fullName": "authController refresh: returns user and session when present",
+          "status": "passed",
+          "title": "refresh: returns user and session when present",
+          "duration": 5.785225999999966,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["authController"],
+          "fullName": "authController refresh: returns nulls when service returns nothing",
+          "status": "passed",
+          "title": "refresh: returns nulls when service returns nothing",
+          "duration": 1.8761590000000297,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["authController"],
+          "fullName": "authController forgotPassword: uses provided redirect_to without reading config",
+          "status": "passed",
+          "title": "forgotPassword: uses provided redirect_to without reading config",
+          "duration": 6.552923000000021,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["authController"],
+          "fullName": "authController forgotPassword: builds redirectTo from app.origins[0] when redirect_to is absent",
+          "status": "passed",
+          "title": "forgotPassword: builds redirectTo from app.origins[0] when redirect_to is absent",
+          "duration": 2.360498000000007,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["authController"],
+          "fullName": "authController forgotPassword: builds redirectTo from app.url origin when app.origins[0] is missing",
+          "status": "passed",
+          "title": "forgotPassword: builds redirectTo from app.url origin when app.origins[0] is missing",
+          "duration": 1.7642869999999675,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["authController"],
+          "fullName": "authController resetPassword: validates input, calls service, and returns ok",
+          "status": "passed",
+          "title": "resetPassword: validates input, calls service, and returns ok",
+          "duration": 2.018890000000056,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["authController"],
+          "fullName": "authController verifyEmail: validates query, calls service, and returns ok",
+          "status": "passed",
+          "title": "verifyEmail: validates query, calls service, and returns ok",
+          "duration": 2.329189000000042,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["authController"],
+          "fullName": "authController changePassword: validates input, calls service, and returns ok",
+          "status": "passed",
+          "title": "changePassword: validates input, calls service, and returns ok",
+          "duration": 2.1849849999999833,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["authController"],
+          "fullName": "authController sessions: returns sessions and current session id when present",
+          "status": "passed",
+          "title": "sessions: returns sessions and current session id when present",
+          "duration": 8.788544000000002,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["authController"],
+          "fullName": "authController sessions: returns undefined current session id when missing",
+          "status": "passed",
+          "title": "sessions: returns undefined current session id when missing",
+          "duration": 1.092632999999978,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["authController"],
+          "fullName": "authController revokeSession: converts param id to number, calls service, and returns ok",
+          "status": "passed",
+          "title": "revokeSession: converts param id to number, calls service, and returns ok",
+          "duration": 1.495096999999987,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1783518398920,
+      "endTime": 1783518398979.495,
+      "status": "passed",
+      "message": "",
+      "name": "/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/auth.controller.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["authService.login"],
+          "fullName": "authService.login normalizes the email before authenticating and keeps login successful if post-login metadata fails",
+          "status": "passed",
+          "title": "normalizes the email before authenticating and keeps login successful if post-login metadata fails",
+          "duration": 37.361807,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["authService.login"],
+          "fullName": "authService.login marks login failure with a normalized email when sign-in is rejected",
+          "status": "passed",
+          "title": "marks login failure with a normalized email when sign-in is rejected",
+          "duration": 3.6670570000001135,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["authService.login"],
+          "fullName": "authService.login returns a verification error when Better Auth rejects an unverified email",
+          "status": "passed",
+          "title": "returns a verification error when Better Auth rejects an unverified email",
+          "duration": 1.4060179999999036,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1783518399333,
+      "endTime": 1783518399375.406,
+      "status": "passed",
+      "message": "",
+      "name": "/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/auth.service.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["dependencyController", "getDependencies"],
+          "fullName": "dependencyController getDependencies returns dependencies successfully",
+          "status": "passed",
+          "title": "returns dependencies successfully",
+          "duration": 5.770748000000026,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["dependencyController", "getDependencies"],
+          "fullName": "dependencyController getDependencies throws NotFoundException if task not found",
+          "status": "passed",
+          "title": "throws NotFoundException if task not found",
+          "duration": 4.005670000000009,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["dependencyController", "createDependency"],
+          "fullName": "dependencyController createDependency throws BadRequestException if depending on self",
+          "status": "passed",
+          "title": "throws BadRequestException if depending on self",
+          "duration": 3.5479609999999866,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["dependencyController", "createDependency"],
+          "fullName": "dependencyController createDependency throws NotFoundException if tasks not found",
+          "status": "passed",
+          "title": "throws NotFoundException if tasks not found",
+          "duration": 1.333250000000021,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["dependencyController", "createDependency"],
+          "fullName": "dependencyController createDependency creates blocks dependency and logs activity",
+          "status": "passed",
+          "title": "creates blocks dependency and logs activity",
+          "duration": 1.730122999999935,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["dependencyController", "createDependency"],
+          "fullName": "dependencyController createDependency throws circular dependency error if circular dependency is detected",
+          "status": "passed",
+          "title": "throws circular dependency error if circular dependency is detected",
+          "duration": 1.3251040000000103,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["dependencyController", "createDependency"],
+          "fullName": "dependencyController createDependency throws duplicate dependency error if duplicate is detected",
+          "status": "passed",
+          "title": "throws duplicate dependency error if duplicate is detected",
+          "duration": 1.2840059999999767,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["dependencyController", "deleteDependency"],
+          "fullName": "dependencyController deleteDependency deletes dependency successfully",
+          "status": "passed",
+          "title": "deletes dependency successfully",
+          "duration": 2.507908000000043,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["dependencyController", "deleteDependency"],
+          "fullName": "dependencyController deleteDependency throws NotFoundException if dependency not found",
+          "status": "passed",
+          "title": "throws NotFoundException if dependency not found",
+          "duration": 1.0584689999999455,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1783518399147,
+      "endTime": 1783518399170.0583,
+      "status": "passed",
+      "message": "",
+      "name": "/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/dependency.controller.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["epicController", "createEpic"],
+          "fullName": "epicController createEpic creates epic successfully",
+          "status": "passed",
+          "title": "creates epic successfully",
+          "duration": 10.541520999999989,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["epicController", "getEpics"],
+          "fullName": "epicController getEpics fetches epics successfully",
+          "status": "passed",
+          "title": "fetches epics successfully",
+          "duration": 1.6316759999999704,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["epicController", "getEpic"],
+          "fullName": "epicController getEpic fetches epic details successfully",
+          "status": "passed",
+          "title": "fetches epic details successfully",
+          "duration": 1.5294719999999415,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["epicController", "getEpic"],
+          "fullName": "epicController getEpic throws NotFoundException if epic not found",
+          "status": "passed",
+          "title": "throws NotFoundException if epic not found",
+          "duration": 3.473781000000031,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["epicController", "updateEpic"],
+          "fullName": "epicController updateEpic updates epic successfully",
+          "status": "passed",
+          "title": "updates epic successfully",
+          "duration": 8.691370000000006,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["epicController", "updateEpic"],
+          "fullName": "epicController updateEpic throws NotFoundException if epic not found",
+          "status": "passed",
+          "title": "throws NotFoundException if epic not found",
+          "duration": 6.253996000000029,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["epicController", "deleteEpic"],
+          "fullName": "epicController deleteEpic deletes epic successfully",
+          "status": "passed",
+          "title": "deletes epic successfully",
+          "duration": 1.2258659999999963,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["epicController", "deleteEpic"],
+          "fullName": "epicController deleteEpic throws NotFoundException if epic not found",
+          "status": "passed",
+          "title": "throws NotFoundException if epic not found",
+          "duration": 1.070400999999947,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1783518399762,
+      "endTime": 1783518399798.0703,
+      "status": "passed",
+      "message": "",
+      "name": "/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/epic.controller.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["math"],
+          "fullName": "math adds numbers",
+          "status": "passed",
+          "title": "adds numbers",
+          "duration": 2.3557399999999973,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1783518400079,
+      "endTime": 1783518400081.3557,
+      "status": "passed",
+      "message": "",
+      "name": "/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/example.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["http-response"],
+          "fullName": "http-response fail: uses default status code 400",
+          "status": "passed",
+          "title": "fail: uses default status code 400",
+          "duration": 5.5237900000000195,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["http-response"],
+          "fullName": "http-response fail: accepts custom status code",
+          "status": "passed",
+          "title": "fail: accepts custom status code",
+          "duration": 0.6432399999999916,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1783518399787,
+      "endTime": 1783518399793.6433,
+      "status": "passed",
+      "message": "",
+      "name": "/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/http-response.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["labelController", "createLabel"],
+          "fullName": "labelController createLabel creates label successfully",
+          "status": "passed",
+          "title": "creates label successfully",
+          "duration": 13.491127000000006,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["labelController", "createLabel"],
+          "fullName": "labelController createLabel throws BadRequestException if label already exists",
+          "status": "passed",
+          "title": "throws BadRequestException if label already exists",
+          "duration": 4.032209999999964,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["labelController", "getLabels"],
+          "fullName": "labelController getLabels fetches labels successfully",
+          "status": "passed",
+          "title": "fetches labels successfully",
+          "duration": 1.4166079999999965,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["labelController", "updateLabel"],
+          "fullName": "labelController updateLabel updates label successfully",
+          "status": "passed",
+          "title": "updates label successfully",
+          "duration": 3.185252999999989,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["labelController", "updateLabel"],
+          "fullName": "labelController updateLabel throws NotFoundException if label not found",
+          "status": "passed",
+          "title": "throws NotFoundException if label not found",
+          "duration": 1.4246429999999464,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["labelController", "updateLabel"],
+          "fullName": "labelController updateLabel throws BadRequestException if name conflict exists",
+          "status": "passed",
+          "title": "throws BadRequestException if name conflict exists",
+          "duration": 2.2808970000000954,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["labelController", "deleteLabel"],
+          "fullName": "labelController deleteLabel deletes label successfully",
+          "status": "passed",
+          "title": "deletes label successfully",
+          "duration": 2.131714000000102,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["labelController", "deleteLabel"],
+          "fullName": "labelController deleteLabel throws NotFoundException if label not found",
+          "status": "passed",
+          "title": "throws NotFoundException if label not found",
+          "duration": 1.640942999999993,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1783518399573,
+      "endTime": 1783518399602.6409,
+      "status": "passed",
+      "message": "",
+      "name": "/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/label.controller.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["milestoneController", "createMilestone"],
+          "fullName": "milestoneController createMilestone creates milestone successfully",
+          "status": "passed",
+          "title": "creates milestone successfully",
+          "duration": 16.570339000000104,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["milestoneController", "getMilestones"],
+          "fullName": "milestoneController getMilestones fetches milestones successfully",
+          "status": "passed",
+          "title": "fetches milestones successfully",
+          "duration": 3.112545999999952,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["milestoneController", "updateMilestone"],
+          "fullName": "milestoneController updateMilestone updates milestone successfully",
+          "status": "passed",
+          "title": "updates milestone successfully",
+          "duration": 2.2301410000000033,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["milestoneController", "updateMilestone"],
+          "fullName": "milestoneController updateMilestone throws NotFoundException if milestone not found",
+          "status": "passed",
+          "title": "throws NotFoundException if milestone not found",
+          "duration": 5.178525000000036,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["milestoneController", "deleteMilestone"],
+          "fullName": "milestoneController deleteMilestone deletes milestone successfully",
+          "status": "passed",
+          "title": "deletes milestone successfully",
+          "duration": 2.0045829999999114,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["milestoneController", "deleteMilestone"],
+          "fullName": "milestoneController deleteMilestone throws NotFoundException if milestone not found",
+          "status": "passed",
+          "title": "throws NotFoundException if milestone not found",
+          "duration": 1.0517449999999826,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1783518399750,
+      "endTime": 1783518399782.0518,
+      "status": "passed",
+      "message": "",
+      "name": "/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/milestone.controller.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "orgMembersController",
+            "verifyOrgAdmin helpers validation"
+          ],
+          "fullName": "orgMembersController verifyOrgAdmin helpers validation throws UnauthorizedException if session has no user",
+          "status": "passed",
+          "title": "throws UnauthorizedException if session has no user",
+          "duration": 19.726668000000018,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "orgMembersController",
+            "verifyOrgAdmin helpers validation"
+          ],
+          "fullName": "orgMembersController verifyOrgAdmin helpers validation throws BadRequestException if no active organization",
+          "status": "passed",
+          "title": "throws BadRequestException if no active organization",
+          "duration": 2.096938000000023,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "orgMembersController",
+            "verifyOrgAdmin helpers validation"
+          ],
+          "fullName": "orgMembersController verifyOrgAdmin helpers validation throws ForbiddenException if caller is not org owner/admin",
+          "status": "failed",
+          "title": "throws ForbiddenException if caller is not org owner/admin",
+          "duration": 40.09286899999995,
+          "failureMessages": [
+            "Error: expected [Function] to throw error including 'Forbidden: You must be an organizatio…' but got 'Forbidden: You must be a member of th…'\n    at _Assertion.__VITEST_REJECTS__ (file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/chai/index.js:1659:22)\n    at /home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/org-members.controller.test.ts:127:8\n    at file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)"
+          ],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "orgMembersController",
+            "verifyOrgAdmin helpers validation"
+          ],
+          "fullName": "orgMembersController verifyOrgAdmin helpers validation throws NotFoundException if target is not a member of organization",
+          "status": "failed",
+          "title": "throws NotFoundException if target is not a member of organization",
+          "duration": 19.9422669999999,
+          "failureMessages": [
+            "Error: expected [Function] to throw error including 'Not Found: User is not a member of th…' but got 'Forbidden: You do not have the requir…'\n    at _Assertion.__VITEST_REJECTS__ (file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/chai/index.js:1659:22)\n    at /home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/org-members.controller.test.ts:144:8\n    at file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)"
+          ],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "orgMembersController",
+            "verifyOrgAdmin helpers validation"
+          ],
+          "fullName": "orgMembersController verifyOrgAdmin helpers validation throws ForbiddenException if admin tries to modify other admin/owner",
+          "status": "failed",
+          "title": "throws ForbiddenException if admin tries to modify other admin/owner",
+          "duration": 4.399537999999893,
+          "failureMessages": [
+            "Error: expected [Function] to throw error including 'Forbidden: Admins cannot modify other…' but got 'Forbidden: You must be a member of th…'\n    at _Assertion.__VITEST_REJECTS__ (file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/chai/index.js:1659:22)\n    at /home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/org-members.controller.test.ts:161:8\n    at file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)"
+          ],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["orgMembersController", "banMember"],
+          "fullName": "orgMembersController banMember bans user and revokes sessions successfully",
+          "status": "failed",
+          "title": "bans user and revokes sessions successfully",
+          "duration": 9.125084000000015,
+          "failureMessages": [
+            "ForbiddenException: Forbidden: You do not have the required permission (member:ban)\n    at Object.verifyAdminAccess (/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/src/app/services/org-members.service.ts:53:13)\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at Object.banMember (/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/src/app/services/org-members.service.ts:79:5)\n    at Object.banMember (/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/src/app/http/controllers/org-members.controller.ts:38:5)\n    at /home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/org-members.controller.test.ts:185:7\n    at file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["orgMembersController", "unbanMember"],
+          "fullName": "orgMembersController unbanMember unbans member successfully",
+          "status": "failed",
+          "title": "unbans member successfully",
+          "duration": 2.1297609999999167,
+          "failureMessages": [
+            "ForbiddenException: Forbidden: You do not have the required permission (member:ban)\n    at Object.verifyAdminAccess (/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/src/app/services/org-members.service.ts:53:13)\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at Object.unbanMember (/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/src/app/services/org-members.service.ts:93:5)\n    at Object.unbanMember (/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/src/app/http/controllers/org-members.controller.ts:47:5)\n    at /home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/org-members.controller.test.ts:216:7\n    at file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["orgMembersController", "revokeSessions"],
+          "fullName": "orgMembersController revokeSessions revokes sessions successfully",
+          "status": "failed",
+          "title": "revokes sessions successfully",
+          "duration": 3.711712000000034,
+          "failureMessages": [
+            "ForbiddenException: Forbidden: You do not have the required permission (member:update)\n    at Object.verifyAdminAccess (/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/src/app/services/org-members.service.ts:53:13)\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at Object.revokeSessions (/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/src/app/services/org-members.service.ts:102:5)\n    at Object.revokeSessions (/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/src/app/http/controllers/org-members.controller.ts:56:5)\n    at /home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/org-members.controller.test.ts:244:7\n    at file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["orgMembersController", "impersonateUser"],
+          "fullName": "orgMembersController impersonateUser impersonates via API successfully",
+          "status": "failed",
+          "title": "impersonates via API successfully",
+          "duration": 23.117690999999922,
+          "failureMessages": [
+            "ForbiddenException: Forbidden: You do not have the required permission (member:impersonate)\n    at Object.verifyAdminAccess (/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/src/app/services/org-members.service.ts:53:13)\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at Object.impersonateUser (/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/src/app/services/org-members.service.ts:112:26)\n    at Object.impersonateUser (/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/src/app/http/controllers/org-members.controller.ts:65:20)\n    at /home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/org-members.controller.test.ts:271:7\n    at file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["orgMembersController", "impersonateUser"],
+          "fullName": "orgMembersController impersonateUser falls back to manual prisma impersonation session if API fails",
+          "status": "failed",
+          "title": "falls back to manual prisma impersonation session if API fails",
+          "duration": 3.8545930000000226,
+          "failureMessages": [
+            "ForbiddenException: Forbidden: You do not have the required permission (member:impersonate)\n    at Object.verifyAdminAccess (/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/src/app/services/org-members.service.ts:53:13)\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at Object.impersonateUser (/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/src/app/services/org-members.service.ts:112:26)\n    at Object.impersonateUser (/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/src/app/http/controllers/org-members.controller.ts:65:20)\n    at /home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/org-members.controller.test.ts:298:7\n    at file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["orgMembersController", "bulkInvite"],
+          "fullName": "orgMembersController bulkInvite returns 400 if no file uploaded",
+          "status": "passed",
+          "title": "returns 400 if no file uploaded",
+          "duration": 3.3042689999999766,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["orgMembersController", "bulkInvite"],
+          "fullName": "orgMembersController bulkInvite invites CSV members successfully",
+          "status": "failed",
+          "title": "invites CSV members successfully",
+          "duration": 3.257090000000062,
+          "failureMessages": [
+            "ForbiddenException: Forbidden: You do not have the required permission (member:invite)\n    at Object.verifyAdminAccess (/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/src/app/services/org-members.service.ts:53:13)\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at Object.bulkInvite (/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/src/app/services/org-members.service.ts:354:5)\n    at Object.bulkInvite (/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/src/app/http/controllers/org-members.controller.ts:176:21)\n    at /home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/org-members.controller.test.ts:348:7\n    at file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["orgMembersController", "inviteMember"],
+          "fullName": "orgMembersController inviteMember invites member successfully",
+          "status": "failed",
+          "title": "invites member successfully",
+          "duration": 1.5628549999998995,
+          "failureMessages": [
+            "ForbiddenException: Forbidden: You do not have the required permission (member:invite)\n    at Object.verifyAdminAccess (/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/src/app/services/org-members.service.ts:53:13)\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at Object.inviteMember (/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/src/app/http/controllers/org-members.controller.ts:194:5)\n    at /home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/org-members.controller.test.ts:374:7\n    at file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["orgMembersController", "getMembers"],
+          "fullName": "orgMembersController getMembers fetches members successfully",
+          "status": "failed",
+          "title": "fetches members successfully",
+          "duration": 1.6622739999997975,
+          "failureMessages": [
+            "ForbiddenException: Forbidden: You do not have the required permission (member:read)\n    at Object.verifyAdminAccess (/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/src/app/services/org-members.service.ts:53:13)\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at Object.getMembers (/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/src/app/services/org-members.service.ts:263:5)\n    at Object.getMembers (/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/src/app/http/controllers/org-members.controller.ts:249:20)\n    at /home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/org-members.controller.test.ts:400:7\n    at file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["orgMembersController", "getInvitationPublic"],
+          "fullName": "orgMembersController getInvitationPublic returns invitation details if pending",
+          "status": "passed",
+          "title": "returns invitation details if pending",
+          "duration": 1.8696669999999358,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["orgMembersController", "getInvitationPublic"],
+          "fullName": "orgMembersController getInvitationPublic returns 404 if invitation not found",
+          "status": "passed",
+          "title": "returns 404 if invitation not found",
+          "duration": 1.5120990000000347,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["orgMembersController", "getPendingInvitations"],
+          "fullName": "orgMembersController getPendingInvitations fetches pending invitations",
+          "status": "failed",
+          "title": "fetches pending invitations",
+          "duration": 2.1701379999999517,
+          "failureMessages": [
+            "ForbiddenException: Forbidden: You do not have the required permission (member:read)\n    at Object.verifyAdminAccess (/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/src/app/services/org-members.service.ts:53:13)\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at Object.getPendingInvitations (/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/src/app/services/org-members.service.ts:307:5)\n    at Object.getPendingInvitations (/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/src/app/http/controllers/org-members.controller.ts:286:25)\n    at /home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/org-members.controller.test.ts:468:7\n    at file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["orgMembersController", "revokeInvitation"],
+          "fullName": "orgMembersController revokeInvitation revokes invitation successfully",
+          "status": "failed",
+          "title": "revokes invitation successfully",
+          "duration": 6.394813999999997,
+          "failureMessages": [
+            "AssertionError: expected \"vi.fn()\" to be called at least once\n    at Proxy.<anonymous> (file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/expect/dist/index.js:1467:10)\n    at Proxy.<anonymous> (file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/chai/index.js:1700:25)\n    at /home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/org-members.controller.test.ts:492:36\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1783518398380,
+      "endTime": 1783518398532.3948,
+      "status": "failed",
+      "message": "",
+      "name": "/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/org-members.controller.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["orgController", "setupOrganization"],
+          "fullName": "orgController setupOrganization returns 401 Unauthorized if no active user session is found",
+          "status": "passed",
+          "title": "returns 401 Unauthorized if no active user session is found",
+          "duration": 16.555049999999937,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["orgController", "setupOrganization"],
+          "fullName": "orgController setupOrganization returns 401 Unauthorized if session is stale in DB",
+          "status": "passed",
+          "title": "returns 401 Unauthorized if session is stale in DB",
+          "duration": 12.409284999999954,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["orgController", "setupOrganization"],
+          "fullName": "orgController setupOrganization returns 400 Bad Request if user already owns an org",
+          "status": "failed",
+          "title": "returns 400 Bad Request if user already owns an org",
+          "duration": 17.616944999999987,
+          "failureMessages": [
+            "Error: expected [Function] to throw error including 'You have already created an organizat…' but got 'Cannot read properties of undefined (…'\n    at _Assertion.__VITEST_REJECTS__ (file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/chai/index.js:1659:22)\n    at /home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/org.controller.test.ts:131:8\n    at file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)"
+          ],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["orgController", "setupOrganization"],
+          "fullName": "orgController setupOrganization returns 400 Bad Request if slug is already taken",
+          "status": "failed",
+          "title": "returns 400 Bad Request if slug is already taken",
+          "duration": 4.498204000000101,
+          "failureMessages": [
+            "Error: expected [Function] to throw error including 'This URL slug is already taken.' but got 'Cannot read properties of undefined (…'\n    at _Assertion.__VITEST_REJECTS__ (file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/chai/index.js:1659:22)\n    at /home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/org.controller.test.ts:154:8\n    at file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)"
+          ],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["orgController", "setupOrganization"],
+          "fullName": "orgController setupOrganization successfully creates organization, workspace, and owner member",
+          "status": "failed",
+          "title": "successfully creates organization, workspace, and owner member",
+          "duration": 3.965323000000012,
+          "failureMessages": [
+            "TypeError: Cannot read properties of undefined (reading 'findFirst')\n    at Object.findOwnerMember (/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/src/app/repositories/org.repository.ts:8:38)\n    at Object.setupOrganization (/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/src/app/services/org.service.ts:27:45)\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at Object.setupOrganization (/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/src/app/http/controllers/org.controller.ts:21:20)\n    at /home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/org.controller.test.ts:185:7\n    at file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["orgController", "setupOrganization"],
+          "fullName": "orgController setupOrganization handles logo uploading if req.file is present",
+          "status": "failed",
+          "title": "handles logo uploading if req.file is present",
+          "duration": 9.988330999999903,
+          "failureMessages": [
+            "TypeError: Cannot read properties of undefined (reading 'findFirst')\n    at Object.findOwnerMember (/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/src/app/repositories/org.repository.ts:8:38)\n    at Object.setupOrganization (/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/src/app/services/org.service.ts:27:45)\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at Object.setupOrganization (/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/src/app/http/controllers/org.controller.ts:21:20)\n    at /home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/org.controller.test.ts:241:7\n    at file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1783518398380,
+      "endTime": 1783518398445.9883,
+      "status": "failed",
+      "message": "",
+      "name": "/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/org.controller.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["projectController", "getProjectTemplates"],
+          "fullName": "projectController getProjectTemplates returns list of templates",
+          "status": "passed",
+          "title": "returns list of templates",
+          "duration": 5.901837999999998,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["projectController", "getProjectTemplateBySlug"],
+          "fullName": "projectController getProjectTemplateBySlug returns template or throws 404",
+          "status": "passed",
+          "title": "returns template or throws 404",
+          "duration": 1.3276489999999512,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["projectController", "getProjectTemplateBySlug"],
+          "fullName": "projectController getProjectTemplateBySlug throws NotFoundException when template is not found",
+          "status": "passed",
+          "title": "throws NotFoundException when template is not found",
+          "duration": 1.8039430000000038,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["projectController", "createProject"],
+          "fullName": "projectController createProject uses template config to create status and custom fields",
+          "status": "passed",
+          "title": "uses template config to create status and custom fields",
+          "duration": 4.595919999999978,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["projectController", "createProject"],
+          "fullName": "projectController createProject uses simple template fallback when templateSlug is not found in database",
+          "status": "passed",
+          "title": "uses simple template fallback when templateSlug is not found in database",
+          "duration": 3.5227339999999003,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["projectController", "getProjects"],
+          "fullName": "projectController getProjects returns all projects for workspace admin",
+          "status": "passed",
+          "title": "returns all projects for workspace admin",
+          "duration": 1.664767999999981,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["projectController", "getProjects"],
+          "fullName": "projectController getProjects returns member-only projects when workspace admin verification fails",
+          "status": "passed",
+          "title": "returns member-only projects when workspace admin verification fails",
+          "duration": 1.0258369999999104,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["projectController", "getProject"],
+          "fullName": "projectController getProject verifies project access and returns details",
+          "status": "passed",
+          "title": "verifies project access and returns details",
+          "duration": 1.1409949999999753,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["projectController", "updateProject"],
+          "fullName": "projectController updateProject verifies admin access and updates details",
+          "status": "passed",
+          "title": "verifies admin access and updates details",
+          "duration": 1.1512450000000172,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["projectController", "deleteProject"],
+          "fullName": "projectController deleteProject verifies admin access and deletes project",
+          "status": "passed",
+          "title": "verifies admin access and deletes project",
+          "duration": 0.7905100000000402,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["projectController", "getProjectMembers"],
+          "fullName": "projectController getProjectMembers verifies access and returns list",
+          "status": "passed",
+          "title": "verifies access and returns list",
+          "duration": 0.8608940000000302,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["projectController", "addProjectMembers"],
+          "fullName": "projectController addProjectMembers throws BadRequestException if userIds is empty or not array",
+          "status": "passed",
+          "title": "throws BadRequestException if userIds is empty or not array",
+          "duration": 1.097362999999973,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["projectController", "addProjectMembers"],
+          "fullName": "projectController addProjectMembers throws BadRequestException if user is not in workspace",
+          "status": "passed",
+          "title": "throws BadRequestException if user is not in workspace",
+          "duration": 0.9539299999999002,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["projectController", "addProjectMembers"],
+          "fullName": "projectController addProjectMembers upserts project member records if in workspace",
+          "status": "failed",
+          "title": "upserts project member records if in workspace",
+          "duration": 18.720950000000016,
+          "failureMessages": [
+            "AssertionError: expected \"vi.fn()\" to be called with arguments: [ { where: { …(1) }, …(2) } ]\n\nReceived:\n\n  1st vi.fn() call:\n\n@@ -1,10 +1,9 @@\n  [\n    {\n      \"create\": {\n        \"projectId\": \"proj-123\",\n-       \"role\": \"member\",\n        \"userId\": \"user-123\",\n      },\n      \"update\": {},\n      \"where\": {\n        \"projectId_userId\": {\n\n\nNumber of calls: 1\n\n    at Proxy.<anonymous> (file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/expect/dist/index.js:1487:10)\n    at Proxy.<anonymous> (file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/chai/index.js:1700:25)\n    at /home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/project.controller.test.ts:503:47\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["projectController", "removeProjectMember"],
+          "fullName": "projectController removeProjectMember verifies project admin access and deletes project member",
+          "status": "passed",
+          "title": "verifies project admin access and deletes project member",
+          "duration": 1.7970000000000255,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["projectController", "getProjectVault"],
+          "fullName": "projectController getProjectVault decrypts values/notes when vault exists",
+          "status": "passed",
+          "title": "decrypts values/notes when vault exists",
+          "duration": 1.3172190000000228,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["projectController", "getProjectVault"],
+          "fullName": "projectController getProjectVault creates vault automatically if not present",
+          "status": "passed",
+          "title": "creates vault automatically if not present",
+          "duration": 1.2789259999999558,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["projectController", "getProjectVault"],
+          "fullName": "projectController getProjectVault returns '[Decryption Failed]' fallback when decryption throws",
+          "status": "passed",
+          "title": "returns '[Decryption Failed]' fallback when decryption throws",
+          "duration": 1.9409829999999602,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["projectController", "addVaultService"],
+          "fullName": "projectController addVaultService throws NotFoundException if vault does not exist",
+          "status": "passed",
+          "title": "throws NotFoundException if vault does not exist",
+          "duration": 1.7833940000000439,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["projectController", "addVaultService"],
+          "fullName": "projectController addVaultService throws BadRequestException if service already exists",
+          "status": "passed",
+          "title": "throws BadRequestException if service already exists",
+          "duration": 1.424131999999986,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["projectController", "addVaultService"],
+          "fullName": "projectController addVaultService creates service successfully",
+          "status": "passed",
+          "title": "creates service successfully",
+          "duration": 1.2306249999999181,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["projectController", "deleteVaultService"],
+          "fullName": "projectController deleteVaultService deletes service successfully",
+          "status": "passed",
+          "title": "deletes service successfully",
+          "duration": 1.5922009999999318,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["projectController", "addOrUpdateVaultItem"],
+          "fullName": "projectController addOrUpdateVaultItem encrypts and upserts vault item",
+          "status": "passed",
+          "title": "encrypts and upserts vault item",
+          "duration": 2.5820289999999204,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["projectController", "updateVaultItem"],
+          "fullName": "projectController updateVaultItem updates only requested vault item details",
+          "status": "passed",
+          "title": "updates only requested vault item details",
+          "duration": 1.8807880000000523,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["projectController", "updateVaultItem"],
+          "fullName": "projectController updateVaultItem updates vault item note and handles non-null / null notes",
+          "status": "passed",
+          "title": "updates vault item note and handles non-null / null notes",
+          "duration": 2.2095319999999674,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["projectController", "deleteVaultItem"],
+          "fullName": "projectController deleteVaultItem deletes vault item successfully",
+          "status": "passed",
+          "title": "deletes vault item successfully",
+          "duration": 1.004605999999967,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["projectController", "uploadProjectFile"],
+          "fullName": "projectController uploadProjectFile throws BadRequestException if no file uploaded",
+          "status": "passed",
+          "title": "throws BadRequestException if no file uploaded",
+          "duration": 2.5972080000000233,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["projectController", "uploadProjectFile"],
+          "fullName": "projectController uploadProjectFile throws BadRequestException if extension is disallowed",
+          "status": "passed",
+          "title": "throws BadRequestException if extension is disallowed",
+          "duration": 2.107668999999987,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["projectController", "uploadProjectFile"],
+          "fullName": "projectController uploadProjectFile uploads using mediaService and returns URL",
+          "status": "failed",
+          "title": "uploads using mediaService and returns URL",
+          "duration": 13.382009999999923,
+          "failureMessages": [
+            "TypeError: __vite_ssr_import_3__.mediaService.generateUrl is not a function\n    at Object.uploadProjectFile (/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/src/app/services/project.service.ts:417:30)\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at Object.uploadProjectFile (/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/src/app/http/controllers/project.controller.ts:303:25)\n    at /home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/project.controller.test.ts:923:7\n    at file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["projectController", "getProjectFiles"],
+          "fullName": "projectController getProjectFiles fetches project files with their signed URLs",
+          "status": "failed",
+          "title": "fetches project files with their signed URLs",
+          "duration": 1.2952169999999796,
+          "failureMessages": [
+            "TypeError: __vite_ssr_import_3__.mediaService.generateUrl is not a function\n    at /home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/src/app/services/project.service.ts:443:25\n    at Array.map (<anonymous>)\n    at Object.getProjectFiles (/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/src/app/services/project.service.ts:436:23)\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at Object.getProjectFiles (/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/src/app/http/controllers/project.controller.ts:315:19)\n    at /home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/project.controller.test.ts:967:7\n    at file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["projectController", "deleteProjectFile"],
+          "fullName": "projectController deleteProjectFile throws NotFoundException if file is not part of project",
+          "status": "passed",
+          "title": "throws NotFoundException if file is not part of project",
+          "duration": 1.0407249999999522,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["projectController", "deleteProjectFile"],
+          "fullName": "projectController deleteProjectFile deletes media if file exists in project",
+          "status": "passed",
+          "title": "deletes media if file exists in project",
+          "duration": 1.0505229999999983,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1783518398314,
+      "endTime": 1783518398403.0505,
+      "status": "failed",
+      "message": "",
+      "name": "/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/project.controller.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["sprintController", "createSprint"],
+          "fullName": "sprintController createSprint creates sprint successfully",
+          "status": "passed",
+          "title": "creates sprint successfully",
+          "duration": 14.725017999999977,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["sprintController", "getSprints"],
+          "fullName": "sprintController getSprints fetches sprints successfully",
+          "status": "passed",
+          "title": "fetches sprints successfully",
+          "duration": 2.653544000000011,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["sprintController", "getSprint"],
+          "fullName": "sprintController getSprint fetches sprint details",
+          "status": "passed",
+          "title": "fetches sprint details",
+          "duration": 1.7348210000000108,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["sprintController", "getSprint"],
+          "fullName": "sprintController getSprint throws NotFoundException if sprint not found",
+          "status": "passed",
+          "title": "throws NotFoundException if sprint not found",
+          "duration": 4.277845999999954,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["sprintController", "updateSprint"],
+          "fullName": "sprintController updateSprint throws NotFoundException if sprint not found",
+          "status": "passed",
+          "title": "throws NotFoundException if sprint not found",
+          "duration": 1.6628449999999475,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["sprintController", "updateSprint"],
+          "fullName": "sprintController updateSprint updates sprint details (no status change)",
+          "status": "passed",
+          "title": "updates sprint details (no status change)",
+          "duration": 2.0037119999999504,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["sprintController", "updateSprint"],
+          "fullName": "sprintController updateSprint transitions sprint to active and enforces one active sprint",
+          "status": "passed",
+          "title": "transitions sprint to active and enforces one active sprint",
+          "duration": 1.2071999999999434,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["sprintController", "updateSprint"],
+          "fullName": "sprintController updateSprint completes sprint and moves uncompleted tasks to destination",
+          "status": "passed",
+          "title": "completes sprint and moves uncompleted tasks to destination",
+          "duration": 2.1824209999999766,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["sprintController", "deleteSprint"],
+          "fullName": "sprintController deleteSprint deletes sprint successfully",
+          "status": "passed",
+          "title": "deletes sprint successfully",
+          "duration": 2.172190999999998,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["sprintController", "deleteSprint"],
+          "fullName": "sprintController deleteSprint throws NotFoundException if sprint not found",
+          "status": "passed",
+          "title": "throws NotFoundException if sprint not found",
+          "duration": 1.389927000000057,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1783518399093,
+      "endTime": 1783518399128.39,
+      "status": "passed",
+      "message": "",
+      "name": "/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/sprint.controller.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["taskExtrasController", "createStatus"],
+          "fullName": "taskExtrasController createStatus creates status successfully",
+          "status": "passed",
+          "title": "creates status successfully",
+          "duration": 5.491530000000012,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["taskExtrasController", "createStatus"],
+          "fullName": "taskExtrasController createStatus throws BadRequestException if status already exists",
+          "status": "passed",
+          "title": "throws BadRequestException if status already exists",
+          "duration": 2.8226949999999533,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["taskExtrasController", "deleteStatus"],
+          "fullName": "taskExtrasController deleteStatus deletes status if no active tasks map to it",
+          "status": "passed",
+          "title": "deletes status if no active tasks map to it",
+          "duration": 0.8810019999999668,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["taskExtrasController", "deleteStatus"],
+          "fullName": "taskExtrasController deleteStatus throws BadRequestException if active tasks exist",
+          "status": "passed",
+          "title": "throws BadRequestException if active tasks exist",
+          "duration": 1.133762000000047,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["taskExtrasController", "subtasks"],
+          "fullName": "taskExtrasController subtasks creates subtask and logs activity",
+          "status": "passed",
+          "title": "creates subtask and logs activity",
+          "duration": 2.02169600000002,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["taskExtrasController", "subtasks"],
+          "fullName": "taskExtrasController subtasks updates subtask and audits completion change",
+          "status": "passed",
+          "title": "updates subtask and audits completion change",
+          "duration": 2.1540869999998904,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["taskExtrasController", "comments"],
+          "fullName": "taskExtrasController comments creates comment and triggers notification",
+          "status": "passed",
+          "title": "creates comment and triggers notification",
+          "duration": 1.6740770000000111,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["taskExtrasController", "comments"],
+          "fullName": "taskExtrasController comments deletes comment if author",
+          "status": "passed",
+          "title": "deletes comment if author",
+          "duration": 0.7573169999999436,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["taskExtrasController", "comments"],
+          "fullName": "taskExtrasController comments deletes comment if admin and not author",
+          "status": "failed",
+          "title": "deletes comment if admin and not author",
+          "duration": 11.963318999999956,
+          "failureMessages": [
+            "TypeError: __vite_ssr_import_0__.default.project.findUnique is not a function\n    at Object.findProjectById (/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/src/app/repositories/task.repository.ts:268:27)\n    at Object.deleteComment (/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/src/app/services/task-extras.service.ts:215:44)\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at Object.deleteComment (/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/src/app/http/controllers/task-extras.controller.ts:217:5)\n    at /home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/task-extras.controller.test.ts:274:7\n    at file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["taskExtrasController", "custom fields"],
+          "fullName": "taskExtrasController custom fields creates custom field definition successfully",
+          "status": "passed",
+          "title": "creates custom field definition successfully",
+          "duration": 2.0179990000000316,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["taskExtrasController", "comment reactions"],
+          "fullName": "taskExtrasController comment reactions toggles reaction on",
+          "status": "passed",
+          "title": "toggles reaction on",
+          "duration": 2.178794000000039,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["taskExtrasController", "comment reactions"],
+          "fullName": "taskExtrasController comment reactions toggles reaction off if already exists",
+          "status": "passed",
+          "title": "toggles reaction off if already exists",
+          "duration": 1.0414860000000772,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1783518398295,
+      "endTime": 1783518398331.0415,
+      "status": "failed",
+      "message": "",
+      "name": "/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/task-extras.controller.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["taskController", "createTask"],
+          "fullName": "taskController createTask creates task successfully",
+          "status": "passed",
+          "title": "creates task successfully",
+          "duration": 16.544410000000084,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["taskController", "getTasks"],
+          "fullName": "taskController getTasks fetches tasks successfully",
+          "status": "passed",
+          "title": "fetches tasks successfully",
+          "duration": 1.9867289999999684,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["taskController", "getTask"],
+          "fullName": "taskController getTask fetches single task details",
+          "status": "passed",
+          "title": "fetches single task details",
+          "duration": 1.0946670000000722,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["taskController", "getTask"],
+          "fullName": "taskController getTask throws NotFoundException if task not found",
+          "status": "passed",
+          "title": "throws NotFoundException if task not found",
+          "duration": 2.833135000000084,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["taskController", "updateTask"],
+          "fullName": "taskController updateTask updates task details and handles status transitions",
+          "status": "passed",
+          "title": "updates task details and handles status transitions",
+          "duration": 3.7612159999998767,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["taskController", "updateTask"],
+          "fullName": "taskController updateTask completes all incomplete subtasks when transitioning to Done",
+          "status": "passed",
+          "title": "completes all incomplete subtasks when transitioning to Done",
+          "duration": 8.066595000000007,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["taskController", "deleteTask"],
+          "fullName": "taskController deleteTask deletes task successfully",
+          "status": "passed",
+          "title": "deletes task successfully",
+          "duration": 1.168997999999874,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1783518399353,
+      "endTime": 1783518399389.169,
+      "status": "passed",
+      "message": "",
+      "name": "/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/task.controller.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "Auth API Endpoint Integration Tests (/api/v1/auth)",
+            "POST /api/v1/auth/signup"
+          ],
+          "fullName": "Auth API Endpoint Integration Tests (/api/v1/auth) POST /api/v1/auth/signup signs up a user successfully",
+          "status": "passed",
+          "title": "signs up a user successfully",
+          "duration": 48.70886500000006,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Auth API Endpoint Integration Tests (/api/v1/auth)",
+            "POST /api/v1/auth/login"
+          ],
+          "fullName": "Auth API Endpoint Integration Tests (/api/v1/auth) POST /api/v1/auth/login logs in user successfully",
+          "status": "passed",
+          "title": "logs in user successfully",
+          "duration": 9.782541000000037,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Auth API Endpoint Integration Tests (/api/v1/auth)",
+            "GET /api/v1/auth/me"
+          ],
+          "fullName": "Auth API Endpoint Integration Tests (/api/v1/auth) GET /api/v1/auth/me returns user session info when logged in",
+          "status": "passed",
+          "title": "returns user session info when logged in",
+          "duration": 31.95994699999983,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1783518400230,
+      "endTime": 1783518400320.96,
+      "status": "passed",
+      "message": "",
+      "name": "/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/integration/auth.routes.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "Media API Endpoint Integration Tests (/api/v1/media)",
+            "POST /api/v1/media/avatar"
+          ],
+          "fullName": "Media API Endpoint Integration Tests (/api/v1/media) POST /api/v1/media/avatar successfully uploads user avatar and updates user record",
+          "status": "passed",
+          "title": "successfully uploads user avatar and updates user record",
+          "duration": 72.12930099999994,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Media API Endpoint Integration Tests (/api/v1/media)",
+            "POST /api/v1/media/avatar"
+          ],
+          "fullName": "Media API Endpoint Integration Tests (/api/v1/media) POST /api/v1/media/avatar returns error response when no file is uploaded",
+          "status": "passed",
+          "title": "returns error response when no file is uploaded",
+          "duration": 28.312296999999944,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Media API Endpoint Integration Tests (/api/v1/media)",
+            "POST /api/v1/media/org/logo"
+          ],
+          "fullName": "Media API Endpoint Integration Tests (/api/v1/media) POST /api/v1/media/org/logo successfully uploads organization logo for owner/admin",
+          "status": "failed",
+          "title": "successfully uploads organization logo for owner/admin",
+          "duration": 29.07520499999964,
+          "failureMessages": [
+            "AssertionError: expected 403 to be 200 // Object.is equality\n    at /home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/integration/media.routes.test.ts:122:26\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Media API Endpoint Integration Tests (/api/v1/media)",
+            "POST /api/v1/media/org/logo"
+          ],
+          "fullName": "Media API Endpoint Integration Tests (/api/v1/media) POST /api/v1/media/org/logo returns 403 Forbidden when member is not an owner or admin",
+          "status": "passed",
+          "title": "returns 403 Forbidden when member is not an owner or admin",
+          "duration": 12.23209799999995,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Media API Endpoint Integration Tests (/api/v1/media)",
+            "POST /api/v1/media/org/logo"
+          ],
+          "fullName": "Media API Endpoint Integration Tests (/api/v1/media) POST /api/v1/media/org/logo returns 400 Bad Request when there is no active organization in the session",
+          "status": "passed",
+          "title": "returns 400 Bad Request when there is no active organization in the session",
+          "duration": 13.512337000000116,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Media API Endpoint Integration Tests (/api/v1/media)",
+            "POST /api/v1/media/workspace/:id/icon"
+          ],
+          "fullName": "Media API Endpoint Integration Tests (/api/v1/media) POST /api/v1/media/workspace/:id/icon successfully uploads workspace icon for admin member",
+          "status": "failed",
+          "title": "successfully uploads workspace icon for admin member",
+          "duration": 12.842556999999942,
+          "failureMessages": [
+            "AssertionError: expected 403 to be 200 // Object.is equality\n    at /home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/integration/media.routes.test.ts:188:26\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Media API Endpoint Integration Tests (/api/v1/media)",
+            "POST /api/v1/media/workspace/:id/icon"
+          ],
+          "fullName": "Media API Endpoint Integration Tests (/api/v1/media) POST /api/v1/media/workspace/:id/icon returns 403 Forbidden when member is not workspace admin or org owner/admin",
+          "status": "passed",
+          "title": "returns 403 Forbidden when member is not workspace admin or org owner/admin",
+          "duration": 10.469052999999803,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Media API Endpoint Integration Tests (/api/v1/media)",
+            "POST /api/v1/media/project/:id/icon"
+          ],
+          "fullName": "Media API Endpoint Integration Tests (/api/v1/media) POST /api/v1/media/project/:id/icon successfully uploads project icon for admin member",
+          "status": "failed",
+          "title": "successfully uploads project icon for admin member",
+          "duration": 6.894651000000067,
+          "failureMessages": [
+            "AssertionError: expected 403 to be 200 // Object.is equality\n    at /home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/integration/media.routes.test.ts:237:26\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Media API Endpoint Integration Tests (/api/v1/media)",
+            "POST /api/v1/media/project/:id/icon"
+          ],
+          "fullName": "Media API Endpoint Integration Tests (/api/v1/media) POST /api/v1/media/project/:id/icon returns 404 Project Not Found when project does not exist",
+          "status": "passed",
+          "title": "returns 404 Project Not Found when project does not exist",
+          "duration": 19.80179999999973,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Media API Endpoint Integration Tests (/api/v1/media)",
+            "POST /api/v1/media/project/:id/icon"
+          ],
+          "fullName": "Media API Endpoint Integration Tests (/api/v1/media) POST /api/v1/media/project/:id/icon returns 403 Forbidden when user does not have permission",
+          "status": "passed",
+          "title": "returns 403 Forbidden when user does not have permission",
+          "duration": 9.90297899999996,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Media API Endpoint Integration Tests (/api/v1/media)",
+            "POST /api/v1/media/upload"
+          ],
+          "fullName": "Media API Endpoint Integration Tests (/api/v1/media) POST /api/v1/media/upload successfully uploads a generic file attachment",
+          "status": "failed",
+          "title": "successfully uploads a generic file attachment",
+          "duration": 9.122157999999672,
+          "failureMessages": [
+            "AssertionError: expected 'media-logo' to be 'media-attachment' // Object.is equality\n    at /home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/integration/media.routes.test.ts:293:38\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1783518400232,
+      "endTime": 1783518400459.122,
+      "status": "failed",
+      "message": "",
+      "name": "/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/integration/media.routes.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "Org API Endpoint Integration Tests (/api/v1/org)",
+            "POST /api/v1/org/setup"
+          ],
+          "fullName": "Org API Endpoint Integration Tests (/api/v1/org) POST /api/v1/org/setup successfully sets up org",
+          "status": "failed",
+          "title": "successfully sets up org",
+          "duration": 91.73476899999969,
+          "failureMessages": [
+            "AssertionError: expected 500 to be 201 // Object.is equality\n    at /home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/integration/org.routes.test.ts:65:26\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Org API Endpoint Integration Tests (/api/v1/org)",
+            "POST /api/v1/org/members/:id/ban"
+          ],
+          "fullName": "Org API Endpoint Integration Tests (/api/v1/org) POST /api/v1/org/members/:id/ban bans user successfully",
+          "status": "failed",
+          "title": "bans user successfully",
+          "duration": 23.380969999999706,
+          "failureMessages": [
+            "AssertionError: expected 403 to be 200 // Object.is equality\n    at /home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/integration/org.routes.test.ts:82:26\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Org API Endpoint Integration Tests (/api/v1/org)",
+            "POST /api/v1/org/members/invite"
+          ],
+          "fullName": "Org API Endpoint Integration Tests (/api/v1/org) POST /api/v1/org/members/invite returns 400 if email is missing",
+          "status": "passed",
+          "title": "returns 400 if email is missing",
+          "duration": 7.929564000000028,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1783518400229,
+      "endTime": 1783518400351.9294,
+      "status": "failed",
+      "message": "",
+      "name": "/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/integration/org.routes.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "Project API Endpoint Integration Tests (/api/v1/projects)",
+            "GET /api/v1/project-templates"
+          ],
+          "fullName": "Project API Endpoint Integration Tests (/api/v1/projects) GET /api/v1/project-templates successfully retrieves templates",
+          "status": "passed",
+          "title": "successfully retrieves templates",
+          "duration": 22.397795999999744,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Project API Endpoint Integration Tests (/api/v1/projects)",
+            "POST /api/v1/workspaces/:workspaceId/projects"
+          ],
+          "fullName": "Project API Endpoint Integration Tests (/api/v1/projects) POST /api/v1/workspaces/:workspaceId/projects creates project successfully",
+          "status": "passed",
+          "title": "creates project successfully",
+          "duration": 35.713920000000144,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Project API Endpoint Integration Tests (/api/v1/projects)",
+            "GET /api/v1/projects/:id/members"
+          ],
+          "fullName": "Project API Endpoint Integration Tests (/api/v1/projects) GET /api/v1/projects/:id/members retrieves project members",
+          "status": "passed",
+          "title": "retrieves project members",
+          "duration": 8.359670999999707,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1783518400227,
+      "endTime": 1783518400293.3596,
+      "status": "passed",
+      "message": "",
+      "name": "/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/integration/project.routes.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "Task API Endpoint Integration Tests (/api/v1/tasks)",
+            "POST /api/v1/projects/:projectId/tasks"
+          ],
+          "fullName": "Task API Endpoint Integration Tests (/api/v1/tasks) POST /api/v1/projects/:projectId/tasks creates task successfully",
+          "status": "passed",
+          "title": "creates task successfully",
+          "duration": 52.30123100000037,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Task API Endpoint Integration Tests (/api/v1/tasks)",
+            "GET /api/v1/projects/:projectId/tasks"
+          ],
+          "fullName": "Task API Endpoint Integration Tests (/api/v1/tasks) GET /api/v1/projects/:projectId/tasks fetches tasks successfully",
+          "status": "passed",
+          "title": "fetches tasks successfully",
+          "duration": 10.353814000000057,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Task API Endpoint Integration Tests (/api/v1/tasks)",
+            "POST /api/v1/projects/:projectId/sprints"
+          ],
+          "fullName": "Task API Endpoint Integration Tests (/api/v1/tasks) POST /api/v1/projects/:projectId/sprints creates sprint successfully",
+          "status": "passed",
+          "title": "creates sprint successfully",
+          "duration": 8.514024000000063,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1783518400227,
+      "endTime": 1783518400298.514,
+      "status": "passed",
+      "message": "",
+      "name": "/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/integration/task.routes.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "Workspace API Endpoint Integration Tests (/api/v1/workspaces)",
+            "GET /api/v1/workspaces"
+          ],
+          "fullName": "Workspace API Endpoint Integration Tests (/api/v1/workspaces) GET /api/v1/workspaces INT-WS-GET-01: successfully retrieves all workspaces that a user has access to",
+          "status": "passed",
+          "title": "INT-WS-GET-01: successfully retrieves all workspaces that a user has access to",
+          "duration": 62.85677900000019,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Workspace API Endpoint Integration Tests (/api/v1/workspaces)",
+            "GET /api/v1/workspaces"
+          ],
+          "fullName": "Workspace API Endpoint Integration Tests (/api/v1/workspaces) GET /api/v1/workspaces INT-WS-GET-02: returns 401 Unauthorized if no active user session is resolved",
+          "status": "passed",
+          "title": "INT-WS-GET-02: returns 401 Unauthorized if no active user session is resolved",
+          "duration": 13.606154999999944,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Workspace API Endpoint Integration Tests (/api/v1/workspaces)",
+            "GET /api/v1/workspaces"
+          ],
+          "fullName": "Workspace API Endpoint Integration Tests (/api/v1/workspaces) GET /api/v1/workspaces INT-WS-GET-03: returns 400 Bad Request if user has no active organization",
+          "status": "passed",
+          "title": "INT-WS-GET-03: returns 400 Bad Request if user has no active organization",
+          "duration": 13.314121000000341,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Workspace API Endpoint Integration Tests (/api/v1/workspaces)",
+            "POST /api/v1/workspaces"
+          ],
+          "fullName": "Workspace API Endpoint Integration Tests (/api/v1/workspaces) POST /api/v1/workspaces INT-WS-POST-01: creates workspace successfully for an organization admin",
+          "status": "failed",
+          "title": "INT-WS-POST-01: creates workspace successfully for an organization admin",
+          "duration": 33.7383319999999,
+          "failureMessages": [
+            "AssertionError: expected 403 to be 200 // Object.is equality\n    at /home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/integration/workspace.routes.test.ts:126:26\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Workspace API Endpoint Integration Tests (/api/v1/workspaces)",
+            "POST /api/v1/workspaces"
+          ],
+          "fullName": "Workspace API Endpoint Integration Tests (/api/v1/workspaces) POST /api/v1/workspaces INT-WS-POST-02: returns 422 validation failure if required body fields are missing",
+          "status": "passed",
+          "title": "INT-WS-POST-02: returns 422 validation failure if required body fields are missing",
+          "duration": 7.166197000000011,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Workspace API Endpoint Integration Tests (/api/v1/workspaces)",
+            "POST /api/v1/workspaces"
+          ],
+          "fullName": "Workspace API Endpoint Integration Tests (/api/v1/workspaces) POST /api/v1/workspaces INT-WS-POST-03: returns 422 validation failure if slug format is invalid",
+          "status": "passed",
+          "title": "INT-WS-POST-03: returns 422 validation failure if slug format is invalid",
+          "duration": 5.8130489999998645,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Workspace API Endpoint Integration Tests (/api/v1/workspaces)",
+            "POST /api/v1/workspaces"
+          ],
+          "fullName": "Workspace API Endpoint Integration Tests (/api/v1/workspaces) POST /api/v1/workspaces INT-WS-POST-04: returns 400 Bad Request if workspace slug already exists",
+          "status": "failed",
+          "title": "INT-WS-POST-04: returns 400 Bad Request if workspace slug already exists",
+          "duration": 7.66701699999976,
+          "failureMessages": [
+            "AssertionError: expected 403 to be 400 // Object.is equality\n    at /home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/integration/workspace.routes.test.ts:196:26\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Workspace API Endpoint Integration Tests (/api/v1/workspaces)",
+            "POST /api/v1/workspaces"
+          ],
+          "fullName": "Workspace API Endpoint Integration Tests (/api/v1/workspaces) POST /api/v1/workspaces INT-WS-POST-05: returns 403 Forbidden if user is a standard member (not org admin/owner)",
+          "status": "failed",
+          "title": "INT-WS-POST-05: returns 403 Forbidden if user is a standard member (not org admin/owner)",
+          "duration": 10.342642999999953,
+          "failureMessages": [
+            "AssertionError: expected 'Forbidden: You must have permission t…' to be 'Forbidden: You must be an organizatio…' // Object.is equality\n    at /home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/integration/workspace.routes.test.ts:209:32\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Workspace API Endpoint Integration Tests (/api/v1/workspaces)",
+            "PATCH /api/v1/workspaces/:id"
+          ],
+          "fullName": "Workspace API Endpoint Integration Tests (/api/v1/workspaces) PATCH /api/v1/workspaces/:id INT-WS-PATCH-01: successfully updates workspace fields by a Workspace Admin",
+          "status": "failed",
+          "title": "INT-WS-PATCH-01: successfully updates workspace fields by a Workspace Admin",
+          "duration": 8.985529000000042,
+          "failureMessages": [
+            "AssertionError: expected 403 to be 200 // Object.is equality\n    at /home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/integration/workspace.routes.test.ts:241:26\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Workspace API Endpoint Integration Tests (/api/v1/workspaces)",
+            "PATCH /api/v1/workspaces/:id"
+          ],
+          "fullName": "Workspace API Endpoint Integration Tests (/api/v1/workspaces) PATCH /api/v1/workspaces/:id INT-WS-PATCH-02: returns 404 Not Found if workspace does not exist or isn't in active organization",
+          "status": "failed",
+          "title": "INT-WS-PATCH-02: returns 404 Not Found if workspace does not exist or isn't in active organization",
+          "duration": 22.00242500000013,
+          "failureMessages": [
+            "AssertionError: expected 403 to be 404 // Object.is equality\n    at /home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/integration/workspace.routes.test.ts:261:26\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Workspace API Endpoint Integration Tests (/api/v1/workspaces)",
+            "DELETE /api/v1/workspaces/:id"
+          ],
+          "fullName": "Workspace API Endpoint Integration Tests (/api/v1/workspaces) DELETE /api/v1/workspaces/:id INT-WS-DEL-01: successfully deletes workspace by Org Owner/Admin",
+          "status": "failed",
+          "title": "INT-WS-DEL-01: successfully deletes workspace by Org Owner/Admin",
+          "duration": 6.726942999999665,
+          "failureMessages": [
+            "AssertionError: expected 403 to be 200 // Object.is equality\n    at /home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/integration/workspace.routes.test.ts:277:26\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Workspace API Endpoint Integration Tests (/api/v1/workspaces)",
+            "POST /api/v1/workspaces/:id/members (Add Members)"
+          ],
+          "fullName": "Workspace API Endpoint Integration Tests (/api/v1/workspaces) POST /api/v1/workspaces/:id/members (Add Members) INT-WS-MEM-POST-01: successfully adds valid org members to the workspace",
+          "status": "failed",
+          "title": "INT-WS-MEM-POST-01: successfully adds valid org members to the workspace",
+          "duration": 7.6366290000000845,
+          "failureMessages": [
+            "AssertionError: expected 403 to be 200 // Object.is equality\n    at /home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/integration/workspace.routes.test.ts:306:26\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Workspace API Endpoint Integration Tests (/api/v1/workspaces)",
+            "POST /api/v1/workspaces/:id/members (Add Members)"
+          ],
+          "fullName": "Workspace API Endpoint Integration Tests (/api/v1/workspaces) POST /api/v1/workspaces/:id/members (Add Members) INT-WS-MEM-POST-02: returns 400 Bad Request if userIds parameter is missing or empty",
+          "status": "failed",
+          "title": "INT-WS-MEM-POST-02: returns 400 Bad Request if userIds parameter is missing or empty",
+          "duration": 7.504989000000023,
+          "failureMessages": [
+            "AssertionError: expected 403 to be 400 // Object.is equality\n    at /home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/integration/workspace.routes.test.ts:328:26\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Workspace API Endpoint Integration Tests (/api/v1/workspaces)",
+            "POST /api/v1/workspaces/:id/members (Add Members)"
+          ],
+          "fullName": "Workspace API Endpoint Integration Tests (/api/v1/workspaces) POST /api/v1/workspaces/:id/members (Add Members) INT-WS-MEM-POST-03: returns 400 Bad Request if one or more user IDs are not members of the organization",
+          "status": "failed",
+          "title": "INT-WS-MEM-POST-03: returns 400 Bad Request if one or more user IDs are not members of the organization",
+          "duration": 5.671751000000313,
+          "failureMessages": [
+            "AssertionError: expected 403 to be 400 // Object.is equality\n    at /home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/integration/workspace.routes.test.ts:345:26\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Workspace API Endpoint Integration Tests (/api/v1/workspaces)",
+            "DELETE /api/v1/workspaces/:id/members/:userId (Remove Member)"
+          ],
+          "fullName": "Workspace API Endpoint Integration Tests (/api/v1/workspaces) DELETE /api/v1/workspaces/:id/members/:userId (Remove Member) INT-WS-MEM-DEL-01: successfully removes workspace member",
+          "status": "failed",
+          "title": "INT-WS-MEM-DEL-01: successfully removes workspace member",
+          "duration": 5.7510220000003756,
+          "failureMessages": [
+            "AssertionError: expected 403 to be 200 // Object.is equality\n    at /home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/integration/workspace.routes.test.ts:366:26\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1783518400230,
+      "endTime": 1783518400450.751,
+      "status": "failed",
+      "message": "",
+      "name": "/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/integration/workspace.routes.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["crypto helper utilities"],
+          "fullName": "crypto helper utilities UT-CRY-01: encrypts and decrypts a plain text string successfully",
+          "status": "passed",
+          "title": "UT-CRY-01: encrypts and decrypts a plain text string successfully",
+          "duration": 4.4048779999999965,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["crypto helper utilities"],
+          "fullName": "crypto helper utilities UT-CRY-02: generates randomized encryption (different IVs for same text)",
+          "status": "passed",
+          "title": "UT-CRY-02: generates randomized encryption (different IVs for same text)",
+          "duration": 1.104756000000009,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["crypto helper utilities"],
+          "fullName": "crypto helper utilities UT-CRY-03: throws an error when decrypting an invalid format string",
+          "status": "passed",
+          "title": "UT-CRY-03: throws an error when decrypting an invalid format string",
+          "duration": 1.125614999999982,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["crypto helper utilities"],
+          "fullName": "crypto helper utilities UT-CRY-04: throws integrity check error for tampered ciphertext",
+          "status": "passed",
+          "title": "UT-CRY-04: throws integrity check error for tampered ciphertext",
+          "duration": 1.0513349999999946,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1783518399951,
+      "endTime": 1783518399959.0513,
+      "status": "passed",
+      "message": "",
+      "name": "/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/unit/crypto.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["Email Templates Redesign"],
+          "fullName": "Email Templates Redesign should render welcome email",
+          "status": "passed",
+          "title": "should render welcome email",
+          "duration": 3.3056310000000053,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["Email Templates Redesign"],
+          "fullName": "Email Templates Redesign should render forgot password email",
+          "status": "passed",
+          "title": "should render forgot password email",
+          "duration": 0.7089649999999779,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["Email Templates Redesign"],
+          "fullName": "Email Templates Redesign should render verify email email",
+          "status": "passed",
+          "title": "should render verify email email",
+          "duration": 0.5940969999999766,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["Email Templates Redesign"],
+          "fullName": "Email Templates Redesign should render reset password success email",
+          "status": "passed",
+          "title": "should render reset password success email",
+          "duration": 0.6963610000000244,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["Email Templates Redesign"],
+          "fullName": "Email Templates Redesign should render two-factor otp email",
+          "status": "passed",
+          "title": "should render two-factor otp email",
+          "duration": 1.2966400000000249,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["Email Templates Redesign"],
+          "fullName": "Email Templates Redesign should render invite email",
+          "status": "passed",
+          "title": "should render invite email",
+          "duration": 0.42381399999999303,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["Email Templates Redesign"],
+          "fullName": "Email Templates Redesign should render notification email",
+          "status": "passed",
+          "title": "should render notification email",
+          "duration": 0.4506250000000023,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1783518399859,
+      "endTime": 1783518399866.4507,
+      "status": "passed",
+      "message": "",
+      "name": "/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/unit/email-templates.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["Notification System"],
+          "fullName": "Notification System UT-NOT-01: sends notifications across all channels successfully",
+          "status": "passed",
+          "title": "UT-NOT-01: sends notifications across all channels successfully",
+          "duration": 7.071055999999999,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1783518400150,
+      "endTime": 1783518400157.071,
+      "status": "passed",
+      "message": "",
+      "name": "/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/unit/notification.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "project-access middleware utilities",
+            "resolveSession"
+          ],
+          "fullName": "project-access middleware utilities resolveSession UT-PA-01: throws UnauthorizedException when no user is present in session",
+          "status": "passed",
+          "title": "UT-PA-01: throws UnauthorizedException when no user is present in session",
+          "duration": 11.323102999999946,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "project-access middleware utilities",
+            "resolveSession"
+          ],
+          "fullName": "project-access middleware utilities resolveSession UT-PA-02: throws BadRequestException when user has no active organization",
+          "status": "passed",
+          "title": "UT-PA-02: throws BadRequestException when user has no active organization",
+          "duration": 2.547413000000006,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "project-access middleware utilities",
+            "resolveSession"
+          ],
+          "fullName": "project-access middleware utilities resolveSession UT-PA-03: returns activeOrgId and userId on success",
+          "status": "passed",
+          "title": "UT-PA-03: returns activeOrgId and userId on success",
+          "duration": 3.5272919999999885,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "project-access middleware utilities",
+            "verifyWorkspaceAdmin"
+          ],
+          "fullName": "project-access middleware utilities verifyWorkspaceAdmin UT-WA-01: returns context if caller is an Org Owner/Admin",
+          "status": "failed",
+          "title": "UT-WA-01: returns context if caller is an Org Owner/Admin",
+          "duration": 111.29910099999995,
+          "failureMessages": [
+            "ForbiddenException: Forbidden: You must be an organization or workspace admin\n    at Module.verifyWorkspaceAdmin (/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/src/app/http/middlewares/project-access.middleware.ts:77:11)\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at /home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/unit/project-access.middleware.test.ts:101:19\n    at file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "project-access middleware utilities",
+            "verifyWorkspaceAdmin"
+          ],
+          "fullName": "project-access middleware utilities verifyWorkspaceAdmin UT-WA-02: returns context if caller is a Workspace Admin (but not Org Admin)",
+          "status": "failed",
+          "title": "UT-WA-02: returns context if caller is a Workspace Admin (but not Org Admin)",
+          "duration": 1.281881999999996,
+          "failureMessages": [
+            "ForbiddenException: Forbidden: You must be an organization or workspace admin\n    at Module.verifyWorkspaceAdmin (/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/src/app/http/middlewares/project-access.middleware.ts:77:11)\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at /home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/unit/project-access.middleware.test.ts:127:19\n    at file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "project-access middleware utilities",
+            "verifyWorkspaceAdmin"
+          ],
+          "fullName": "project-access middleware utilities verifyWorkspaceAdmin UT-WA-03: throws ForbiddenException if caller has no admin permissions",
+          "status": "passed",
+          "title": "UT-WA-03: throws ForbiddenException if caller has no admin permissions",
+          "duration": 1.2896569999999201,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "project-access middleware utilities",
+            "verifyProjectAccess"
+          ],
+          "fullName": "project-access middleware utilities verifyProjectAccess UT-PA-04: throws NotFoundException if project does not exist",
+          "status": "passed",
+          "title": "UT-PA-04: throws NotFoundException if project does not exist",
+          "duration": 0.8961899999999332,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "project-access middleware utilities",
+            "verifyProjectAccess"
+          ],
+          "fullName": "project-access middleware utilities verifyProjectAccess UT-PA-05: returns context if project exists and user is Org Owner/Admin",
+          "status": "failed",
+          "title": "UT-PA-05: returns context if project exists and user is Org Owner/Admin",
+          "duration": 1.985416999999984,
+          "failureMessages": [
+            "ForbiddenException: Forbidden: You must be a project member or workspace/org admin\n    at Module.verifyProjectAccess (/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/src/app/http/middlewares/project-access.middleware.ts:107:11)\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at /home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/unit/project-access.middleware.test.ts:184:19\n    at file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "project-access middleware utilities",
+            "verifyProjectAccess"
+          ],
+          "fullName": "project-access middleware utilities verifyProjectAccess UT-PA-06: returns context if project exists and user is Workspace Admin",
+          "status": "failed",
+          "title": "UT-PA-06: returns context if project exists and user is Workspace Admin",
+          "duration": 2.0841749999999593,
+          "failureMessages": [
+            "ForbiddenException: Forbidden: You must be a project member or workspace/org admin\n    at Module.verifyProjectAccess (/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/src/app/http/middlewares/project-access.middleware.ts:107:11)\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at /home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/unit/project-access.middleware.test.ts:203:19\n    at file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "project-access middleware utilities",
+            "verifyProjectAccess"
+          ],
+          "fullName": "project-access middleware utilities verifyProjectAccess UT-PA-07: returns context if project exists and user is direct Project Member",
+          "status": "failed",
+          "title": "UT-PA-07: returns context if project exists and user is direct Project Member",
+          "duration": 1.6810289999999668,
+          "failureMessages": [
+            "ForbiddenException: Forbidden: You must be a project member or workspace/org admin\n    at Module.verifyProjectAccess (/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/src/app/http/middlewares/project-access.middleware.ts:107:11)\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at /home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/unit/project-access.middleware.test.ts:223:19\n    at file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "project-access middleware utilities",
+            "verifyProjectAccess"
+          ],
+          "fullName": "project-access middleware utilities verifyProjectAccess UT-PA-08: throws ForbiddenException if user has no project access",
+          "status": "passed",
+          "title": "UT-PA-08: throws ForbiddenException if user has no project access",
+          "duration": 1.1720540000000028,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "project-access middleware utilities",
+            "verifyProjectAdmin"
+          ],
+          "fullName": "project-access middleware utilities verifyProjectAdmin UT-PA-09: throws NotFoundException if project is missing",
+          "status": "passed",
+          "title": "UT-PA-09: throws NotFoundException if project is missing",
+          "duration": 0.9696599999999762,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "project-access middleware utilities",
+            "verifyProjectAdmin"
+          ],
+          "fullName": "project-access middleware utilities verifyProjectAdmin UT-PA-10: verifies project admin permissions using workspace admin utility",
+          "status": "failed",
+          "title": "UT-PA-10: verifies project admin permissions using workspace admin utility",
+          "duration": 1.774236999999971,
+          "failureMessages": [
+            "ForbiddenException: Forbidden: You must be a project admin or workspace/org admin\n    at Module.verifyProjectAdmin (/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/src/app/http/middlewares/project-access.middleware.ts:137:11)\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at /home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/unit/project-access.middleware.test.ts:268:19\n    at file:///home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1783518398070,
+      "endTime": 1783518398213.7742,
+      "status": "failed",
+      "message": "",
+      "name": "/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/unit/project-access.middleware.test.ts"
+    },
+    {
+      "assertionResults": [],
+      "startTime": 1783518397354,
+      "endTime": 1783518397354,
+      "status": "failed",
+      "message": "Cannot access 'envValue' before initialization",
+      "name": "/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/unit/rate-limit.middleware.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["user-agent parsing utility"],
+          "fullName": "user-agent parsing utility UT-UA-01: returns empty object if user-agent is undefined or empty",
+          "status": "passed",
+          "title": "UT-UA-01: returns empty object if user-agent is undefined or empty",
+          "duration": 3.703846999999996,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["user-agent parsing utility"],
+          "fullName": "user-agent parsing utility UT-UA-02: parses Windows OS and Chrome browser correctly",
+          "status": "passed",
+          "title": "UT-UA-02: parses Windows OS and Chrome browser correctly",
+          "duration": 0.31375600000001214,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["user-agent parsing utility"],
+          "fullName": "user-agent parsing utility UT-UA-03: parses macOS and Safari browser correctly",
+          "status": "passed",
+          "title": "UT-UA-03: parses macOS and Safari browser correctly",
+          "duration": 0.23362299999999436,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["user-agent parsing utility"],
+          "fullName": "user-agent parsing utility UT-UA-04: parses Android OS and Firefox browser correctly",
+          "status": "passed",
+          "title": "UT-UA-04: parses Android OS and Firefox browser correctly",
+          "duration": 0.17365000000000919,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["user-agent parsing utility"],
+          "fullName": "user-agent parsing utility UT-UA-05: parses iOS and Chrome browser correctly (WIP/Edge cases)",
+          "status": "passed",
+          "title": "UT-UA-05: parses iOS and Chrome browser correctly (WIP/Edge cases)",
+          "duration": 0.2236650000000111,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["user-agent parsing utility"],
+          "fullName": "user-agent parsing utility UT-UA-06: parses Edge browser correctly",
+          "status": "passed",
+          "title": "UT-UA-06: parses Edge browser correctly",
+          "duration": 0.17851899999999432,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": ["user-agent parsing utility"],
+          "fullName": "user-agent parsing utility UT-UA-07: returns undefined browser/os for unrecognized strings",
+          "status": "passed",
+          "title": "UT-UA-07: returns undefined browser/os for unrecognized strings",
+          "duration": 0.1610459999999989,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1783518400065,
+      "endTime": 1783518400070.2236,
+      "status": "passed",
+      "message": "",
+      "name": "/home/codeclouds-tanmoy/Personal/Veylo/veylo-express-backend/tests/unit/user-agent.test.ts"
+    }
+  ]
+}

@@ -68,6 +68,7 @@ const {
     getUrl: vi.fn(),
     getMedia: vi.fn(),
     deleteMedia: vi.fn(),
+    generateUrl: vi.fn().mockReturnValue("http://localhost/files/dummy.png"),
   },
 }));
 
@@ -505,7 +506,7 @@ describe("projectController", () => {
           projectId_userId: { projectId: "proj-123", userId: "user-123" },
         },
         update: {},
-        create: { projectId: "proj-123", userId: "user-123", role: "member" },
+        create: { projectId: "proj-123", userId: "user-123" },
       });
       expect(res.json).toHaveBeenCalledWith({
         success: true,
@@ -907,7 +908,7 @@ describe("projectController", () => {
         createdAt: new Date(),
       };
       mockMediaService.addMedia.mockResolvedValueOnce(mockMedia);
-      mockMediaService.getUrl.mockResolvedValueOnce("http://s3/doc.pdf");
+      mockMediaService.generateUrl.mockReturnValueOnce("http://s3/doc.pdf");
 
       const req: any = {
         params: { id: "proj-123" },
@@ -934,7 +935,7 @@ describe("projectController", () => {
         "project_files",
         false,
       );
-      expect(mockMediaService.getUrl).toHaveBeenCalledWith("m-123");
+      expect(mockMediaService.generateUrl).toHaveBeenCalledWith(mockMedia);
       expect(res.json).toHaveBeenCalledWith({
         success: true,
         message: "File uploaded successfully",
@@ -959,7 +960,7 @@ describe("projectController", () => {
         },
       ];
       mockMediaService.getMedia.mockResolvedValueOnce(mockFiles);
-      mockMediaService.getUrl.mockResolvedValueOnce("http://s3/f1.pdf");
+      mockMediaService.generateUrl.mockReturnValueOnce("http://s3/f1.pdf");
 
       const req: any = { params: { id: "proj-123" } };
       const res = createRes();

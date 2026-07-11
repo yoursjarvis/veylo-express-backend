@@ -90,8 +90,6 @@ export const orgMembersRepository = {
       organizationId: params.activeOrgId,
     };
 
-
-
     if (params.search || params.status) {
       where.user = userWhere;
     }

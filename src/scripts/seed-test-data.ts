@@ -52,6 +52,12 @@ async function main() {
     }
   }
 
+  // Hash Password
+  console.log("Hashing password for users...");
+  const hashedPassword = await hashPassword(PASSWORD);
+
+  const users = [];
+
   if (!orgId) {
     // Look for first existing org if input was blank
     const firstOrg = await prisma.organization.findFirst();
@@ -63,6 +69,34 @@ async function main() {
         `Using existing organization: ${orgName} (ID: ${orgId}, Slug: ${orgSlug})`,
       );
     } else {
+      // Create owner user first
+      console.log("Creating organization owner user...");
+      const ownerFirstName = faker.person.firstName();
+      const ownerLastName = faker.person.lastName();
+      const ownerName = `${ownerFirstName} ${ownerLastName}`;
+      const ownerEmail = faker.internet
+        .email({ firstName: ownerFirstName, lastName: ownerLastName })
+        .toLowerCase();
+
+      const ownerUser = await prisma.user.create({
+        data: {
+          firstName: ownerFirstName,
+          lastName: ownerLastName,
+          name: ownerName,
+          email: ownerEmail,
+          emailVerified: true,
+          role: "user",
+          accounts: {
+            create: {
+              providerId: "credential",
+              accountId: ownerEmail,
+              password: hashedPassword,
+            },
+          },
+        },
+      });
+      users.push(ownerUser);
+
       // Create a brand new organization
       orgName = faker.company.name() + " Test";
       orgSlug = faker.helpers.slugify(orgName.toLowerCase());
@@ -70,24 +104,30 @@ async function main() {
         data: {
           name: orgName,
           slug: orgSlug,
+          ownerId: ownerUser.id,
         },
       });
       orgId = newOrg.id;
       console.log(
         `Created new organization: ${orgName} (ID: ${orgId}, Slug: ${orgSlug})`,
       );
+
+      // Create Org Member record for owner
+      await prisma.member.create({
+        data: {
+          organizationId: orgId,
+          userId: ownerUser.id,
+          role: "owner",
+        },
+      });
     }
   }
 
-  // 2. Hash Password
-  console.log("Hashing password for users...");
-  const hashedPassword = await hashPassword(PASSWORD);
-
   // 3. Create Org Members
   console.log("Creating organization members...");
-  const users = [];
+  const targetUserCount = users.length > 0 ? 9 : 10;
 
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < targetUserCount; i++) {
     const firstName = faker.person.firstName();
     const lastName = faker.person.lastName();
     const name = `${firstName} ${lastName}`;
@@ -273,6 +313,11 @@ async function main() {
         template: projectTemplates[i],
         workspaceId: workspace.id,
         organizationId: orgId,
+        ownerId: users[faker.number.int({ min: 0, max: users.length - 1 })].id,
+        status: faker.helpers.arrayElement(["on_track", "at_risk", "off_track", "on_hold"]),
+        priority: faker.helpers.arrayElement(["low", "medium", "high"]),
+        startDate: faker.date.past({ years: 0.1 }),
+        endDate: faker.date.future({ years: 0.2 }),
       },
     });
 

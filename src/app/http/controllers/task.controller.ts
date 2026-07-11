@@ -9,9 +9,10 @@ import {
   taskCreateSchema,
   taskUpdateSchema,
 } from "@/app/http/validators/task.validator";
+import { taskRepository } from "@/app/repositories/task.repository";
 import { taskService } from "@/app/services/task.service";
 import { mediaService } from "@/core/media";
-import { BadRequestException } from "@/utils/app-error";
+import { BadRequestException, NotFoundException } from "@/utils/app-error";
 import { ok } from "@/utils/http-response";
 
 export const taskController = {
@@ -129,5 +130,37 @@ export const taskController = {
     await mediaService.deleteMedia(attachmentId);
 
     return ok(res, "Attachment deleted successfully");
+  }),
+
+  restoreTask: asyncHandler(async (req: Request, res: Response) => {
+    const taskId = req.params.id as string;
+    const { userId } = await resolveSession(req);
+    const task = await taskRepository.findTaskByIdWithTrashed(taskId);
+
+    if (!task) {
+      throw new NotFoundException("Task not found");
+    }
+
+    await verifyProjectAccess(req, task.projectId);
+
+    await taskService.restoreTask(taskId, userId);
+
+    return ok(res, "Task restored successfully");
+  }),
+
+  forceDeleteTask: asyncHandler(async (req: Request, res: Response) => {
+    const taskId = req.params.id as string;
+    const { userId } = await resolveSession(req);
+    const task = await taskRepository.findTaskByIdWithTrashed(taskId);
+
+    if (!task) {
+      throw new NotFoundException("Task not found");
+    }
+
+    await verifyProjectAccess(req, task.projectId);
+
+    await taskService.forceDeleteTask(taskId, userId);
+
+    return ok(res, "Task permanently deleted");
   }),
 };

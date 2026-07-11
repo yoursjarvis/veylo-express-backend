@@ -1,5 +1,6 @@
 import { Router } from "express";
 
+import { auditLogController } from "@/app/http/controllers/audit-log.controller";
 import { workspaceController } from "@/app/http/controllers/workspace.controller";
 import { requireAuth } from "@/app/http/middlewares/require-auth.middleware";
 
@@ -15,6 +16,18 @@ workspaceRoutes.delete(
   "/:id",
   requireAuth,
   workspaceController.deleteWorkspace,
+);
+
+workspaceRoutes.post(
+  "/:id/restore",
+  requireAuth,
+  workspaceController.restoreWorkspace,
+);
+
+workspaceRoutes.delete(
+  "/:id/force",
+  requireAuth,
+  workspaceController.forceDeleteWorkspace,
 );
 
 workspaceRoutes.get(
@@ -33,4 +46,16 @@ workspaceRoutes.delete(
   "/:id/members/:userId",
   requireAuth,
   workspaceController.removeWorkspaceMember,
+);
+
+workspaceRoutes.get(
+  "/:id/audit-logs",
+  requireAuth,
+  auditLogController.getLogs,
+);
+
+workspaceRoutes.post(
+  "/:id/audit-logs/export",
+  requireAuth,
+  auditLogController.exportLogs,
 );

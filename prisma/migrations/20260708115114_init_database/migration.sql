@@ -20,6 +20,7 @@ CREATE TABLE "users" (
     "updated_at" TIMESTAMPTZ(6) NOT NULL,
     "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "two_factor_enabled" BOOLEAN,
+    "notification_preferences" TEXT DEFAULT '[]',
 
     CONSTRAINT "users_pkey" PRIMARY KEY ("id")
 );
@@ -84,6 +85,7 @@ CREATE TABLE "organizations" (
     "name" TEXT NOT NULL,
     "slug" TEXT,
     "logo" TEXT,
+    "owner_id" UUID NOT NULL,
     "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "metadata" JSONB,
 
@@ -95,7 +97,6 @@ CREATE TABLE "members" (
     "id" UUID NOT NULL,
     "organization_id" UUID NOT NULL,
     "user_id" UUID NOT NULL,
-    "role" TEXT NOT NULL,
     "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "members_pkey" PRIMARY KEY ("id")
@@ -120,7 +121,6 @@ CREATE TABLE "workspace_members" (
     "id" UUID NOT NULL,
     "workspace_id" UUID NOT NULL,
     "user_id" UUID NOT NULL,
-    "role" TEXT NOT NULL DEFAULT 'member',
     "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "workspace_members_pkey" PRIMARY KEY ("id")
@@ -135,6 +135,7 @@ CREATE TABLE "invitations" (
     "status" TEXT NOT NULL,
     "expires_at" TIMESTAMPTZ(6) NOT NULL,
     "inviter_id" UUID NOT NULL,
+    "project_ids" JSONB,
     "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -158,10 +159,25 @@ CREATE TABLE "media" (
     "generated_conversions" JSONB,
     "responsive_images" JSONB,
     "order_column" INTEGER,
+    "version" INTEGER NOT NULL DEFAULT 1,
+    "parent_media_id" UUID,
     "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMPTZ(6) NOT NULL,
 
     CONSTRAINT "media_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "annotations" (
+    "id" UUID NOT NULL,
+    "media_id" UUID NOT NULL,
+    "user_id" UUID NOT NULL,
+    "x" DOUBLE PRECISION NOT NULL,
+    "y" DOUBLE PRECISION NOT NULL,
+    "content" TEXT NOT NULL,
+    "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "annotations_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -199,7 +215,6 @@ CREATE TABLE "project_members" (
     "id" UUID NOT NULL,
     "project_id" UUID NOT NULL,
     "user_id" UUID NOT NULL,
-    "role" TEXT NOT NULL DEFAULT 'member',
     "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "project_members_pkey" PRIMARY KEY ("id")
@@ -261,6 +276,7 @@ CREATE TABLE "tasks" (
     "reporter_id" UUID,
     "parent_task_id" UUID,
     "custom_fields" JSONB DEFAULT '{}',
+    "is_private" BOOLEAN NOT NULL DEFAULT false,
     "deleted_at" TIMESTAMPTZ(6),
     "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -274,6 +290,7 @@ CREATE TABLE "task_statuses" (
     "project_id" UUID NOT NULL,
     "organization_id" UUID NOT NULL,
     "name" TEXT NOT NULL,
+    "color" TEXT,
     "category" TEXT NOT NULL,
     "order" INTEGER NOT NULL DEFAULT 0,
     "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -476,6 +493,7 @@ CREATE TABLE "roles" (
     "organization_id" UUID,
     "name" TEXT NOT NULL,
     "is_system_default" BOOLEAN NOT NULL DEFAULT false,
+    "bypass_permissions" BOOLEAN NOT NULL DEFAULT false,
     "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -512,6 +530,76 @@ CREATE TABLE "workflow_transitions" (
     "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "workflow_transitions_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "automation_rules" (
+    "id" UUID NOT NULL,
+    "project_id" UUID NOT NULL,
+    "name" TEXT NOT NULL,
+    "trigger" TEXT NOT NULL,
+    "trigger_val" TEXT,
+    "action" TEXT NOT NULL,
+    "action_val" TEXT,
+    "is_active" BOOLEAN NOT NULL DEFAULT true,
+    "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "automation_rules_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "work_logs" (
+    "id" UUID NOT NULL,
+    "task_id" UUID NOT NULL,
+    "user_id" UUID NOT NULL,
+    "hours_logged" DOUBLE PRECISION NOT NULL,
+    "logged_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "description" TEXT,
+
+    CONSTRAINT "work_logs_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "checklist_templates" (
+    "id" UUID NOT NULL,
+    "name" TEXT NOT NULL,
+    "description" TEXT,
+    "items" JSONB NOT NULL,
+    "workspace_id" UUID NOT NULL,
+    "organization_id" UUID NOT NULL,
+    "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "checklist_templates_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "objectives" (
+    "id" UUID NOT NULL,
+    "title" TEXT NOT NULL,
+    "description" TEXT,
+    "progress" DOUBLE PRECISION NOT NULL DEFAULT 0,
+    "project_id" UUID NOT NULL,
+    "epic_id" UUID,
+    "organization_id" UUID NOT NULL,
+    "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "objectives_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "key_results" (
+    "id" UUID NOT NULL,
+    "objective_id" UUID NOT NULL,
+    "title" TEXT NOT NULL,
+    "progress" DOUBLE PRECISION NOT NULL DEFAULT 0,
+    "target" TEXT NOT NULL,
+    "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "key_results_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -570,6 +658,9 @@ CREATE UNIQUE INDEX "workspace_members_workspace_id_user_id_key" ON "workspace_m
 
 -- CreateIndex
 CREATE INDEX "media_model_type_model_id_idx" ON "media"("model_type", "model_id");
+
+-- CreateIndex
+CREATE INDEX "annotations_media_id_idx" ON "annotations"("media_id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "projects_project_key_key" ON "projects"("project_key");
@@ -709,11 +800,32 @@ CREATE INDEX "workflow_transitions_organization_id_idx" ON "workflow_transitions
 -- CreateIndex
 CREATE UNIQUE INDEX "workflow_transitions_project_id_from_status_id_to_status_id_key" ON "workflow_transitions"("project_id", "from_status_id", "to_status_id");
 
+-- CreateIndex
+CREATE INDEX "work_logs_task_id_idx" ON "work_logs"("task_id");
+
+-- CreateIndex
+CREATE INDEX "work_logs_user_id_idx" ON "work_logs"("user_id");
+
+-- CreateIndex
+CREATE INDEX "checklist_templates_workspace_id_idx" ON "checklist_templates"("workspace_id");
+
+-- CreateIndex
+CREATE INDEX "idx_objectives_project_id" ON "objectives"("project_id");
+
+-- CreateIndex
+CREATE INDEX "idx_objectives_org_id" ON "objectives"("organization_id");
+
+-- CreateIndex
+CREATE INDEX "idx_key_results_objective_id" ON "key_results"("objective_id");
+
 -- AddForeignKey
 ALTER TABLE "sessions" ADD CONSTRAINT "sessions_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "accounts" ADD CONSTRAINT "accounts_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "organizations" ADD CONSTRAINT "organizations_owner_id_fkey" FOREIGN KEY ("owner_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "members" ADD CONSTRAINT "members_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -735,6 +847,15 @@ ALTER TABLE "invitations" ADD CONSTRAINT "invitations_organization_id_fkey" FORE
 
 -- AddForeignKey
 ALTER TABLE "invitations" ADD CONSTRAINT "invitations_inviter_id_fkey" FOREIGN KEY ("inviter_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "media" ADD CONSTRAINT "media_parent_media_id_fkey" FOREIGN KEY ("parent_media_id") REFERENCES "media"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "annotations" ADD CONSTRAINT "annotations_media_id_fkey" FOREIGN KEY ("media_id") REFERENCES "media"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "annotations" ADD CONSTRAINT "annotations_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "two_factors" ADD CONSTRAINT "two_factors_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -912,3 +1033,30 @@ ALTER TABLE "workflow_transitions" ADD CONSTRAINT "workflow_transitions_to_statu
 
 -- AddForeignKey
 ALTER TABLE "workflow_transitions" ADD CONSTRAINT "workflow_transitions_required_role_id_fkey" FOREIGN KEY ("required_role_id") REFERENCES "roles"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "automation_rules" ADD CONSTRAINT "automation_rules_project_id_fkey" FOREIGN KEY ("project_id") REFERENCES "projects"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "work_logs" ADD CONSTRAINT "work_logs_task_id_fkey" FOREIGN KEY ("task_id") REFERENCES "tasks"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "work_logs" ADD CONSTRAINT "work_logs_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "checklist_templates" ADD CONSTRAINT "checklist_templates_workspace_id_fkey" FOREIGN KEY ("workspace_id") REFERENCES "workspaces"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "checklist_templates" ADD CONSTRAINT "checklist_templates_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "objectives" ADD CONSTRAINT "objectives_project_id_fkey" FOREIGN KEY ("project_id") REFERENCES "projects"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "objectives" ADD CONSTRAINT "objectives_epic_id_fkey" FOREIGN KEY ("epic_id") REFERENCES "epics"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "objectives" ADD CONSTRAINT "objectives_organization_id_fkey" FOREIGN KEY ("organization_id") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "key_results" ADD CONSTRAINT "key_results_objective_id_fkey" FOREIGN KEY ("objective_id") REFERENCES "objectives"("id") ON DELETE CASCADE ON UPDATE CASCADE;

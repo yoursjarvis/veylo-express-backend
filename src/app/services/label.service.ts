@@ -1,5 +1,5 @@
 import { labelRepository } from "@/app/repositories/label.repository";
-import { BadRequestException } from "@/utils/app-error";
+import { BadRequestException, NotFoundException } from "@/utils/app-error";
 
 export const labelService = {
   async createLabel(
@@ -51,5 +51,21 @@ export const labelService = {
 
   async deleteLabel(labelId: string) {
     await labelRepository.delete(labelId);
+  },
+
+  async restoreLabel(labelId: string) {
+    const label = await labelRepository.findByIdWithTrashed(labelId);
+    if (!label) {
+      throw new NotFoundException("Label not found");
+    }
+    return labelRepository.restore(labelId);
+  },
+
+  async forceDeleteLabel(labelId: string) {
+    const label = await labelRepository.findByIdWithTrashed(labelId);
+    if (!label) {
+      throw new NotFoundException("Label not found");
+    }
+    return labelRepository.forceDelete(labelId);
   },
 };

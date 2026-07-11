@@ -1,17 +1,32 @@
 import { vi } from "vitest";
 
 const standardMock = () => ({
-  findUnique: vi.fn(),
-  findFirst: vi.fn(),
-  findMany: vi.fn(),
-  create: vi.fn(),
-  update: vi.fn(),
-  delete: vi.fn(),
-  createMany: vi.fn(),
-  updateMany: vi.fn(),
-  deleteMany: vi.fn(),
-  count: vi.fn(),
-  upsert: vi.fn(),
+  findUnique: vi.fn().mockResolvedValue(null),
+  findFirst: vi.fn().mockResolvedValue(null),
+  findMany: vi.fn().mockResolvedValue([]),
+  create: vi
+    .fn()
+    .mockImplementation((args) =>
+      Promise.resolve({ id: "mock-id", ...(args?.data || {}) }),
+    ),
+  update: vi
+    .fn()
+    .mockImplementation((args) =>
+      Promise.resolve({ id: "mock-id", ...(args?.data || {}) }),
+    ),
+  delete: vi.fn().mockImplementation(() => Promise.resolve({ id: "mock-id" })),
+  createMany: vi.fn().mockResolvedValue({ count: 1 }),
+  updateMany: vi.fn().mockResolvedValue({ count: 1 }),
+  deleteMany: vi.fn().mockResolvedValue({ count: 1 }),
+  count: vi.fn().mockResolvedValue(0),
+  upsert: vi
+    .fn()
+    .mockImplementation((args) =>
+      Promise.resolve({
+        id: "mock-id",
+        ...(args?.create || args?.update || {}),
+      }),
+    ),
 });
 
 export const prismaMock = {
@@ -47,6 +62,7 @@ export const prismaMock = {
   verification: standardMock(),
   account: standardMock(),
   twoFactor: standardMock(),
+  twoFactorBackup: standardMock(),
   vault: standardMock(),
   vaultService: standardMock(),
   vaultItem: standardMock(),
@@ -54,4 +70,8 @@ export const prismaMock = {
   notification: standardMock(),
   taskLabel: standardMock(),
   workflowTransition: standardMock(),
+  role: standardMock(),
+  permission: standardMock(),
+  rolePermission: standardMock(),
+  userRoleAssignment: standardMock(),
 };

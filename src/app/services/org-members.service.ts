@@ -18,12 +18,42 @@ export const orgMembersService = {
     sessionUserId: string,
     targetUserId?: string,
     action: string = "update",
+    allowSelf = false,
   ) {
     const callerMember = await orgMembersRepository.findCallerMember(
       activeOrgId,
       sessionUserId,
     );
     if (!callerMember) {
+      throw new ForbiddenException(
+        "Forbidden: You must be a member of this organization",
+      );
+    }
+
+    // Ownership check: If modifying oneself, and allowSelf is true, bypass permission check
+    if (allowSelf && targetUserId && sessionUserId === targetUserId) {
+      return callerMember;
+    }
+
+    const { rbacService } = await import("@/app/services/rbac.service");
+
+    // Map action to permission string
+    let requiredPermission = `member:${action}`;
+    if (action === "invite") {
+      requiredPermission = "member:invite";
+    } else if (action === "cancel_invitation") {
+      requiredPermission = "invitation:cancel";
+    }
+
+    const isAllowed = await rbacService.authorize(
+      sessionUserId,
+      requiredPermission,
+      {
+        organizationId: activeOrgId,
+      },
+    );
+
+    if (!isAllowed) {
       throw new ForbiddenException(
         "Forbidden: You must be an organization admin",
       );
@@ -40,14 +70,41 @@ export const orgMembersService = {
         );
       }
 
-      const { rbacService } = await import("@/app/services/rbac.service");
-      const isAllowed = await rbacService.authorize(callerMember.userId, `member:${action}`, {
-        organizationId: activeOrgId,
-      });
+      const prisma = (await import("@/lib/prisma")).default;
+      const [org, callerRoleAssignment, targetRoleAssignment] =
+        await Promise.all([
+          prisma.organization.findUnique({
+            where: { id: activeOrgId },
+            select: { ownerId: true },
+          }),
+          prisma.userRoleAssignment.findFirst({
+            where: {
+              userId: sessionUserId,
+              scopeType: "ORGANIZATION",
+              scopeId: activeOrgId,
+            },
+            include: { role: true },
+          }),
+          prisma.userRoleAssignment.findFirst({
+            where: {
+              userId: targetUserId,
+              scopeType: "ORGANIZATION",
+              scopeId: activeOrgId,
+            },
+            include: { role: true },
+          }),
+        ]);
 
-      if (!isAllowed) {
+      const callerRoleName = callerRoleAssignment?.role?.name;
+      const targetRoleName = targetRoleAssignment?.role?.name;
+      const isTargetOwner = org?.ownerId === targetUserId;
+
+      if (
+        callerRoleName === "admin" &&
+        (targetRoleName === "admin" || isTargetOwner)
+      ) {
         throw new ForbiddenException(
-          "Forbidden: You do not have permission to modify members",
+          "Forbidden: Admins cannot modify other admins or owners",
         );
       }
     }
@@ -61,7 +118,12 @@ export const orgMembersService = {
     targetUserId: string,
     reason?: string,
   ) {
-    await this.verifyAdminAccess(activeOrgId, sessionUserId, targetUserId);
+    await this.verifyAdminAccess(
+      activeOrgId,
+      sessionUserId,
+      targetUserId,
+      "ban",
+    );
 
     await orgMembersRepository.banUser(
       targetUserId,
@@ -75,7 +137,12 @@ export const orgMembersService = {
     sessionUserId: string,
     targetUserId: string,
   ) {
-    await this.verifyAdminAccess(activeOrgId, sessionUserId, targetUserId);
+    await this.verifyAdminAccess(
+      activeOrgId,
+      sessionUserId,
+      targetUserId,
+      "ban",
+    );
     await orgMembersRepository.unbanUser(targetUserId);
   },
 
@@ -84,7 +151,13 @@ export const orgMembersService = {
     sessionUserId: string,
     targetUserId: string,
   ) {
-    await this.verifyAdminAccess(activeOrgId, sessionUserId, targetUserId);
+    await this.verifyAdminAccess(
+      activeOrgId,
+      sessionUserId,
+      targetUserId,
+      "update",
+      true,
+    );
     await orgMembersRepository.deleteSessionsByUserId(targetUserId);
   },
 
@@ -98,6 +171,7 @@ export const orgMembersService = {
       activeOrgId,
       sessionUserId,
       targetUserId,
+      "impersonate",
     );
 
     try {
@@ -133,7 +207,13 @@ export const orgMembersService = {
     password: string,
     headers: HeadersInit,
   ) {
-    await this.verifyAdminAccess(activeOrgId, sessionUserId, targetUserId, "change_password");
+    await this.verifyAdminAccess(
+      activeOrgId,
+      sessionUserId,
+      targetUserId,
+      "change-password",
+      true,
+    );
 
     const setUserPassword = (auth.api as Record<string, unknown>)
       .setUserPassword as (options: {
@@ -152,7 +232,13 @@ export const orgMembersService = {
     sessionUserId: string,
     targetUserId: string,
   ) {
-    await this.verifyAdminAccess(activeOrgId, sessionUserId, targetUserId, "update");
+    await this.verifyAdminAccess(
+      activeOrgId,
+      sessionUserId,
+      targetUserId,
+      "read",
+      true,
+    );
     return prisma.session.findMany({
       where: { userId: targetUserId },
       orderBy: { lastActiveAt: "desc" },
@@ -166,7 +252,13 @@ export const orgMembersService = {
     sessionId: string,
     _headers: HeadersInit,
   ) {
-    await this.verifyAdminAccess(activeOrgId, sessionUserId, targetUserId, "update");
+    await this.verifyAdminAccess(
+      activeOrgId,
+      sessionUserId,
+      targetUserId,
+      "update",
+      true,
+    );
     await prisma.session.deleteMany({
       where: {
         id: sessionId,
@@ -186,7 +278,13 @@ export const orgMembersService = {
       size: number;
     },
   ) {
-    await this.verifyAdminAccess(activeOrgId, sessionUserId, targetUserId, "update");
+    await this.verifyAdminAccess(
+      activeOrgId,
+      sessionUserId,
+      targetUserId,
+      "update",
+      true,
+    );
 
     const { mediaService } = await import("@/app/services/media.service");
     const result = await mediaService.uploadAvatar(targetUserId, {
@@ -195,7 +293,7 @@ export const orgMembersService = {
       mimetype: file.mimetype,
       size: file.size,
     });
-    
+
     return result.url;
   },
 
@@ -203,9 +301,15 @@ export const orgMembersService = {
     activeOrgId: string,
     sessionUserId: string,
     targetUserId: string,
-    data: { firstName: string; lastName: string; email: string }
+    data: { firstName: string; lastName: string; email: string },
   ) {
-    await this.verifyAdminAccess(activeOrgId, sessionUserId);
+    await this.verifyAdminAccess(
+      activeOrgId,
+      sessionUserId,
+      targetUserId,
+      "update",
+      true,
+    );
 
     // Verify user belongs to org
     const member = await prisma.member.findFirst({
@@ -244,7 +348,7 @@ export const orgMembersService = {
       status?: string;
     },
   ) {
-    await this.verifyAdminAccess(activeOrgId, sessionUserId);
+    await this.verifyAdminAccess(activeOrgId, sessionUserId, undefined, "read");
 
     const members = await orgMembersRepository.findMembers({
       activeOrgId,
@@ -288,7 +392,7 @@ export const orgMembersService = {
   },
 
   async getPendingInvitations(activeOrgId: string, sessionUserId: string) {
-    await this.verifyAdminAccess(activeOrgId, sessionUserId);
+    await this.verifyAdminAccess(activeOrgId, sessionUserId, undefined, "read");
     return orgMembersRepository.findPendingInvitations(activeOrgId);
   },
 
@@ -331,9 +435,17 @@ export const orgMembersService = {
 
   async bulkInvite(
     activeOrgId: string,
+    sessionUserId: string,
     file: { buffer: Buffer; mimetype: string; originalname: string },
     headers: HeadersInit,
   ) {
+    await this.verifyAdminAccess(
+      activeOrgId,
+      sessionUserId,
+      undefined,
+      "invite",
+    );
+
     let records: Record<string, unknown>[] = [];
 
     if (file.mimetype === "text/csv" || file.originalname.endsWith(".csv")) {
@@ -416,7 +528,12 @@ export const orgMembersService = {
     id: string,
     headers: HeadersInit,
   ) {
-    await this.verifyAdminAccess(activeOrgId, sessionUserId);
+    await this.verifyAdminAccess(
+      activeOrgId,
+      sessionUserId,
+      undefined,
+      "cancel_invitation",
+    );
 
     const invitation = await orgMembersRepository.findInvitationInOrg(
       id,
@@ -437,5 +554,57 @@ export const orgMembersService = {
       },
       headers,
     });
+  },
+
+  async resendInvitation(
+    activeOrgId: string,
+    sessionUserId: string,
+    id: string,
+    headers: HeadersInit,
+  ) {
+    await this.verifyAdminAccess(
+      activeOrgId,
+      sessionUserId,
+      undefined,
+      "invite",
+    );
+
+    const invitation = await orgMembersRepository.findInvitationInOrg(
+      id,
+      activeOrgId,
+    );
+    if (!invitation) {
+      throw new NotFoundException("Invitation not found in this organization");
+    }
+
+    const createInvitation = (auth.api as Record<string, unknown>)
+      .createInvitation as (options: {
+      body: {
+        email: string;
+        role: string;
+        organizationId: string;
+        resend: boolean;
+      };
+      headers: HeadersInit;
+    }) => Promise<{ id: string; [key: string]: unknown } | null>;
+
+    const result = await createInvitation({
+      body: {
+        email: invitation.email,
+        role: invitation.role || "member",
+        organizationId: activeOrgId,
+        resend: true,
+      },
+      headers,
+    });
+
+    if (result && Array.isArray(invitation.projectIds) && invitation.projectIds.length > 0) {
+      await prisma.invitation.update({
+        where: { id: result.id },
+        data: { projectIds: invitation.projectIds as string[] },
+      });
+    }
+
+    return result;
   },
 };

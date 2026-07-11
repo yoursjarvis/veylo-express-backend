@@ -16,6 +16,12 @@ export const updateRoleSchema = z.object({
 export const assignRoleSchema = z.object({
   userId: z.string().uuid(),
   roleIds: z.array(z.string().uuid()),
-  scopeType: z.enum(["ORGANIZATION", "PROJECT"]),
+  scopeType: z.enum([
+    "SYSTEM",
+    "ORGANIZATION",
+    "WORKSPACE",
+    "DEPARTMENT",
+    "PROJECT",
+  ]),
   scopeId: z.string().uuid(),
 });

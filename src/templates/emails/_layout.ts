@@ -1,4 +1,4 @@
-  type LayoutInput = {
+type LayoutInput = {
   title: string;
   preheader?: string;
   bodyHtml: string;

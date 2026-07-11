@@ -30,6 +30,12 @@ taskRoutes.get(
 taskRoutes.get("/tasks/:id", requireAuth, taskController.getTask);
 taskRoutes.patch("/tasks/:id", requireAuth, taskController.updateTask);
 taskRoutes.delete("/tasks/:id", requireAuth, taskController.deleteTask);
+taskRoutes.post("/tasks/:id/restore", requireAuth, taskController.restoreTask);
+taskRoutes.delete(
+  "/tasks/:id/force",
+  requireAuth,
+  taskController.forceDeleteTask,
+);
 taskRoutes.post(
   "/tasks/:taskId/attachments",
   requireAuth,
@@ -56,6 +62,16 @@ taskRoutes.get(
 taskRoutes.get("/sprints/:id", requireAuth, sprintController.getSprint);
 taskRoutes.patch("/sprints/:id", requireAuth, sprintController.updateSprint);
 taskRoutes.delete("/sprints/:id", requireAuth, sprintController.deleteSprint);
+taskRoutes.post(
+  "/sprints/:id/restore",
+  requireAuth,
+  sprintController.restoreSprint,
+);
+taskRoutes.delete(
+  "/sprints/:id/force",
+  requireAuth,
+  sprintController.forceDeleteSprint,
+);
 
 // --- TASK STATUS CRUD ---
 taskRoutes.post(
@@ -77,6 +93,16 @@ taskRoutes.delete(
   "/statuses/:id",
   requireAuth,
   taskExtrasController.deleteStatus,
+);
+taskRoutes.post(
+  "/statuses/:id/restore",
+  requireAuth,
+  taskExtrasController.restoreStatus,
+);
+taskRoutes.delete(
+  "/statuses/:id/force",
+  requireAuth,
+  taskExtrasController.forceDeleteStatus,
 );
 
 // --- SUBTASK CHECKLIST CRUD ---
@@ -112,6 +138,16 @@ taskRoutes.delete(
   requireAuth,
   taskExtrasController.deleteComment,
 );
+taskRoutes.post(
+  "/comments/:id/restore",
+  requireAuth,
+  taskExtrasController.restoreComment,
+);
+taskRoutes.delete(
+  "/comments/:id/force",
+  requireAuth,
+  taskExtrasController.forceDeleteComment,
+);
 taskRoutes.get(
   "/comments/:commentId/reactions/:emoji/users",
   requireAuth,
@@ -138,6 +174,16 @@ taskRoutes.delete(
   "/custom-fields/:id",
   requireAuth,
   taskExtrasController.deleteCustomField,
+);
+taskRoutes.post(
+  "/custom-fields/:id/restore",
+  requireAuth,
+  taskExtrasController.restoreCustomField,
+);
+taskRoutes.delete(
+  "/custom-fields/:id/force",
+  requireAuth,
+  taskExtrasController.forceDeleteCustomField,
 );
 
 // --- IN-APP NOTIFICATIONS ---
@@ -205,6 +251,12 @@ taskRoutes.get(
 taskRoutes.get("/epics/:id", requireAuth, epicController.getEpic);
 taskRoutes.patch("/epics/:id", requireAuth, epicController.updateEpic);
 taskRoutes.delete("/epics/:id", requireAuth, epicController.deleteEpic);
+taskRoutes.post("/epics/:id/restore", requireAuth, epicController.restoreEpic);
+taskRoutes.delete(
+  "/epics/:id/force",
+  requireAuth,
+  epicController.forceDeleteEpic,
+);
 
 // --- LABEL CRUD ---
 taskRoutes.post(
@@ -219,6 +271,16 @@ taskRoutes.get(
 );
 taskRoutes.patch("/labels/:id", requireAuth, labelController.updateLabel);
 taskRoutes.delete("/labels/:id", requireAuth, labelController.deleteLabel);
+taskRoutes.post(
+  "/labels/:id/restore",
+  requireAuth,
+  labelController.restoreLabel,
+);
+taskRoutes.delete(
+  "/labels/:id/force",
+  requireAuth,
+  labelController.forceDeleteLabel,
+);
 
 // --- MILESTONE CRUD ---
 taskRoutes.post(
@@ -240,6 +302,16 @@ taskRoutes.delete(
   "/milestones/:id",
   requireAuth,
   milestoneController.deleteMilestone,
+);
+taskRoutes.post(
+  "/milestones/:id/restore",
+  requireAuth,
+  milestoneController.restoreMilestone,
+);
+taskRoutes.delete(
+  "/milestones/:id/force",
+  requireAuth,
+  milestoneController.forceDeleteMilestone,
 );
 
 // --- WORK LOGS CRUD ---

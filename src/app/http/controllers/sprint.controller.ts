@@ -84,4 +84,34 @@ export const sprintController = {
 
     return ok(res, "Sprint deleted successfully");
   }),
+
+  restoreSprint: asyncHandler(async (req: Request, res: Response) => {
+    const sprintId = req.params.id as string;
+
+    const sprint = await sprintRepository.findByIdWithTrashed(sprintId);
+    if (!sprint) {
+      throw new NotFoundException("Sprint not found");
+    }
+
+    await verifyProjectAccess(req, sprint.projectId);
+
+    await sprintService.restoreSprint(sprintId);
+
+    return ok(res, "Sprint restored successfully");
+  }),
+
+  forceDeleteSprint: asyncHandler(async (req: Request, res: Response) => {
+    const sprintId = req.params.id as string;
+
+    const sprint = await sprintRepository.findByIdWithTrashed(sprintId);
+    if (!sprint) {
+      throw new NotFoundException("Sprint not found");
+    }
+
+    await verifyProjectAccess(req, sprint.projectId);
+
+    await sprintService.forceDeleteSprint(sprintId);
+
+    return ok(res, "Sprint permanently deleted");
+  }),
 };

@@ -17,6 +17,7 @@ import { config } from "@/utils/config";
 
 import { errorMiddleware } from "./app/http/middlewares/error-handler.middlware";
 import { rateLimit } from "./app/http/middlewares/rate-limit.middleware";
+import { requestContextStoreMiddleware } from "./app/http/middlewares/request-context-store.middleware";
 import { bullBoardAdapter } from "./lib/bull-board";
 
 const app = express();
@@ -78,6 +79,7 @@ app.use(
 
 app.use(express.json({ limit: "32kb" }));
 app.use(express.urlencoded({ extended: true }));
+app.use(requestContextStoreMiddleware);
 
 // Serve static files from storage directory
 const storageRoot = config("storage.disks.local.root") || "storage/app";

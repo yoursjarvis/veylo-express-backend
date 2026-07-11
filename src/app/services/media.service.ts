@@ -41,8 +41,16 @@ export const mediaService = {
       size: number;
     },
   ) {
-    const member = await mediaRepository.findOrgMember(activeOrgId, userId);
-    if (!member) {
+    const { rbacService } = await import("@/app/services/rbac.service");
+    const isAllowed = await rbacService.authorize(
+      userId,
+      "organization:update",
+      {
+        organizationId: activeOrgId,
+      },
+    );
+
+    if (!isAllowed) {
       throw new ForbiddenException(
         "You do not have permission to upload logos for this organization",
       );
@@ -71,14 +79,13 @@ export const mediaService = {
       size: number;
     },
   ) {
-    const workspaceMember = await mediaRepository.findWorkspaceMember(
+    const { rbacService } = await import("@/app/services/rbac.service");
+    const isAllowed = await rbacService.authorize(userId, "workspace:update", {
+      organizationId: activeOrgId,
       workspaceId,
-      userId,
-      activeOrgId,
-    );
-    const orgAdmin = await mediaRepository.findOrgMember(activeOrgId, userId);
+    });
 
-    if (!workspaceMember && !orgAdmin) {
+    if (!isAllowed) {
       throw new ForbiddenException(
         "You do not have permission to upload icons for this workspace",
       );
@@ -118,14 +125,14 @@ export const mediaService = {
       throw new NotFoundException("Project not found");
     }
 
-    const workspaceMember = await mediaRepository.findWorkspaceMember(
-      project.workspaceId,
-      userId,
-      activeOrgId,
-    );
-    const orgAdmin = await mediaRepository.findOrgMember(activeOrgId, userId);
+    const { rbacService } = await import("@/app/services/rbac.service");
+    const isAllowed = await rbacService.authorize(userId, "project:update", {
+      organizationId: activeOrgId,
+      workspaceId: project.workspaceId,
+      projectId,
+    });
 
-    if (!workspaceMember && !orgAdmin) {
+    if (!isAllowed) {
       throw new ForbiddenException(
         "You do not have permission to upload icons for this project",
       );

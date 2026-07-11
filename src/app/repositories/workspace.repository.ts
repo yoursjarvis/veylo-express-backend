@@ -114,6 +114,24 @@ export const workspaceRepository = {
     });
   },
 
+  findWorkspaceByIdWithTrashed(id: string) {
+    return prisma.workspace.findUniqueWithTrashed({
+      where: { id },
+    });
+  },
+
+  restoreWorkspace(id: string) {
+    return prisma.workspace.restore({
+      where: { id },
+    });
+  },
+
+  forceDeleteWorkspace(id: string) {
+    return prisma.workspace.forceDelete({
+      where: { id },
+    });
+  },
+
   async syncOrgAdminsToWorkspaces(organizationId: string) {
     const orgAdmins = await prisma.member.findMany({
       where: {
@@ -131,8 +149,7 @@ export const workspaceRepository = {
 
     if (workspaces.length === 0) return;
 
-    const createData: { workspaceId: string; userId: string }[] =
-      [];
+    const createData: { workspaceId: string; userId: string }[] = [];
 
     for (const admin of orgAdmins) {
       for (const workspace of workspaces) {

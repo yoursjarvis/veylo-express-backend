@@ -14,20 +14,14 @@ vi.mock("../../src/lib/auth/auth", async () => {
   };
 });
 
-vi.mock("../../src/lib/prisma", async () => {
-  const { prismaMock } = await import("../helpers/db");
-  return {
-    default: prismaMock,
-    basePrisma: prismaMock,
-  };
-});
-
 vi.mock("../../src/app/http/middlewares/rate-limit.middleware", () => ({
   rateLimit: () => (req: any, res: any, next: any) => next(),
 }));
 
+import prisma from "@/lib/prisma";
+
+const prismaMock = prisma as any;
 import { setMockUser } from "../helpers/auth";
-import { prismaMock } from "../helpers/db";
 import { createUser, createOrganization } from "../helpers/factories";
 
 describe("Org API Endpoint Integration Tests (/api/v1/org)", () => {
@@ -62,6 +56,8 @@ describe("Org API Endpoint Integration Tests (/api/v1/org)", () => {
         .post("/api/v1/org/setup")
         .send({ name: "Acme", slug: "acme", workspaceName: "Acme Ws" });
 
+      console.log("SETUP ORG RESPONSE:", res.status, res.body);
+
       expect(res.status).toBe(201);
       expect(res.body.message).toBe("Organization created successfully");
     });
@@ -69,15 +65,28 @@ describe("Org API Endpoint Integration Tests (/api/v1/org)", () => {
 
   describe("POST /api/v1/org/members/:id/ban", () => {
     it("bans user successfully", async () => {
-      prismaMock.member.findFirst
-        .mockResolvedValueOnce({ id: "caller", role: "owner" })
-        .mockResolvedValueOnce({ id: "target", role: "member" });
+      prismaMock.member.findFirst.mockReset();
+      prismaMock.member.findFirst.mockImplementation((args: any) => {
+        console.log(
+          "DEBUG Mock findFirst called with:",
+          JSON.stringify(args, null, 2),
+        );
+        if (args?.where?.userId === "user-123") {
+          return Promise.resolve({ id: "caller", role: "owner" });
+        }
+        if (args?.where?.userId === "target-user") {
+          return Promise.resolve({ id: "target", role: "member" });
+        }
+        return Promise.resolve(null);
+      });
       prismaMock.user.update.mockResolvedValueOnce({});
       prismaMock.session.deleteMany.mockResolvedValueOnce({});
 
       const res = await request(app)
         .post("/api/v1/org/members/target-user/ban")
         .send({ reason: "spam" });
+
+      console.log("BAN USER RESPONSE:", res.status, res.body);
 
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
@@ -87,9 +96,11 @@ describe("Org API Endpoint Integration Tests (/api/v1/org)", () => {
 
   describe("POST /api/v1/org/members/invite", () => {
     it("returns 400 if email is missing", async () => {
-      prismaMock.member.findFirst.mockResolvedValueOnce({
-        id: "caller",
-        role: "owner",
+      prismaMock.member.findFirst.mockImplementation((args: any) => {
+        if (args?.where?.userId === "user-123") {
+          return Promise.resolve({ id: "caller", role: "owner" });
+        }
+        return Promise.resolve(null);
       });
 
       const res = await request(app)

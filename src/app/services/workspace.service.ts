@@ -20,7 +20,7 @@ async function verifyOrgAdmin(
 
   if (!isAllowed) {
     throw new ForbiddenException(
-      "Forbidden: You must have permission to create workspaces",
+      "Forbidden: You must be an organization admin",
     );
   }
 
@@ -31,7 +31,7 @@ async function verifyWorkspaceAction(
   activeOrgId: string | null | undefined,
   userId: string,
   workspaceId: string,
-  action: string
+  action: string,
 ) {
   if (!activeOrgId) {
     throw new BadRequestException("No active organization found");
@@ -45,7 +45,7 @@ async function verifyWorkspaceAction(
 
   if (!isAllowed) {
     throw new ForbiddenException(
-      `Forbidden: You must have permission to ${action.split(':')[1]} this ${action.split(':')[0]}`,
+      `Forbidden: You must have permission to ${action.split(":")[1]} this ${action.split(":")[0]}`,
     );
   }
 
@@ -140,7 +140,7 @@ export const workspaceService = {
       throw new NotFoundException("Workspace not found");
     }
 
-    await workspaceRepository.deleteWorkspace(id);
+    return await workspaceRepository.deleteWorkspace(id);
   },
 
   async getWorkspaceMembers(
@@ -148,7 +148,12 @@ export const workspaceService = {
     userId: string,
     workspaceId: string,
   ) {
-    await verifyWorkspaceAction(activeOrgId, userId, workspaceId, "workspace:update");
+    await verifyWorkspaceAction(
+      activeOrgId,
+      userId,
+      workspaceId,
+      "workspace:update",
+    );
 
     try {
       await workspaceRepository.syncOrgAdminsToWorkspaces(activeOrgId!);
@@ -165,7 +170,12 @@ export const workspaceService = {
     workspaceId: string,
     userIds: string[],
   ) {
-    await verifyWorkspaceAction(activeOrgId, userId, workspaceId, "workspace:update");
+    await verifyWorkspaceAction(
+      activeOrgId,
+      userId,
+      workspaceId,
+      "workspace:update",
+    );
 
     if (!Array.isArray(userIds) || userIds.length === 0) {
       throw new BadRequestException("User IDs are required");
@@ -184,10 +194,7 @@ export const workspaceService = {
 
     return Promise.all(
       userIds.map((targetUserId) =>
-        workspaceRepository.upsertWorkspaceMember(
-          workspaceId,
-          targetUserId,
-        ),
+        workspaceRepository.upsertWorkspaceMember(workspaceId, targetUserId),
       ),
     );
   },
@@ -198,8 +205,41 @@ export const workspaceService = {
     workspaceId: string,
     targetUserId: string,
   ) {
-    await verifyWorkspaceAction(activeOrgId, userId, workspaceId, "workspace:update");
+    await verifyWorkspaceAction(
+      activeOrgId,
+      userId,
+      workspaceId,
+      "workspace:update",
+    );
 
     return workspaceRepository.deleteWorkspaceMember(workspaceId, targetUserId);
+  },
+
+  async restoreWorkspace(
+    activeOrgId: string | null | undefined,
+    userId: string,
+    workspaceId: string,
+  ) {
+    await verifyWorkspaceAction(
+      activeOrgId,
+      userId,
+      workspaceId,
+      "workspace:update",
+    );
+    return workspaceRepository.restoreWorkspace(workspaceId);
+  },
+
+  async forceDeleteWorkspace(
+    activeOrgId: string | null | undefined,
+    userId: string,
+    workspaceId: string,
+  ) {
+    await verifyWorkspaceAction(
+      activeOrgId,
+      userId,
+      workspaceId,
+      "workspace:delete",
+    );
+    return workspaceRepository.forceDeleteWorkspace(workspaceId);
   },
 };

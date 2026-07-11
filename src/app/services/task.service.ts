@@ -415,13 +415,13 @@ export const taskService = {
 
     if (task.isPrivate && userId) {
       const project = await taskRepository.findProjectById(task.projectId);
-      
+
       const { rbacService } = await import("@/app/services/rbac.service");
       const isAllowed = await rbacService.authorize(userId, "task:read", {
         organizationId: task.organizationId,
         workspaceId: project?.workspaceId,
         projectId: task.projectId,
-        taskId: task.id
+        taskId: task.id,
       });
 
       if (!isAllowed) {
@@ -435,7 +435,14 @@ export const taskService = {
       "task_attachments",
     );
     const attachmentsWithUrls = attachments.map(
-      (a: { id: string; disk: string; modelType: string; collectionName: string; fileName: string; [key: string]: unknown }) => ({
+      (a: {
+        id: string;
+        disk: string;
+        modelType: string;
+        collectionName: string;
+        fileName: string;
+        [key: string]: unknown;
+      }) => ({
         ...a,
         url: mediaService.generateUrl(a),
       }),
@@ -767,5 +774,25 @@ export const taskService = {
     await taskRepository.deleteTask(taskId);
 
     await logActivity(taskId, userId, "deleted", task.title, null);
+  },
+
+  async restoreTask(taskId: string, userId: string) {
+    const task = await taskRepository.findTaskByIdWithTrashed(taskId);
+    if (!task) {
+      throw new NotFoundException("Task not found");
+    }
+
+    await taskRepository.restoreTask(taskId);
+
+    await logActivity(taskId, userId, "restored", null, task.title);
+  },
+
+  async forceDeleteTask(taskId: string, _userId: string) {
+    const task = await taskRepository.findTaskByIdWithTrashed(taskId);
+    if (!task) {
+      throw new NotFoundException("Task not found");
+    }
+
+    await taskRepository.forceDeleteTask(taskId);
   },
 };

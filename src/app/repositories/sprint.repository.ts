@@ -105,4 +105,22 @@ export const sprintRepository = {
       where: { id },
     });
   },
+
+  async findByIdWithTrashed(id: string) {
+    return prisma.sprint.findUniqueWithTrashed({
+      where: { id },
+    });
+  },
+
+  async restore(id: string) {
+    return prisma.sprint.restore({
+      where: { id },
+    });
+  },
+
+  async forceDelete(id: string) {
+    return prisma.sprint.forceDelete({
+      where: { id },
+    });
+  },
 };
