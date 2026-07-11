@@ -7,6 +7,7 @@ import { orgRoutes } from "@/routes/v1/org.routes";
 import { portfolioRoutes } from "@/routes/v1/portfolio.routes";
 import { projectRoutes } from "@/routes/v1/project.routes";
 import { rbacRoutes } from "@/routes/v1/rbac.routes";
+import { searchRoutes } from "@/routes/v1/search.routes";
 import { taskRoutes } from "@/routes/v1/task.routes";
 import { workspaceRoutes } from "@/routes/v1/workspace.routes";
 
@@ -21,3 +22,4 @@ apiV1Routes.use("/", taskRoutes);
 apiV1Routes.use("/rbac", rbacRoutes);
 apiV1Routes.use("/", objectiveRoutes);
 apiV1Routes.use("/", portfolioRoutes);
+apiV1Routes.use("/search", searchRoutes);
