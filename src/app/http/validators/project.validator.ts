@@ -27,6 +27,11 @@ export const projectUpdateSchema = z.object({
   icon: z.string().optional(),
   template: z.string().optional(),
   teamMode: z.string().optional(),
+  ownerId: z.string().uuid().optional().nullable(),
+  status: z.string().optional(),
+  priority: z.string().optional(),
+  startDate: z.coerce.date().optional().nullable(),
+  endDate: z.coerce.date().optional().nullable(),
 });
 
 export const vaultServiceSchema = z.object({

@@ -616,5 +616,41 @@
     "resource": "audit-log",
     "action": "export",
     "description": "Export audit logs to CSV"
+  },
+  {
+    "module": "Portfolios",
+    "resource": "portfolio",
+    "action": "read",
+    "description": "View portfolios and their projects progress"
+  },
+  {
+    "module": "Portfolios",
+    "resource": "portfolio",
+    "action": "create",
+    "description": "Create new portfolios"
+  },
+  {
+    "module": "Portfolios",
+    "resource": "portfolio",
+    "action": "update",
+    "description": "Update portfolios settings, name, description and project associations"
+  },
+  {
+    "module": "Portfolios",
+    "resource": "portfolio",
+    "action": "delete",
+    "description": "Soft delete portfolios"
+  },
+  {
+    "module": "Portfolios",
+    "resource": "portfolio",
+    "action": "restore",
+    "description": "Restore deleted portfolios"
+  },
+  {
+    "module": "Portfolios",
+    "resource": "portfolio",
+    "action": "force-delete",
+    "description": "Permanently delete portfolios"
   }
 ]

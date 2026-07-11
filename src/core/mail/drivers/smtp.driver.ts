@@ -21,6 +21,7 @@ function resolveSecure(): boolean {
 function buildTransportOptions(): SMTPTransport.Options {
   const username = config("mail.mailers.smtp.username");
   const password = config("mail.mailers.smtp.password");
+  const encryption = config("mail.mailers.smtp.encryption");
 
   return {
     host: config("mail.mailers.smtp.host"),
@@ -33,7 +34,8 @@ function buildTransportOptions(): SMTPTransport.Options {
             pass: password,
           }
         : undefined,
-    requireTLS: config("mail.mailers.smtp.encryption") === "tls",
+    requireTLS: encryption === "tls",
+    ignoreTLS: encryption === "none",
   };
 }
 

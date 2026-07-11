@@ -62,6 +62,7 @@ export const orgRepository = {
         data: {
           organizationId: org.id,
           userId: data.userId,
+          role: "owner",
         },
       });
 

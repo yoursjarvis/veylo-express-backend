@@ -89,6 +89,12 @@ orgRoutes.post(
   orgMembersController.revokeInvitation,
 );
 
+orgRoutes.post(
+  "/invitations/:id/resend",
+  requireAuth,
+  orgMembersController.resendInvitation,
+);
+
 orgRoutes.get(
   "/invitations/:id/public",
   orgMembersController.getInvitationPublic,

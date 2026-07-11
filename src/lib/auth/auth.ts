@@ -160,6 +160,7 @@ export const auth = betterAuth({
                 data: {
                   organizationId: inv.organizationId,
                   userId: user.id,
+                  role: inv.role || "member",
                 },
               });
 

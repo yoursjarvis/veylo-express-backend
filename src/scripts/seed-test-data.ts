@@ -117,6 +117,7 @@ async function main() {
         data: {
           organizationId: orgId,
           userId: ownerUser.id,
+          role: "owner",
         },
       });
     }
@@ -312,6 +313,11 @@ async function main() {
         template: projectTemplates[i],
         workspaceId: workspace.id,
         organizationId: orgId,
+        ownerId: users[faker.number.int({ min: 0, max: users.length - 1 })].id,
+        status: faker.helpers.arrayElement(["on_track", "at_risk", "off_track", "on_hold"]),
+        priority: faker.helpers.arrayElement(["low", "medium", "high"]),
+        startDate: faker.date.past({ years: 0.1 }),
+        endDate: faker.date.future({ years: 0.2 }),
       },
     });
 

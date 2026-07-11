@@ -342,4 +342,51 @@ export const orgMembersController = {
       });
     }
   }),
+
+  resendInvitation: asyncHandler(async (req: Request, res: Response) => {
+    const { activeOrgId, sessionUserId } = await getActiveOrgAndSession(req);
+    const id = req.params.id as string;
+
+    try {
+      const result = await orgMembersService.resendInvitation(
+        activeOrgId,
+        sessionUserId,
+        id,
+        betterAuthHeaders(req),
+      );
+
+      return ok(res, "Invitation resent successfully", result);
+    } catch (error) {
+      const err = error as Error & { status?: number | string; code?: string };
+      logger.error({ error: err, id }, "[ORG_MEMBERS] resendInvitation failed");
+      let statusCode = 500;
+      if (err.status) {
+        if (typeof err.status === "number") {
+          statusCode = err.status;
+        } else if (typeof err.status === "string") {
+          const parsed = parseInt(err.status, 10);
+          if (!isNaN(parsed)) {
+            statusCode = parsed;
+          } else {
+            const statusMap: Record<string, number> = {
+              BAD_REQUEST: 400,
+              UNAUTHORIZED: 401,
+              FORBIDDEN: 403,
+              NOT_FOUND: 404,
+              CONFLICT: 409,
+              UNPROCESSABLE_ENTITY: 422,
+              INTERNAL_SERVER_ERROR: 500,
+            };
+            if (err.status in statusMap) {
+              statusCode = statusMap[err.status];
+            }
+          }
+        }
+      }
+      return res.status(statusCode).json({
+        message: err.message || "Failed to resend invitation",
+        code: err.code,
+      });
+    }
+  }),
 };

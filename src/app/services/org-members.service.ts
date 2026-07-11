@@ -555,4 +555,56 @@ export const orgMembersService = {
       headers,
     });
   },
+
+  async resendInvitation(
+    activeOrgId: string,
+    sessionUserId: string,
+    id: string,
+    headers: HeadersInit,
+  ) {
+    await this.verifyAdminAccess(
+      activeOrgId,
+      sessionUserId,
+      undefined,
+      "invite",
+    );
+
+    const invitation = await orgMembersRepository.findInvitationInOrg(
+      id,
+      activeOrgId,
+    );
+    if (!invitation) {
+      throw new NotFoundException("Invitation not found in this organization");
+    }
+
+    const createInvitation = (auth.api as Record<string, unknown>)
+      .createInvitation as (options: {
+      body: {
+        email: string;
+        role: string;
+        organizationId: string;
+        resend: boolean;
+      };
+      headers: HeadersInit;
+    }) => Promise<{ id: string; [key: string]: unknown } | null>;
+
+    const result = await createInvitation({
+      body: {
+        email: invitation.email,
+        role: invitation.role || "member",
+        organizationId: activeOrgId,
+        resend: true,
+      },
+      headers,
+    });
+
+    if (result && Array.isArray(invitation.projectIds) && invitation.projectIds.length > 0) {
+      await prisma.invitation.update({
+        where: { id: result.id },
+        data: { projectIds: invitation.projectIds as string[] },
+      });
+    }
+
+    return result;
+  },
 };
