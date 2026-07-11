@@ -68,6 +68,27 @@ function checkHasDeletedAt(modelName: string): boolean {
   return fieldEnum ? "deletedAt" in fieldEnum : false;
 }
 
+function flattenUniqueWhere(
+  where: Record<string, unknown> | undefined,
+): Record<string, unknown> | undefined {
+  if (!where) return where;
+
+  const flattened: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(where)) {
+    if (
+      value &&
+      typeof value === "object" &&
+      !(value instanceof Date) &&
+      !Array.isArray(value)
+    ) {
+      Object.assign(flattened, value);
+    } else {
+      flattened[key] = value;
+    }
+  }
+  return flattened;
+}
+
 export const softDeleteExtension = Prisma.defineExtension((client) => {
   return client.$extends({
     name: "softDelete",
@@ -96,7 +117,9 @@ export const softDeleteExtension = Prisma.defineExtension((client) => {
               { withTrashed: true },
               async () => {
                 return await context.findFirst({
-                  where: args.where,
+                  where: flattenUniqueWhere(
+                    args.where as Record<string, unknown>,
+                  ),
                 });
               },
             )) as Record<string, unknown> | null;
@@ -313,7 +336,9 @@ export const softDeleteExtension = Prisma.defineExtension((client) => {
               { withTrashed: true },
               async () => {
                 return await clientContext[clientModelName].findFirst({
-                  where: typedArgs.where,
+                  where: flattenUniqueWhere(
+                    typedArgs.where as Record<string, unknown>,
+                  ),
                 });
               },
             )) as Record<string, unknown> | null;
@@ -507,7 +532,7 @@ export const softDeleteExtension = Prisma.defineExtension((client) => {
           return clientContext[clientModelName].findFirst({
             ...rest,
             where: {
-              ...(where as Record<string, unknown>),
+              ...flattenUniqueWhere(where as Record<string, unknown>),
               deletedAt: null,
             },
           });
@@ -533,7 +558,7 @@ export const softDeleteExtension = Prisma.defineExtension((client) => {
           return clientContext[clientModelName].findFirstOrThrow({
             ...rest,
             where: {
-              ...(where as Record<string, unknown>),
+              ...flattenUniqueWhere(where as Record<string, unknown>),
               deletedAt: null,
             },
           });
