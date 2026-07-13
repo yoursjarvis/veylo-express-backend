@@ -27,17 +27,18 @@ export const projectController = {
 
     const validatedData = projectCreateSchema.parse(req.body);
 
-    const project = await projectService.createProject(
-      workspaceId,
-      activeOrgId,
-      validatedData,
-    );
-
     const { auth } = await import("@/lib/auth/auth");
     const { betterAuthHeaders } = await import("@/lib/auth/node-headers");
     const session = await auth.api.getSession({
       headers: betterAuthHeaders(req),
     });
+
+    const project = await projectService.createProject(
+      workspaceId,
+      activeOrgId,
+      validatedData,
+      session?.user?.id,
+    );
 
     if (session?.user) {
       await auditLogService.log({

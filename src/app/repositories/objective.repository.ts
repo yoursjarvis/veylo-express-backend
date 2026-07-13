@@ -60,6 +60,7 @@ export const objectiveRepository = {
             title: data.krTitle,
             target: data.krTarget,
             progress: 0,
+            organizationId: data.organizationId,
           },
         },
       },

@@ -95,6 +95,7 @@ export const workspaceRepository = {
         members: {
           create: {
             userId: data.creatorUserId,
+            organizationId: data.organizationId,
           },
         },
       },
@@ -149,13 +150,14 @@ export const workspaceRepository = {
 
     if (workspaces.length === 0) return;
 
-    const createData: { workspaceId: string; userId: string }[] = [];
+    const createData: { workspaceId: string; userId: string; organizationId: string }[] = [];
 
     for (const admin of orgAdmins) {
       for (const workspace of workspaces) {
         createData.push({
           workspaceId: workspace.id,
           userId: admin.userId,
+          organizationId,
         });
       }
     }
@@ -196,17 +198,43 @@ export const workspaceRepository = {
     });
   },
 
-  upsertWorkspaceMember(workspaceId: string, userId: string) {
+  async upsertWorkspaceMember(workspaceId: string, userId: string) {
+    const workspace = await prisma.workspace.findUnique({
+      where: { id: workspaceId },
+      select: { organizationId: true },
+    });
+    if (!workspace) throw new Error("Workspace not found");
     return prisma.workspaceMember.upsert({
-      where: { workspaceId_userId: { workspaceId, userId } },
+      where: {
+        workspaceId_userId_organizationId: {
+          workspaceId,
+          userId,
+          organizationId: workspace.organizationId,
+        },
+      },
       update: {},
-      create: { workspaceId, userId },
+      create: {
+        workspaceId,
+        userId,
+        organizationId: workspace.organizationId,
+      },
     });
   },
 
-  deleteWorkspaceMember(workspaceId: string, userId: string) {
+  async deleteWorkspaceMember(workspaceId: string, userId: string) {
+    const workspace = await prisma.workspace.findUnique({
+      where: { id: workspaceId },
+      select: { organizationId: true },
+    });
+    if (!workspace) throw new Error("Workspace not found");
     return prisma.workspaceMember.delete({
-      where: { workspaceId_userId: { workspaceId, userId } },
+      where: {
+        workspaceId_userId_organizationId: {
+          workspaceId,
+          userId,
+          organizationId: workspace.organizationId,
+        },
+      },
     });
   },
 };

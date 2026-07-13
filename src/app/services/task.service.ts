@@ -146,7 +146,10 @@ export const taskService = {
       labels:
         data.labelIds && data.labelIds.length > 0
           ? {
-              create: data.labelIds.map((labelId) => ({ labelId })),
+              create: data.labelIds.map((labelId) => ({
+                labelId,
+                organizationId,
+              })),
             }
           : undefined,
     });

@@ -79,6 +79,7 @@ export const orgRepository = {
             roleId: ownerRole.id,
             scopeType: "ORGANIZATION",
             scopeId: org.id,
+            organizationId: org.id,
           },
         });
       }

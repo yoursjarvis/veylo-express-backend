@@ -54,8 +54,18 @@ export const dependencyRepository = {
   },
 
   async createDependency(blockingTaskId: string, blockedTaskId: string) {
+    const task = await prisma.task.findUnique({
+      where: { id: blockingTaskId },
+      select: { organizationId: true },
+    });
+    if (!task) throw new Error("Blocking task not found");
     return prisma.taskDependency.create({
-      data: { blockingTaskId, blockedTaskId, dependencyType: "blocks" },
+      data: {
+        blockingTaskId,
+        blockedTaskId,
+        dependencyType: "blocks",
+        organizationId: task.organizationId,
+      },
     });
   },
 

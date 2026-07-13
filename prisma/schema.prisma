@@ -61,6 +61,14 @@ model User {
   auditLogs             AuditLog[]
   ownedProjects         Project[]            @relation("ProjectOwner")
   portfolios            Portfolio[]
+  createdDocs           ProjectDoc[]         @relation("DocCreator")
+  updatedDocs           ProjectDoc[]         @relation("DocUpdater")
+  docPermissions        ProjectDocPermission[]
+  docComments           ProjectDocComment[]
+  createdDocVersions    ProjectDocVersion[]  @relation("DocVersionCreator")
+  docActivities         ProjectDocActivity[]
+  docFavorites          ProjectDocFavorite[]
+  docCommentReactions   ProjectDocCommentReaction[]
 
   @@index([email], map: "idx_users_email")
   @@index([isActive], map: "idx_users_is_active")
@@ -165,6 +173,28 @@ model Organization {
   objectives          Objective[]
   auditLogs           AuditLog[]
   portfolios          Portfolio[]
+  projectDocs         ProjectDoc[]
+  projectDocPermissions      ProjectDocPermission[]
+  projectDocComments         ProjectDocComment[]
+  projectDocVersions         ProjectDocVersion[]
+  projectDocActivities       ProjectDocActivity[]
+  projectDocFavorites        ProjectDocFavorite[]
+  projectDocCommentReactions ProjectDocCommentReaction[]
+  workspaceMembers           WorkspaceMember[]
+  projectMembers             ProjectMember[]
+  vaults                     Vault[]
+  vaultServices              VaultService[]
+  vaultItems                 VaultItem[]
+  commentReactions           CommentReaction[]
+  slackWebhooks              SlackWebhook[]
+  taskDependencies           TaskDependency[]
+  taskLabels                 TaskLabel[]
+  rolePermissions            RolePermission[]
+  userRoleAssignments        UserRoleAssignment[]
+  automationRules            AutomationRule[]
+  workLogs                   WorkLog[]
+  keyResults                 KeyResult[]
+  portfolioProjects          PortfolioProject[]
 
   @@map("organizations")
 }
@@ -204,16 +234,19 @@ model Workspace {
 }
 
 model WorkspaceMember {
-  id          String   @id @default(uuid(7)) @db.Uuid
-  workspaceId String   @map("workspace_id") @db.Uuid
-  userId      String   @map("user_id") @db.Uuid
-  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  id             String   @id @default(uuid(7)) @db.Uuid
+  workspaceId    String   @map("workspace_id") @db.Uuid
+  userId         String   @map("user_id") @db.Uuid
+  organizationId String   @map("organization_id") @db.Uuid
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace    Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
-  @@unique([workspaceId, userId])
+  @@unique([workspaceId, userId, organizationId])
+  @@index([organizationId])
   @@map("workspace_members")
 }
 
@@ -335,6 +368,7 @@ model Project {
   automationRules     AutomationRule[]
   objectives          Objective[]
   portfolios          PortfolioProject[]
+  docs                ProjectDoc[]
 
   @@index([organizationId], map: "idx_projects_org_id")
   @@index([workspaceId], map: "idx_projects_workspace_id")
@@ -342,60 +376,72 @@ model Project {
 }
 
 model ProjectMember {
-  id        String   @id @default(uuid(7)) @db.Uuid
-  projectId String   @map("project_id") @db.Uuid
-  userId    String   @map("user_id") @db.Uuid
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  id             String   @id @default(uuid(7)) @db.Uuid
+  projectId      String   @map("project_id") @db.Uuid
+  userId         String   @map("user_id") @db.Uuid
+  organizationId String   @map("organization_id") @db.Uuid
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project      Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
-  @@unique([projectId, userId])
+  @@unique([projectId, userId, organizationId])
+  @@index([organizationId])
   @@map("project_members")
 }
 
 model Vault {
-  id        String    @id @default(uuid(7)) @db.Uuid
-  projectId String    @unique @map("project_id") @db.Uuid
-  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
-  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  id             String    @id @default(uuid(7)) @db.Uuid
+  projectId      String    @unique @map("project_id") @db.Uuid
+  organizationId String    @map("organization_id") @db.Uuid
+  deletedAt      DateTime? @map("deleted_at") @db.Timestamptz(6)
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  project  Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  services VaultService[]
+  project      Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  services     VaultService[]
 
+  @@index([organizationId])
   @@map("vaults")
 }
 
 model VaultService {
-  id        String    @id @default(uuid(7)) @db.Uuid
-  vaultId   String    @map("vault_id") @db.Uuid
-  name      String
-  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
-  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  id             String    @id @default(uuid(7)) @db.Uuid
+  vaultId        String    @map("vault_id") @db.Uuid
+  organizationId String    @map("organization_id") @db.Uuid
+  name           String
+  deletedAt      DateTime? @map("deleted_at") @db.Timestamptz(6)
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  vault Vault       @relation(fields: [vaultId], references: [id], onDelete: Cascade)
-  items VaultItem[]
+  vault        Vault        @relation(fields: [vaultId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  items        VaultItem[]
 
-  @@unique([vaultId, name])
+  @@unique([vaultId, name, organizationId])
+  @@index([organizationId])
   @@map("vault_services")
 }
 
 model VaultItem {
-  id        String    @id @default(uuid(7)) @db.Uuid
-  serviceId String    @map("service_id") @db.Uuid
-  key       String
-  value     String    @db.Text
-  note      String?   @db.Text
-  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
-  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  id             String    @id @default(uuid(7)) @db.Uuid
+  serviceId      String    @map("service_id") @db.Uuid
+  organizationId String    @map("organization_id") @db.Uuid
+  key            String
+  value          String    @db.Text
+  note           String?   @db.Text
+  deletedAt      DateTime? @map("deleted_at") @db.Timestamptz(6)
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  service VaultService @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  service      VaultService @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
-  @@unique([serviceId, key])
+  @@unique([serviceId, key, organizationId])
+  @@index([organizationId])
   @@map("vault_items")
 }
 
@@ -547,17 +593,20 @@ model Comment {
 }
 
 model CommentReaction {
-  id        String   @id @default(uuid(7)) @db.Uuid
-  commentId String   @map("comment_id") @db.Uuid
-  userId    String   @map("user_id") @db.Uuid
-  emoji     String   @db.VarChar(50)
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  id             String   @id @default(uuid(7)) @db.Uuid
+  commentId      String   @map("comment_id") @db.Uuid
+  userId         String   @map("user_id") @db.Uuid
+  organizationId String   @map("organization_id") @db.Uuid
+  emoji          String   @db.VarChar(50)
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  comment Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comment      Comment      @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
-  @@unique([commentId, userId, emoji], map: "uq_comment_reactions_user_emoji")
+  @@unique([commentId, userId, emoji, organizationId], map: "uq_comment_reactions_user_emoji")
+  @@index([organizationId])
   @@map("comment_reactions")
 }
 
@@ -582,17 +631,20 @@ model TaskActivity {
 }
 
 model SlackWebhook {
-  id        String    @id @default(uuid(7)) @db.Uuid
-  projectId String    @map("project_id") @db.Uuid
-  url       String
-  channel   String?
-  isActive  Boolean   @default(true) @map("is_active")
-  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
-  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  id             String    @id @default(uuid(7)) @db.Uuid
+  projectId      String    @map("project_id") @db.Uuid
+  organizationId String    @map("organization_id") @db.Uuid
+  url            String
+  channel        String?
+  isActive       Boolean   @default(true) @map("is_active")
+  deletedAt      DateTime? @map("deleted_at") @db.Timestamptz(6)
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project      Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
+  @@index([organizationId])
   @@map("slack_webhooks")
 }
 
@@ -626,14 +678,17 @@ model TaskDependency {
   id             String   @id @default(uuid(7)) @db.Uuid
   blockingTaskId String   @map("blocking_task_id") @db.Uuid
   blockedTaskId  String   @map("blocked_task_id") @db.Uuid
+  organizationId String   @map("organization_id") @db.Uuid
   dependencyType String   @default("blocks") // blocks
   createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt      DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  blockingTask Task @relation("BlockingTasks", fields: [blockingTaskId], references: [id], onDelete: Cascade)
-  blockedTask  Task @relation("BlockedTasks", fields: [blockedTaskId], references: [id], onDelete: Cascade)
+  blockingTask Task         @relation("BlockingTasks", fields: [blockingTaskId], references: [id], onDelete: Cascade)
+  blockedTask  Task         @relation("BlockedTasks", fields: [blockedTaskId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
-  @@unique([blockingTaskId, blockedTaskId, dependencyType])
+  @@unique([blockingTaskId, blockedTaskId, dependencyType, organizationId])
+  @@index([organizationId])
   @@map("task_dependencies")
 }
 
@@ -697,13 +752,16 @@ model Label {
 }
 
 model TaskLabel {
-  taskId    String   @map("task_id") @db.Uuid
-  labelId   String   @map("label_id") @db.Uuid
-  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  label     Label    @relation(fields: [labelId], references: [id], onDelete: Cascade)
-  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  taskId         String   @map("task_id") @db.Uuid
+  labelId        String   @map("label_id") @db.Uuid
+  organizationId String   @map("organization_id") @db.Uuid
+  task           Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  label          Label    @relation(fields: [labelId], references: [id], onDelete: Cascade)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  updatedAt      DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  @@id([taskId, labelId])
+  @@id([taskId, labelId, organizationId])
+  @@index([organizationId])
   @@map("task_labels")
 }
 
@@ -765,32 +823,38 @@ model Role {
 }
 
 model RolePermission {
-  roleId       String @map("role_id") @db.Uuid
-  permissionId String @map("permission_id") @db.Uuid
+  roleId         String  @map("role_id") @db.Uuid
+  permissionId   String  @map("permission_id") @db.Uuid
+  organizationId String? @map("organization_id") @db.Uuid
 
-  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
-  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
-  updatedAt  DateTime   @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  role         Role          @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission    @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  updatedAt    DateTime      @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   @@id([roleId, permissionId])
+  @@index([organizationId])
   @@map("role_permissions")
 }
 
 model UserRoleAssignment {
-  id        String   @id @default(uuid(7)) @db.Uuid
-  userId    String   @map("user_id") @db.Uuid
-  roleId    String   @map("role_id") @db.Uuid
-  scopeType String   @map("scope_type") // e.g. ORGANIZATION, PROJECT
-  scopeId   String   @map("scope_id") @db.Uuid // ID of the organization or project
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  id             String   @id @default(uuid(7)) @db.Uuid
+  userId         String   @map("user_id") @db.Uuid
+  roleId         String   @map("role_id") @db.Uuid
+  organizationId String   @map("organization_id") @db.Uuid
+  scopeType      String   @map("scope_type") // e.g. ORGANIZATION, PROJECT
+  scopeId        String   @map("scope_id") @db.Uuid // ID of the organization or project
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role         Role         @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, roleId, scopeType, scopeId])
+  @@unique([userId, roleId, scopeType, scopeId, organizationId])
   @@index([userId])
   @@index([scopeType, scopeId])
+  @@index([organizationId])
   @@map("user_role_assignments")
 }
 
@@ -817,38 +881,44 @@ model WorkflowTransition {
 }
 
 model AutomationRule {
-  id         String    @id @default(uuid(7)) @db.Uuid
-  projectId  String    @map("project_id") @db.Uuid
-  name       String
-  trigger    String // task_status_changed, subtasks_all_done
-  triggerVal String?   @map("trigger_val")
-  action     String // close_parent, assign_to_creator, etc.
-  actionVal  String?   @map("action_val")
-  isActive   Boolean   @default(true) @map("is_active")
-  deletedAt  DateTime? @map("deleted_at") @db.Timestamptz(6)
-  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt  DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  id             String    @id @default(uuid(7)) @db.Uuid
+  projectId      String    @map("project_id") @db.Uuid
+  organizationId String    @map("organization_id") @db.Uuid
+  name           String
+  trigger        String // task_status_changed, subtasks_all_done
+  triggerVal     String?   @map("trigger_val")
+  action         String // close_parent, assign_to_creator, etc.
+  actionVal      String?   @map("action_val")
+  isActive       Boolean   @default(true) @map("is_active")
+  deletedAt      DateTime? @map("deleted_at") @db.Timestamptz(6)
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project      Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
+  @@index([organizationId])
   @@map("automation_rules")
 }
 
 model WorkLog {
-  id          String    @id @default(uuid(7)) @db.Uuid
-  taskId      String    @map("task_id") @db.Uuid
-  userId      String    @map("user_id") @db.Uuid
-  hoursLogged Float     @map("hours_logged")
-  loggedAt    DateTime  @default(now()) @map("logged_at")
-  deletedAt   DateTime? @map("deleted_at") @db.Timestamptz(6)
-  updatedAt   DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  description String?   @db.Text
+  id             String    @id @default(uuid(7)) @db.Uuid
+  taskId         String    @map("task_id") @db.Uuid
+  userId         String    @map("user_id") @db.Uuid
+  organizationId String    @map("organization_id") @db.Uuid
+  hoursLogged    Float     @map("hours_logged")
+  loggedAt       DateTime  @default(now()) @map("logged_at")
+  deletedAt      DateTime? @map("deleted_at") @db.Timestamptz(6)
+  updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  description    String?   @db.Text
 
-  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  task         Task         @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   @@index([taskId])
   @@index([userId])
+  @@index([organizationId])
   @@map("work_logs")
 }
 
@@ -893,18 +963,21 @@ model Objective {
 }
 
 model KeyResult {
-  id          String    @id @default(uuid(7)) @db.Uuid
-  objectiveId String    @map("objective_id") @db.Uuid
-  title       String
-  progress    Float     @default(0)
-  target      String
-  deletedAt   DateTime? @map("deleted_at") @db.Timestamptz(6)
-  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt   DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  id             String    @id @default(uuid(7)) @db.Uuid
+  objectiveId    String    @map("objective_id") @db.Uuid
+  organizationId String    @map("organization_id") @db.Uuid
+  title          String
+  progress       Float     @default(0)
+  target         String
+  deletedAt      DateTime? @map("deleted_at") @db.Timestamptz(6)
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  objective Objective @relation(fields: [objectiveId], references: [id], onDelete: Cascade)
+  objective    Objective    @relation(fields: [objectiveId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   @@index([objectiveId], map: "idx_key_results_objective_id")
+  @@index([organizationId])
   @@map("key_results")
 }
 
@@ -956,15 +1029,166 @@ model Portfolio {
 }
 
 model PortfolioProject {
-  id          String   @id @default(uuid(7)) @db.Uuid
-  portfolioId String   @map("portfolio_id") @db.Uuid
-  projectId   String   @map("project_id") @db.Uuid
-  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  id             String   @id @default(uuid(7)) @db.Uuid
+  portfolioId    String   @map("portfolio_id") @db.Uuid
+  projectId      String   @map("project_id") @db.Uuid
+  organizationId String   @map("organization_id") @db.Uuid
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  portfolio Portfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
-  project   Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  portfolio    Portfolio    @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
+  project      Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
-  @@unique([portfolioId, projectId])
+  @@unique([portfolioId, projectId, organizationId])
+  @@index([organizationId])
   @@map("portfolio_projects")
+}
+
+model ProjectDoc {
+  id             String    @id @default(uuid(7)) @db.Uuid
+  projectId      String    @map("project_id") @db.Uuid
+  organizationId String    @map("organization_id") @db.Uuid
+  parentId       String?   @map("parent_id") @db.Uuid
+  title          String
+  slug           String
+  emoji          String?
+  icon           String?
+  coverImage     String?   @map("cover_image")
+  content        Json?
+  plainText      String?   @map("plain_text") @db.Text
+  order          Int       @default(0)
+  createdBy      String    @map("created_by") @db.Uuid
+  updatedBy      String    @map("updated_by") @db.Uuid
+  archived       Boolean   @default(false)
+  deleted        Boolean   @default(false)
+  deletedAt      DateTime? @map("deleted_at") @db.Timestamptz(6)
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  project        Project                @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  organization   Organization           @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  parent         ProjectDoc?            @relation("DocHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children       ProjectDoc[]           @relation("DocHierarchy")
+  creator        User                   @relation("DocCreator", fields: [createdBy], references: [id], onDelete: Cascade)
+  updater        User                   @relation("DocUpdater", fields: [updatedBy], references: [id], onDelete: Cascade)
+  permissions    ProjectDocPermission[]
+  comments       ProjectDocComment[]
+  versions       ProjectDocVersion[]
+  activities     ProjectDocActivity[]
+  favorites      ProjectDocFavorite[]
+
+  @@index([projectId], map: "idx_project_docs_project_id")
+  @@index([parentId], map: "idx_project_docs_parent_id")
+  @@index([createdBy], map: "idx_project_docs_created_by")
+  @@map("project_docs")
+}
+
+model ProjectDocPermission {
+  id             String   @id @default(uuid(7)) @db.Uuid
+  docId          String   @map("doc_id") @db.Uuid
+  userId         String   @map("user_id") @db.Uuid
+  organizationId String   @map("organization_id") @db.Uuid
+  permission     String // view, comment, edit
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  doc          ProjectDoc   @relation(fields: [docId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([docId, userId])
+  @@index([docId], map: "idx_project_doc_perms_doc_id")
+  @@index([userId], map: "idx_project_doc_perms_user_id")
+  @@map("project_doc_permissions")
+}
+
+model ProjectDocComment {
+  id             String   @id @default(uuid(7)) @db.Uuid
+  docId          String   @map("doc_id") @db.Uuid
+  userId         String   @map("user_id") @db.Uuid
+  organizationId String   @map("organization_id") @db.Uuid
+  parentId       String?  @map("parent_id") @db.Uuid
+  content        String   @db.Text
+  resolved       Boolean  @default(false)
+  isEdited       Boolean  @default(false) @map("is_edited")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  doc          ProjectDoc                  @relation(fields: [docId], references: [id], onDelete: Cascade)
+  user         User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization Organization                @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  parent       ProjectDocComment?          @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies      ProjectDocComment[]         @relation("CommentReplies")
+  reactions    ProjectDocCommentReaction[]
+
+  @@index([docId], map: "idx_project_doc_comments_doc_id")
+  @@map("project_doc_comments")
+}
+
+model ProjectDocVersion {
+  id             String   @id @default(uuid(7)) @db.Uuid
+  docId          String   @map("doc_id") @db.Uuid
+  organizationId String   @map("organization_id") @db.Uuid
+  content        Json
+  createdBy      String   @map("created_by") @db.Uuid
+  version        Int
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  doc          ProjectDoc   @relation(fields: [docId], references: [id], onDelete: Cascade)
+  creator      User         @relation("DocVersionCreator", fields: [createdBy], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([docId], map: "idx_project_doc_versions_doc_id")
+  @@map("project_doc_versions")
+}
+
+model ProjectDocActivity {
+  id             String   @id @default(uuid(7)) @db.Uuid
+  docId          String   @map("doc_id") @db.Uuid
+  userId         String   @map("user_id") @db.Uuid
+  organizationId String   @map("organization_id") @db.Uuid
+  action         String
+  metadata       Json?
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  doc          ProjectDoc   @relation(fields: [docId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([docId], map: "idx_project_doc_activities_doc_id")
+  @@map("project_doc_activities")
+}
+
+model ProjectDocFavorite {
+  id             String   @id @default(uuid(7)) @db.Uuid
+  docId          String   @map("doc_id") @db.Uuid
+  userId         String   @map("user_id") @db.Uuid
+  organizationId String   @map("organization_id") @db.Uuid
+  isPinned       Boolean  @default(false) @map("is_pinned")
+  isFavorite     Boolean  @default(false) @map("is_favorite")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  doc          ProjectDoc   @relation(fields: [docId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([docId, userId])
+  @@map("project_doc_favorites")
+}
+
+model ProjectDocCommentReaction {
+  id             String   @id @default(uuid(7)) @db.Uuid
+  commentId      String   @map("comment_id") @db.Uuid
+  userId         String   @map("user_id") @db.Uuid
+  organizationId String   @map("organization_id") @db.Uuid
+  emoji          String   @db.VarChar(50)
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  comment      ProjectDocComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([commentId, userId, emoji])
+  @@map("project_doc_comment_reactions")
 }

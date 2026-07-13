@@ -1,0 +1,1037 @@
+// DBML generated from Prisma Schema
+// Visualization code for dbdiagram.io
+
+Table users {
+  id uuid [pk, default: `uuid(7`, not null]
+  first_name varchar [not null, note: 'prisma: firstName']
+  last_name varchar [not null, note: 'prisma: lastName']
+  name varchar [not null]
+  email varchar [unique, not null]
+  email_verified boolean [default: false, not null, note: 'prisma: emailVerified']
+  image varchar
+  is_active boolean [default: true, not null, note: 'prisma: isActive']
+  last_login_at timestamp [note: 'prisma: lastLoginAt']
+  password_changed_at timestamp [note: 'prisma: passwordChangedAt']
+  failed_login_attempts integer [default: 0, not null, note: 'prisma: failedLoginAttempts']
+  locked_until timestamp [note: 'prisma: lockedUntil']
+  deleted_at timestamp [note: 'prisma: deletedAt']
+  role varchar [default: 'user']
+  banned boolean [default: false]
+  ban_reason varchar [note: 'prisma: banReason']
+  ban_expires timestamp [note: 'prisma: banExpires']
+  updated_at timestamp [not null, note: 'prisma: updatedAt']
+  created_at timestamp [default: `now(`, not null, note: 'prisma: createdAt']
+  two_factor_enabled boolean [note: 'prisma: twoFactorEnabled']
+  notification_preferences varchar [default: '[]', note: 'prisma: notificationPreferences']
+
+  indexes {
+    (email)
+    (is_active)
+    (deleted_at)
+    (locked_until)
+  }
+}
+
+Table sessions {
+  id uuid [pk, default: `uuid(7`, not null]
+  user_id uuid [not null, note: 'prisma: userId']
+  token varchar [unique, not null]
+  expires_at timestamp [not null, note: 'prisma: expiresAt']
+  ip_address varchar [note: 'prisma: ipAddress']
+  user_agent varchar [note: 'prisma: userAgent']
+  device_name varchar [note: 'prisma: deviceName']
+  browser varchar
+  os varchar
+  country varchar
+  location varchar
+  last_active_at timestamp [note: 'prisma: lastActiveAt']
+  revoked_at timestamp [note: 'prisma: revokedAt']
+  active_organization_id varchar [note: 'prisma: activeOrganizationId']
+  impersonated_by varchar [note: 'prisma: impersonatedBy']
+  updated_at timestamp [not null, note: 'prisma: updatedAt']
+  created_at timestamp [default: `now(`, not null, note: 'prisma: createdAt']
+
+  indexes {
+    (user_id)
+    (token)
+    (expires_at)
+    (revoked_at)
+  }
+}
+
+Table accounts {
+  id uuid [pk, default: `uuid(7`, not null]
+  user_id uuid [not null, note: 'prisma: userId']
+  account_id varchar [not null, note: 'prisma: accountId']
+  provider_id varchar [not null, note: 'prisma: providerId']
+  access_token varchar [note: 'prisma: accessToken']
+  refresh_token varchar [note: 'prisma: refreshToken']
+  id_token varchar [note: 'prisma: idToken']
+  access_token_expires_at timestamp [note: 'prisma: accessTokenExpiresAt']
+  refresh_token_expires_at timestamp [note: 'prisma: refreshTokenExpiresAt']
+  scope varchar
+  password varchar
+  updated_at timestamp [not null, note: 'prisma: updatedAt']
+  created_at timestamp [default: `now(`, not null, note: 'prisma: createdAt']
+
+  indexes {
+    (provider_id, account_id) [unique]
+    (user_id)
+    (provider_id)
+  }
+}
+
+Table verifications {
+  id uuid [pk, default: `uuid(7`, not null]
+  identifier varchar [not null]
+  value varchar [not null]
+  expires_at timestamp [not null, note: 'prisma: expiresAt']
+  updated_at timestamp [not null, note: 'prisma: updatedAt']
+  created_at timestamp [default: `now(`, not null, note: 'prisma: createdAt']
+
+  indexes {
+    (identifier)
+    (expires_at)
+  }
+}
+
+Table organizations {
+  id uuid [pk, default: `uuid(7`, not null]
+  name varchar [not null]
+  slug varchar [unique]
+  logo varchar
+  owner_id uuid [not null, note: 'prisma: ownerId']
+  created_at timestamp [default: `now(`, not null, note: 'prisma: createdAt']
+  updated_at timestamp [default: `now(`, not null, note: 'prisma: updatedAt']
+  deleted_at timestamp [note: 'prisma: deletedAt']
+  metadata json
+}
+
+Table members {
+  id uuid [pk, default: `uuid(7`, not null]
+  organization_id uuid [not null, note: 'prisma: organizationId']
+  user_id uuid [not null, note: 'prisma: userId']
+  role varchar [default: 'member', not null]
+  created_at timestamp [default: `now(`, not null, note: 'prisma: createdAt']
+  updated_at timestamp [default: `now(`, not null, note: 'prisma: updatedAt']
+}
+
+Table workspaces {
+  id uuid [pk, default: `uuid(7`, not null]
+  name varchar [not null]
+  slug varchar [unique, not null]
+  icon varchar
+  organization_id uuid [not null, note: 'prisma: organizationId']
+  deleted_at timestamp [note: 'prisma: deletedAt']
+  created_at timestamp [default: `now(`, not null, note: 'prisma: createdAt']
+  updated_at timestamp [default: `now(`, not null, note: 'prisma: updatedAt']
+}
+
+Table workspace_members {
+  id uuid [pk, default: `uuid(7`, not null]
+  workspace_id uuid [not null, note: 'prisma: workspaceId']
+  user_id uuid [not null, note: 'prisma: userId']
+  organization_id uuid [not null, note: 'prisma: organizationId']
+  created_at timestamp [default: `now(`, not null, note: 'prisma: createdAt']
+  updated_at timestamp [default: `now(`, not null, note: 'prisma: updatedAt']
+
+  indexes {
+    (workspace_id, user_id, organization_id) [unique]
+    (organization_id)
+  }
+}
+
+Table invitations {
+  id uuid [pk, default: `uuid(7`, not null]
+  organization_id uuid [not null, note: 'prisma: organizationId']
+  email varchar [not null]
+  role varchar
+  status varchar [not null]
+  expires_at timestamp [not null, note: 'prisma: expiresAt']
+  inviter_id uuid [not null, note: 'prisma: inviterId']
+  project_ids json [note: 'prisma: projectIds']
+  deleted_at timestamp [note: 'prisma: deletedAt']
+  created_at timestamp [default: `now(`, not null, note: 'prisma: createdAt']
+  updated_at timestamp [default: `now(`, not null, note: 'prisma: updatedAt']
+}
+
+Table media {
+  id uuid [pk, default: `uuid(7`, not null]
+  model_type varchar [not null, note: 'prisma: modelType']
+  model_id uuid [not null, note: 'prisma: modelId']
+  collection_name varchar [not null, note: 'prisma: collectionName']
+  name varchar [not null]
+  file_name varchar [not null, note: 'prisma: fileName']
+  mime_type varchar [note: 'prisma: mimeType']
+  disk varchar [not null]
+  conversions_disk varchar [note: 'prisma: conversionsDisk']
+  size integer [not null]
+  manipulations json
+  custom_properties json [note: 'prisma: customProperties']
+  generated_conversions json [note: 'prisma: generatedConversions']
+  responsive_images json [note: 'prisma: responsiveImages']
+  order_column integer [note: 'prisma: orderColumn']
+  version integer [default: 1, not null]
+  parent_media_id uuid [note: 'prisma: parentMediaId']
+  deleted_at timestamp [note: 'prisma: deletedAt']
+  created_at timestamp [default: `now(`, not null, note: 'prisma: createdAt']
+  updated_at timestamp [not null, note: 'prisma: updatedAt']
+
+  indexes {
+    (model_type, model_id)
+  }
+}
+
+Table annotations {
+  id uuid [pk, default: `uuid(7`, not null]
+  media_id uuid [not null, note: 'prisma: mediaId']
+  user_id uuid [not null, note: 'prisma: userId']
+  x float [not null]
+  y float [not null]
+  content text [not null]
+  deleted_at timestamp [note: 'prisma: deletedAt']
+  created_at timestamp [default: `now(`, not null, note: 'prisma: createdAt']
+  updated_at timestamp [default: `now(`, not null, note: 'prisma: updatedAt']
+
+  indexes {
+    (media_id)
+  }
+}
+
+Table two_factors {
+  id uuid [pk, default: `uuid(7`, not null]
+  secret varchar [not null]
+  backup_codes varchar [not null, note: 'prisma: backupCodes']
+  user_id uuid [not null, note: 'prisma: userId']
+  verified boolean [not null]
+  deleted_at timestamp [note: 'prisma: deletedAt']
+  updated_at timestamp [default: `now(`, not null, note: 'prisma: updatedAt']
+}
+
+Table projects {
+  id uuid [pk, default: `uuid(7`, not null]
+  project_key varchar(10) [unique, not null, note: 'prisma: projectKey']
+  title varchar [not null]
+  description varchar
+  icon varchar
+  template varchar [default: 'simple', not null]
+  team_mode varchar [default: 'general', not null, note: 'prisma: teamMode']
+  workspace_id uuid [not null, note: 'prisma: workspaceId']
+  organization_id uuid [not null, note: 'prisma: organizationId']
+  task_sequence integer [default: 0, not null, note: 'prisma: taskSequence']
+  owner_id uuid [note: 'prisma: ownerId']
+  status varchar [default: 'on_track', not null]
+  priority varchar [default: 'medium', not null]
+  start_date timestamp [note: 'prisma: startDate']
+  end_date timestamp [note: 'prisma: endDate']
+  deleted_at timestamp [note: 'prisma: deletedAt']
+  created_at timestamp [default: `now(`, not null, note: 'prisma: createdAt']
+  updated_at timestamp [default: `now(`, not null, note: 'prisma: updatedAt']
+
+  indexes {
+    (organization_id)
+    (workspace_id)
+  }
+}
+
+Table project_members {
+  id uuid [pk, default: `uuid(7`, not null]
+  project_id uuid [not null, note: 'prisma: projectId']
+  user_id uuid [not null, note: 'prisma: userId']
+  organization_id uuid [not null, note: 'prisma: organizationId']
+  created_at timestamp [default: `now(`, not null, note: 'prisma: createdAt']
+  updated_at timestamp [default: `now(`, not null, note: 'prisma: updatedAt']
+
+  indexes {
+    (project_id, user_id, organization_id) [unique]
+    (organization_id)
+  }
+}
+
+Table vaults {
+  id uuid [pk, default: `uuid(7`, not null]
+  project_id uuid [unique, not null, note: 'prisma: projectId']
+  organization_id uuid [not null, note: 'prisma: organizationId']
+  deleted_at timestamp [note: 'prisma: deletedAt']
+  created_at timestamp [default: `now(`, not null, note: 'prisma: createdAt']
+  updated_at timestamp [default: `now(`, not null, note: 'prisma: updatedAt']
+
+  indexes {
+    (organization_id)
+  }
+}
+
+Table vault_services {
+  id uuid [pk, default: `uuid(7`, not null]
+  vault_id uuid [not null, note: 'prisma: vaultId']
+  organization_id uuid [not null, note: 'prisma: organizationId']
+  name varchar [not null]
+  deleted_at timestamp [note: 'prisma: deletedAt']
+  created_at timestamp [default: `now(`, not null, note: 'prisma: createdAt']
+  updated_at timestamp [default: `now(`, not null, note: 'prisma: updatedAt']
+
+  indexes {
+    (vault_id, name, organization_id) [unique]
+    (organization_id)
+  }
+}
+
+Table vault_items {
+  id uuid [pk, default: `uuid(7`, not null]
+  service_id uuid [not null, note: 'prisma: serviceId']
+  organization_id uuid [not null, note: 'prisma: organizationId']
+  key varchar [not null]
+  value text [not null]
+  note text
+  deleted_at timestamp [note: 'prisma: deletedAt']
+  created_at timestamp [default: `now(`, not null, note: 'prisma: createdAt']
+  updated_at timestamp [default: `now(`, not null, note: 'prisma: updatedAt']
+
+  indexes {
+    (service_id, key, organization_id) [unique]
+    (organization_id)
+  }
+}
+
+Table tasks {
+  id uuid [pk, default: `uuid(7`, not null]
+  task_key varchar [unique, not null, note: 'prisma: taskKey']
+  title varchar [not null]
+  description text
+  project_id uuid [not null, note: 'prisma: projectId']
+  organization_id uuid [not null, note: 'prisma: organizationId']
+  epic_id uuid [note: 'prisma: epicId']
+  milestone_id uuid [note: 'prisma: milestoneId']
+  sprint_id uuid [note: 'prisma: sprintId']
+  status_id uuid [not null, note: 'prisma: statusId']
+  position float [default: 0, not null]
+  type varchar [default: 'task', not null]
+  priority varchar [default: 'medium', not null]
+  estimate float
+  start_date timestamp [note: 'prisma: startDate']
+  due_date timestamp [note: 'prisma: dueDate']
+  creator_id uuid [not null, note: 'prisma: creatorId']
+  assignee_id uuid [note: 'prisma: assigneeId']
+  reporter_id uuid [note: 'prisma: reporterId']
+  parent_task_id uuid [note: 'prisma: parentTaskId']
+  custom_fields json [default: '{}', note: 'prisma: customFields']
+  is_private boolean [default: false, not null, note: 'prisma: isPrivate']
+  deleted_at timestamp [note: 'prisma: deletedAt']
+  created_at timestamp [default: `now(`, not null, note: 'prisma: createdAt']
+  updated_at timestamp [default: `now(`, not null, note: 'prisma: updatedAt']
+
+  indexes {
+    (organization_id)
+    (project_id)
+    (epic_id)
+    (milestone_id)
+    (sprint_id)
+    (status_id)
+    (assignee_id)
+    (parent_task_id)
+    (deleted_at)
+  }
+}
+
+Table task_statuses {
+  id uuid [pk, default: `uuid(7`, not null]
+  project_id uuid [not null, note: 'prisma: projectId']
+  organization_id uuid [not null, note: 'prisma: organizationId']
+  name varchar [not null]
+  color varchar
+  category varchar [not null]
+  order integer [default: 0, not null]
+  deleted_at timestamp [note: 'prisma: deletedAt']
+  created_at timestamp [default: `now(`, not null, note: 'prisma: createdAt']
+  updated_at timestamp [default: `now(`, not null, note: 'prisma: updatedAt']
+
+  indexes {
+    (project_id, name) [unique]
+    (organization_id)
+  }
+}
+
+Table sprints {
+  id uuid [pk, default: `uuid(7`, not null]
+  project_id uuid [not null, note: 'prisma: projectId']
+  organization_id uuid [not null, note: 'prisma: organizationId']
+  name varchar [not null]
+  goal text
+  status varchar [default: 'planned', not null]
+  start_date timestamp [note: 'prisma: startDate']
+  end_date timestamp [note: 'prisma: endDate']
+  completed_at timestamp [note: 'prisma: completedAt']
+  deleted_at timestamp [note: 'prisma: deletedAt']
+  created_at timestamp [default: `now(`, not null, note: 'prisma: createdAt']
+  updated_at timestamp [default: `now(`, not null, note: 'prisma: updatedAt']
+
+  indexes {
+    (organization_id)
+    (project_id)
+  }
+}
+
+Table custom_field_definitions {
+  id uuid [pk, default: `uuid(7`, not null]
+  project_id uuid [not null, note: 'prisma: projectId']
+  organization_id uuid [not null, note: 'prisma: organizationId']
+  name varchar [not null]
+  type varchar [not null]
+  options json
+  deleted_at timestamp [note: 'prisma: deletedAt']
+  created_at timestamp [default: `now(`, not null, note: 'prisma: createdAt']
+  updated_at timestamp [default: `now(`, not null, note: 'prisma: updatedAt']
+
+  indexes {
+    (project_id, name) [unique]
+    (organization_id)
+  }
+}
+
+Table comments {
+  id uuid [pk, default: `uuid(7`, not null]
+  task_id uuid [not null, note: 'prisma: taskId']
+  user_id uuid [not null, note: 'prisma: userId']
+  organization_id uuid [not null, note: 'prisma: organizationId']
+  parent_id uuid [note: 'prisma: parentId']
+  content text [not null]
+  is_edited boolean [default: false, not null, note: 'prisma: isEdited']
+  deleted_at timestamp [note: 'prisma: deletedAt']
+  created_at timestamp [default: `now(`, not null, note: 'prisma: createdAt']
+  updated_at timestamp [default: `now(`, not null, note: 'prisma: updatedAt']
+
+  indexes {
+    (organization_id)
+    (parent_id)
+  }
+}
+
+Table comment_reactions {
+  id uuid [pk, default: `uuid(7`, not null]
+  comment_id uuid [not null, note: 'prisma: commentId']
+  user_id uuid [not null, note: 'prisma: userId']
+  organization_id uuid [not null, note: 'prisma: organizationId']
+  emoji varchar(50) [not null]
+  created_at timestamp [default: `now(`, not null, note: 'prisma: createdAt']
+  updated_at timestamp [default: `now(`, not null, note: 'prisma: updatedAt']
+
+  indexes {
+    (comment_id, user_id, emoji, organization_id) [unique]
+    (organization_id)
+  }
+}
+
+Table task_activities {
+  id uuid [pk, default: `uuid(7`, not null]
+  task_id uuid [not null, note: 'prisma: taskId']
+  user_id uuid [not null, note: 'prisma: userId']
+  organization_id uuid [not null, note: 'prisma: organizationId']
+  action varchar [not null]
+  oldValue text
+  newValue text
+  created_at timestamp [default: `now(`, not null, note: 'prisma: createdAt']
+  updated_at timestamp [default: `now(`, not null, note: 'prisma: updatedAt']
+
+  indexes {
+    (organization_id)
+    (task_id)
+  }
+}
+
+Table slack_webhooks {
+  id uuid [pk, default: `uuid(7`, not null]
+  project_id uuid [not null, note: 'prisma: projectId']
+  organization_id uuid [not null, note: 'prisma: organizationId']
+  url varchar [not null]
+  channel varchar
+  is_active boolean [default: true, not null, note: 'prisma: isActive']
+  deleted_at timestamp [note: 'prisma: deletedAt']
+  created_at timestamp [default: `now(`, not null, note: 'prisma: createdAt']
+  updated_at timestamp [default: `now(`, not null, note: 'prisma: updatedAt']
+
+  indexes {
+    (organization_id)
+  }
+}
+
+Table notifications {
+  id uuid [pk, default: `uuid(7`, not null]
+  recipient_id uuid [not null, note: 'prisma: recipientId']
+  sender_id uuid [note: 'prisma: senderId']
+  task_id uuid [note: 'prisma: taskId']
+  project_id uuid [note: 'prisma: projectId']
+  organization_id uuid [not null, note: 'prisma: organizationId']
+  type varchar [not null]
+  title varchar [not null]
+  message varchar [not null]
+  is_read boolean [default: false, not null, note: 'prisma: isRead']
+  deleted_at timestamp [note: 'prisma: deletedAt']
+  created_at timestamp [default: `now(`, not null, note: 'prisma: createdAt']
+  updated_at timestamp [default: `now(`, not null, note: 'prisma: updatedAt']
+
+  indexes {
+    (organization_id)
+    (recipient_id)
+  }
+}
+
+Table task_dependencies {
+  id uuid [pk, default: `uuid(7`, not null]
+  blocking_task_id uuid [not null, note: 'prisma: blockingTaskId']
+  blocked_task_id uuid [not null, note: 'prisma: blockedTaskId']
+  organization_id uuid [not null, note: 'prisma: organizationId']
+  dependencyType varchar [default: 'blocks', not null]
+  created_at timestamp [default: `now(`, not null, note: 'prisma: createdAt']
+  updated_at timestamp [default: `now(`, not null, note: 'prisma: updatedAt']
+
+  indexes {
+    (blocking_task_id, blocked_task_id, dependencyType, organization_id) [unique]
+    (organization_id)
+  }
+}
+
+Table epics {
+  id uuid [pk, default: `uuid(7`, not null]
+  organization_id uuid [not null, note: 'prisma: organizationId']
+  project_id uuid [not null, note: 'prisma: projectId']
+  title varchar [not null]
+  description text
+  color varchar [default: '#6366f1', not null]
+  start_date timestamp [note: 'prisma: startDate']
+  end_date timestamp [note: 'prisma: endDate']
+  status varchar [default: 'open', not null]
+  deleted_at timestamp [note: 'prisma: deletedAt']
+  created_at timestamp [default: `now(`, not null, note: 'prisma: createdAt']
+  updated_at timestamp [default: `now(`, not null, note: 'prisma: updatedAt']
+
+  indexes {
+    (project_id)
+    (organization_id)
+  }
+}
+
+Table project_templates {
+  id uuid [pk, default: `uuid(7`, not null]
+  name varchar [not null]
+  slug varchar [unique, not null]
+  description text
+  icon varchar
+  category varchar [not null]
+  is_system boolean [default: true, not null, note: 'prisma: isSystem']
+  config json [not null]
+  deleted_at timestamp [note: 'prisma: deletedAt']
+  created_at timestamp [default: `now(`, not null, note: 'prisma: createdAt']
+  updated_at timestamp [default: `now(`, not null, note: 'prisma: updatedAt']
+}
+
+Table labels {
+  id uuid [pk, default: `uuid(7`, not null]
+  project_id uuid [not null, note: 'prisma: projectId']
+  organization_id uuid [not null, note: 'prisma: organizationId']
+  name varchar [not null]
+  color varchar [not null]
+  deleted_at timestamp [note: 'prisma: deletedAt']
+  created_at timestamp [default: `now(`, not null, note: 'prisma: createdAt']
+  updated_at timestamp [default: `now(`, not null, note: 'prisma: updatedAt']
+
+  indexes {
+    (project_id, name) [unique]
+    (organization_id)
+  }
+}
+
+Table task_labels {
+  task_id uuid [not null, note: 'prisma: taskId']
+  label_id uuid [not null, note: 'prisma: labelId']
+  organization_id uuid [not null, note: 'prisma: organizationId']
+  updated_at timestamp [default: `now(`, not null, note: 'prisma: updatedAt']
+
+  indexes {
+    (task_id, label_id, organization_id) [pk]
+    (organization_id)
+  }
+}
+
+Table milestones {
+  id uuid [pk, default: `uuid(7`, not null]
+  project_id uuid [not null, note: 'prisma: projectId']
+  organization_id uuid [not null, note: 'prisma: organizationId']
+  title varchar [not null]
+  description text
+  due_date timestamp [note: 'prisma: dueDate']
+  is_completed boolean [default: false, not null, note: 'prisma: isCompleted']
+  deleted_at timestamp [note: 'prisma: deletedAt']
+  created_at timestamp [default: `now(`, not null, note: 'prisma: createdAt']
+  updated_at timestamp [default: `now(`, not null, note: 'prisma: updatedAt']
+
+  indexes {
+    (project_id)
+    (organization_id)
+  }
+}
+
+Table permissions {
+  id uuid [pk, default: `uuid(7`, not null]
+  resource varchar [not null]
+  action varchar [not null]
+  module varchar [default: 'PROJECT_MANAGEMENT', not null]
+  description varchar
+  deleted_at timestamp [note: 'prisma: deletedAt']
+  created_at timestamp [default: `now(`, not null, note: 'prisma: createdAt']
+  updated_at timestamp [default: `now(`, not null, note: 'prisma: updatedAt']
+
+  indexes {
+    (resource, action) [unique]
+  }
+}
+
+Table roles {
+  id uuid [pk, default: `uuid(7`, not null]
+  organization_id uuid [note: 'prisma: organizationId']
+  name varchar [not null]
+  is_system_default boolean [default: false, not null, note: 'prisma: isSystemDefault']
+  bypass_permissions boolean [default: false, not null, note: 'prisma: bypassPermissions']
+  deleted_at timestamp [note: 'prisma: deletedAt']
+  created_at timestamp [default: `now(`, not null, note: 'prisma: createdAt']
+  updated_at timestamp [default: `now(`, not null, note: 'prisma: updatedAt']
+
+  indexes {
+    (organization_id, name) [unique]
+    (organization_id)
+  }
+}
+
+Table role_permissions {
+  role_id uuid [not null, note: 'prisma: roleId']
+  permission_id uuid [not null, note: 'prisma: permissionId']
+  organization_id uuid [note: 'prisma: organizationId']
+  updated_at timestamp [default: `now(`, not null, note: 'prisma: updatedAt']
+
+  indexes {
+    (role_id, permission_id) [pk]
+    (organization_id)
+  }
+}
+
+Table user_role_assignments {
+  id uuid [pk, default: `uuid(7`, not null]
+  user_id uuid [not null, note: 'prisma: userId']
+  role_id uuid [not null, note: 'prisma: roleId']
+  organization_id uuid [not null, note: 'prisma: organizationId']
+  scope_type varchar [not null, note: 'prisma: scopeType']
+  scope_id uuid [not null, note: 'prisma: scopeId']
+  created_at timestamp [default: `now(`, not null, note: 'prisma: createdAt']
+  updated_at timestamp [default: `now(`, not null, note: 'prisma: updatedAt']
+
+  indexes {
+    (user_id, role_id, scope_type, scope_id, organization_id) [unique]
+    (user_id)
+    (scope_type, scope_id)
+    (organization_id)
+  }
+}
+
+Table workflow_transitions {
+  id uuid [pk, default: `uuid(7`, not null]
+  project_id uuid [not null, note: 'prisma: projectId']
+  organization_id uuid [not null, note: 'prisma: organizationId']
+  from_status_id uuid [not null, note: 'prisma: fromStatusId']
+  to_status_id uuid [not null, note: 'prisma: toStatusId']
+  required_role_id uuid [note: 'prisma: requiredRoleId']
+  deleted_at timestamp [note: 'prisma: deletedAt']
+  created_at timestamp [default: `now(`, not null, note: 'prisma: createdAt']
+  updated_at timestamp [default: `now(`, not null, note: 'prisma: updatedAt']
+
+  indexes {
+    (project_id, from_status_id, to_status_id) [unique]
+    (organization_id)
+  }
+}
+
+Table automation_rules {
+  id uuid [pk, default: `uuid(7`, not null]
+  project_id uuid [not null, note: 'prisma: projectId']
+  organization_id uuid [not null, note: 'prisma: organizationId']
+  name varchar [not null]
+  trigger varchar [not null]
+  trigger_val varchar [note: 'prisma: triggerVal']
+  action varchar [not null]
+  action_val varchar [note: 'prisma: actionVal']
+  is_active boolean [default: true, not null, note: 'prisma: isActive']
+  deleted_at timestamp [note: 'prisma: deletedAt']
+  created_at timestamp [default: `now(`, not null, note: 'prisma: createdAt']
+  updated_at timestamp [default: `now(`, not null, note: 'prisma: updatedAt']
+
+  indexes {
+    (organization_id)
+  }
+}
+
+Table work_logs {
+  id uuid [pk, default: `uuid(7`, not null]
+  task_id uuid [not null, note: 'prisma: taskId']
+  user_id uuid [not null, note: 'prisma: userId']
+  organization_id uuid [not null, note: 'prisma: organizationId']
+  hours_logged float [not null, note: 'prisma: hoursLogged']
+  logged_at timestamp [default: `now(`, not null, note: 'prisma: loggedAt']
+  deleted_at timestamp [note: 'prisma: deletedAt']
+  updated_at timestamp [default: `now(`, not null, note: 'prisma: updatedAt']
+  description text
+
+  indexes {
+    (task_id)
+    (user_id)
+    (organization_id)
+  }
+}
+
+Table checklist_templates {
+  id uuid [pk, default: `uuid(7`, not null]
+  name varchar [not null]
+  description text
+  items json [not null]
+  workspace_id uuid [not null, note: 'prisma: workspaceId']
+  organization_id uuid [not null, note: 'prisma: organizationId']
+  deleted_at timestamp [note: 'prisma: deletedAt']
+  created_at timestamp [default: `now(`, not null, note: 'prisma: createdAt']
+  updated_at timestamp [default: `now(`, not null, note: 'prisma: updatedAt']
+
+  indexes {
+    (workspace_id)
+  }
+}
+
+Table objectives {
+  id uuid [pk, default: `uuid(7`, not null]
+  title varchar [not null]
+  description text
+  progress float [default: 0, not null]
+  project_id uuid [not null, note: 'prisma: projectId']
+  epic_id uuid [note: 'prisma: epicId']
+  organization_id uuid [not null, note: 'prisma: organizationId']
+  deleted_at timestamp [note: 'prisma: deletedAt']
+  created_at timestamp [default: `now(`, not null, note: 'prisma: createdAt']
+  updated_at timestamp [default: `now(`, not null, note: 'prisma: updatedAt']
+
+  indexes {
+    (project_id)
+    (organization_id)
+  }
+}
+
+Table key_results {
+  id uuid [pk, default: `uuid(7`, not null]
+  objective_id uuid [not null, note: 'prisma: objectiveId']
+  organization_id uuid [not null, note: 'prisma: organizationId']
+  title varchar [not null]
+  progress float [default: 0, not null]
+  target varchar [not null]
+  deleted_at timestamp [note: 'prisma: deletedAt']
+  created_at timestamp [default: `now(`, not null, note: 'prisma: createdAt']
+  updated_at timestamp [default: `now(`, not null, note: 'prisma: updatedAt']
+
+  indexes {
+    (objective_id)
+    (organization_id)
+  }
+}
+
+Table audit_logs {
+  id uuid [pk, default: `uuid(7`, not null]
+  workspace_id uuid [note: 'prisma: workspaceId']
+  organization_id uuid [not null, note: 'prisma: organizationId']
+  user_id uuid [not null, note: 'prisma: userId']
+  action varchar [not null]
+  entity_type varchar [not null, note: 'prisma: entityType']
+  entity_id varchar [note: 'prisma: entityId']
+  entity_name varchar [note: 'prisma: entityName']
+  description text [not null]
+  metadata json
+  ip_address varchar [note: 'prisma: ipAddress']
+  user_agent varchar [note: 'prisma: userAgent']
+  created_at timestamp [default: `now(`, not null, note: 'prisma: createdAt']
+
+  indexes {
+    (workspace_id)
+    (organization_id)
+    (user_id)
+    (created_at)
+  }
+}
+
+Table portfolios {
+  id uuid [pk, default: `uuid(7`, not null]
+  name varchar [not null]
+  description varchar
+  workspace_id uuid [not null, note: 'prisma: workspaceId']
+  organization_id uuid [not null, note: 'prisma: organizationId']
+  owner_id uuid [not null, note: 'prisma: ownerId']
+  deleted_at timestamp [note: 'prisma: deletedAt']
+  created_at timestamp [default: `now(`, not null, note: 'prisma: createdAt']
+  updated_at timestamp [default: `now(`, not null, note: 'prisma: updatedAt']
+
+  indexes {
+    (organization_id)
+    (workspace_id)
+  }
+}
+
+Table portfolio_projects {
+  id uuid [pk, default: `uuid(7`, not null]
+  portfolio_id uuid [not null, note: 'prisma: portfolioId']
+  project_id uuid [not null, note: 'prisma: projectId']
+  organization_id uuid [not null, note: 'prisma: organizationId']
+  created_at timestamp [default: `now(`, not null, note: 'prisma: createdAt']
+  updated_at timestamp [default: `now(`, not null, note: 'prisma: updatedAt']
+
+  indexes {
+    (portfolio_id, project_id, organization_id) [unique]
+    (organization_id)
+  }
+}
+
+Table project_docs {
+  id uuid [pk, default: `uuid(7`, not null]
+  project_id uuid [not null, note: 'prisma: projectId']
+  organization_id uuid [not null, note: 'prisma: organizationId']
+  parent_id uuid [note: 'prisma: parentId']
+  title varchar [not null]
+  slug varchar [not null]
+  emoji varchar
+  icon varchar
+  cover_image varchar [note: 'prisma: coverImage']
+  content json
+  plain_text text [note: 'prisma: plainText']
+  order integer [default: 0, not null]
+  created_by uuid [not null, note: 'prisma: createdBy']
+  updated_by uuid [not null, note: 'prisma: updatedBy']
+  archived boolean [default: false, not null]
+  deleted boolean [default: false, not null]
+  deleted_at timestamp [note: 'prisma: deletedAt']
+  created_at timestamp [default: `now(`, not null, note: 'prisma: createdAt']
+  updated_at timestamp [default: `now(`, not null, note: 'prisma: updatedAt']
+
+  indexes {
+    (project_id)
+    (parent_id)
+    (created_by)
+  }
+}
+
+Table project_doc_permissions {
+  id uuid [pk, default: `uuid(7`, not null]
+  doc_id uuid [not null, note: 'prisma: docId']
+  user_id uuid [not null, note: 'prisma: userId']
+  organization_id uuid [not null, note: 'prisma: organizationId']
+  permission varchar [not null]
+  created_at timestamp [default: `now(`, not null, note: 'prisma: createdAt']
+  updated_at timestamp [default: `now(`, not null, note: 'prisma: updatedAt']
+
+  indexes {
+    (doc_id, user_id) [unique]
+    (doc_id)
+    (user_id)
+  }
+}
+
+Table project_doc_comments {
+  id uuid [pk, default: `uuid(7`, not null]
+  doc_id uuid [not null, note: 'prisma: docId']
+  user_id uuid [not null, note: 'prisma: userId']
+  organization_id uuid [not null, note: 'prisma: organizationId']
+  parent_id uuid [note: 'prisma: parentId']
+  content text [not null]
+  resolved boolean [default: false, not null]
+  is_edited boolean [default: false, not null, note: 'prisma: isEdited']
+  created_at timestamp [default: `now(`, not null, note: 'prisma: createdAt']
+  updated_at timestamp [default: `now(`, not null, note: 'prisma: updatedAt']
+
+  indexes {
+    (doc_id)
+  }
+}
+
+Table project_doc_versions {
+  id uuid [pk, default: `uuid(7`, not null]
+  doc_id uuid [not null, note: 'prisma: docId']
+  organization_id uuid [not null, note: 'prisma: organizationId']
+  content json [not null]
+  created_by uuid [not null, note: 'prisma: createdBy']
+  version integer [not null]
+  created_at timestamp [default: `now(`, not null, note: 'prisma: createdAt']
+
+  indexes {
+    (doc_id)
+  }
+}
+
+Table project_doc_activities {
+  id uuid [pk, default: `uuid(7`, not null]
+  doc_id uuid [not null, note: 'prisma: docId']
+  user_id uuid [not null, note: 'prisma: userId']
+  organization_id uuid [not null, note: 'prisma: organizationId']
+  action varchar [not null]
+  metadata json
+  created_at timestamp [default: `now(`, not null, note: 'prisma: createdAt']
+
+  indexes {
+    (doc_id)
+  }
+}
+
+Table project_doc_favorites {
+  id uuid [pk, default: `uuid(7`, not null]
+  doc_id uuid [not null, note: 'prisma: docId']
+  user_id uuid [not null, note: 'prisma: userId']
+  organization_id uuid [not null, note: 'prisma: organizationId']
+  is_pinned boolean [default: false, not null, note: 'prisma: isPinned']
+  is_favorite boolean [default: false, not null, note: 'prisma: isFavorite']
+  created_at timestamp [default: `now(`, not null, note: 'prisma: createdAt']
+
+  indexes {
+    (doc_id, user_id) [unique]
+  }
+}
+
+Table project_doc_comment_reactions {
+  id uuid [pk, default: `uuid(7`, not null]
+  comment_id uuid [not null, note: 'prisma: commentId']
+  user_id uuid [not null, note: 'prisma: userId']
+  organization_id uuid [not null, note: 'prisma: organizationId']
+  emoji varchar(50) [not null]
+  created_at timestamp [default: `now(`, not null, note: 'prisma: createdAt']
+
+  indexes {
+    (comment_id, user_id, emoji) [unique]
+  }
+}
+
+Ref: sessions.user_id > users.id [delete: cascade]
+Ref: accounts.user_id > users.id [delete: cascade]
+Ref: organizations.owner_id > users.id [delete: cascade]
+Ref: members.organization_id > organizations.id [delete: cascade]
+Ref: members.user_id > users.id [delete: cascade]
+Ref: workspaces.organization_id > organizations.id [delete: cascade]
+Ref: workspace_members.workspace_id > workspaces.id [delete: cascade]
+Ref: workspace_members.user_id > users.id [delete: cascade]
+Ref: workspace_members.organization_id > organizations.id [delete: cascade]
+Ref: invitations.organization_id > organizations.id [delete: cascade]
+Ref: invitations.inviter_id > users.id [delete: cascade]
+Ref: media.parent_media_id > media.id [delete: cascade]
+Ref: annotations.media_id > media.id [delete: cascade]
+Ref: annotations.user_id > users.id [delete: cascade]
+Ref: two_factors.user_id > users.id [delete: cascade]
+Ref: projects.workspace_id > workspaces.id [delete: cascade]
+Ref: projects.organization_id > organizations.id [delete: cascade]
+Ref: projects.owner_id > users.id [delete: set null]
+Ref: project_members.project_id > projects.id [delete: cascade]
+Ref: project_members.user_id > users.id [delete: cascade]
+Ref: project_members.organization_id > organizations.id [delete: cascade]
+Ref: vaults.project_id - projects.id [delete: cascade]
+Ref: vaults.organization_id > organizations.id [delete: cascade]
+Ref: vault_services.vault_id > vaults.id [delete: cascade]
+Ref: vault_services.organization_id > organizations.id [delete: cascade]
+Ref: vault_items.service_id > vault_services.id [delete: cascade]
+Ref: vault_items.organization_id > organizations.id [delete: cascade]
+Ref: tasks.project_id > projects.id [delete: cascade]
+Ref: tasks.organization_id > organizations.id
+Ref: tasks.epic_id > epics.id [delete: set null]
+Ref: tasks.milestone_id > milestones.id [delete: set null]
+Ref: tasks.sprint_id > sprints.id [delete: set null]
+Ref: tasks.status_id > task_statuses.id
+Ref: tasks.creator_id > users.id
+Ref: tasks.assignee_id > users.id
+Ref: tasks.reporter_id > users.id
+Ref: tasks.parent_task_id > tasks.id [delete: cascade]
+Ref: task_statuses.project_id > projects.id [delete: cascade]
+Ref: task_statuses.organization_id > organizations.id
+Ref: sprints.project_id > projects.id [delete: cascade]
+Ref: sprints.organization_id > organizations.id
+Ref: custom_field_definitions.project_id > projects.id [delete: cascade]
+Ref: custom_field_definitions.organization_id > organizations.id
+Ref: comments.task_id > tasks.id [delete: cascade]
+Ref: comments.user_id > users.id [delete: cascade]
+Ref: comments.organization_id > organizations.id
+Ref: comments.parent_id > comments.id [delete: cascade]
+Ref: comment_reactions.comment_id > comments.id [delete: cascade]
+Ref: comment_reactions.user_id > users.id [delete: cascade]
+Ref: comment_reactions.organization_id > organizations.id [delete: cascade]
+Ref: task_activities.task_id > tasks.id [delete: cascade]
+Ref: task_activities.user_id > users.id [delete: cascade]
+Ref: task_activities.organization_id > organizations.id
+Ref: slack_webhooks.project_id > projects.id [delete: cascade]
+Ref: slack_webhooks.organization_id > organizations.id [delete: cascade]
+Ref: notifications.recipient_id > users.id [delete: cascade]
+Ref: notifications.sender_id > users.id [delete: set null]
+Ref: notifications.task_id > tasks.id [delete: cascade]
+Ref: notifications.project_id > projects.id [delete: cascade]
+Ref: notifications.organization_id > organizations.id
+Ref: task_dependencies.blocking_task_id > tasks.id [delete: cascade]
+Ref: task_dependencies.blocked_task_id > tasks.id [delete: cascade]
+Ref: task_dependencies.organization_id > organizations.id [delete: cascade]
+Ref: epics.project_id > projects.id [delete: cascade]
+Ref: epics.organization_id > organizations.id [delete: cascade]
+Ref: labels.project_id > projects.id [delete: cascade]
+Ref: labels.organization_id > organizations.id
+Ref: task_labels.task_id > tasks.id [delete: cascade]
+Ref: task_labels.label_id > labels.id [delete: cascade]
+Ref: task_labels.organization_id > organizations.id [delete: cascade]
+Ref: milestones.project_id > projects.id [delete: cascade]
+Ref: milestones.organization_id > organizations.id
+Ref: roles.organization_id > organizations.id [delete: cascade]
+Ref: role_permissions.role_id > roles.id [delete: cascade]
+Ref: role_permissions.permission_id > permissions.id [delete: cascade]
+Ref: role_permissions.organization_id > organizations.id [delete: cascade]
+Ref: user_role_assignments.user_id > users.id [delete: cascade]
+Ref: user_role_assignments.role_id > roles.id [delete: cascade]
+Ref: user_role_assignments.organization_id > organizations.id [delete: cascade]
+Ref: workflow_transitions.project_id > projects.id [delete: cascade]
+Ref: workflow_transitions.organization_id > organizations.id
+Ref: workflow_transitions.from_status_id > task_statuses.id
+Ref: workflow_transitions.to_status_id > task_statuses.id
+Ref: workflow_transitions.required_role_id > roles.id
+Ref: automation_rules.project_id > projects.id [delete: cascade]
+Ref: automation_rules.organization_id > organizations.id [delete: cascade]
+Ref: work_logs.task_id > tasks.id [delete: cascade]
+Ref: work_logs.user_id > users.id [delete: cascade]
+Ref: work_logs.organization_id > organizations.id [delete: cascade]
+Ref: checklist_templates.workspace_id > workspaces.id [delete: cascade]
+Ref: checklist_templates.organization_id > organizations.id [delete: cascade]
+Ref: objectives.project_id > projects.id [delete: cascade]
+Ref: objectives.epic_id > epics.id [delete: set null]
+Ref: objectives.organization_id > organizations.id [delete: cascade]
+Ref: key_results.objective_id > objectives.id [delete: cascade]
+Ref: key_results.organization_id > organizations.id [delete: cascade]
+Ref: audit_logs.workspace_id > workspaces.id [delete: cascade]
+Ref: audit_logs.organization_id > organizations.id [delete: cascade]
+Ref: audit_logs.user_id > users.id [delete: cascade]
+Ref: portfolios.workspace_id > workspaces.id [delete: cascade]
+Ref: portfolios.organization_id > organizations.id [delete: cascade]
+Ref: portfolios.owner_id > users.id [delete: cascade]
+Ref: portfolio_projects.portfolio_id > portfolios.id [delete: cascade]
+Ref: portfolio_projects.project_id > projects.id [delete: cascade]
+Ref: portfolio_projects.organization_id > organizations.id [delete: cascade]
+Ref: project_docs.project_id > projects.id [delete: cascade]
+Ref: project_docs.organization_id > organizations.id [delete: cascade]
+Ref: project_docs.parent_id > project_docs.id [delete: cascade]
+Ref: project_docs.created_by > users.id [delete: cascade]
+Ref: project_docs.updated_by > users.id [delete: cascade]
+Ref: project_doc_permissions.doc_id > project_docs.id [delete: cascade]
+Ref: project_doc_permissions.user_id > users.id [delete: cascade]
+Ref: project_doc_permissions.organization_id > organizations.id [delete: cascade]
+Ref: project_doc_comments.doc_id > project_docs.id [delete: cascade]
+Ref: project_doc_comments.user_id > users.id [delete: cascade]
+Ref: project_doc_comments.organization_id > organizations.id [delete: cascade]
+Ref: project_doc_comments.parent_id > project_doc_comments.id [delete: cascade]
+Ref: project_doc_versions.doc_id > project_docs.id [delete: cascade]
+Ref: project_doc_versions.created_by > users.id [delete: cascade]
+Ref: project_doc_versions.organization_id > organizations.id [delete: cascade]
+Ref: project_doc_activities.doc_id > project_docs.id [delete: cascade]
+Ref: project_doc_activities.user_id > users.id [delete: cascade]
+Ref: project_doc_activities.organization_id > organizations.id [delete: cascade]
+Ref: project_doc_favorites.doc_id > project_docs.id [delete: cascade]
+Ref: project_doc_favorites.user_id > users.id [delete: cascade]
+Ref: project_doc_favorites.organization_id > organizations.id [delete: cascade]
+Ref: project_doc_comment_reactions.comment_id > project_doc_comments.id [delete: cascade]
+Ref: project_doc_comment_reactions.user_id > users.id [delete: cascade]
+Ref: project_doc_comment_reactions.organization_id > organizations.id [delete: cascade]

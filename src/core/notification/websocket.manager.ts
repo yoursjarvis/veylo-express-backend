@@ -3,9 +3,11 @@ import type { Server } from "http";
 import { fromNodeHeaders } from "better-auth/node";
 import Redis from "ioredis";
 import { WebSocketServer, WebSocket } from "ws";
+import { setupWSConnection } from "y-websocket/bin/utils";
 
 import { auth } from "@/lib/auth/auth";
 import { logger } from "@/lib/logger";
+import prisma from "@/lib/prisma";
 import { config } from "@/utils/config";
 
 export class WebSocketManager {
@@ -44,6 +46,81 @@ export class WebSocketManager {
     // Handle WebSocket upgrade requests
     server.on("upgrade", async (request, socket, head) => {
       const url = new URL(request.url || "", `http://${request.headers.host}`);
+
+      if (url.pathname.startsWith("/ws/docs/")) {
+        try {
+          const pathParts = url.pathname.split("/").filter(Boolean);
+          const docId = pathParts[2];
+          if (!docId) {
+            socket.write("HTTP/1.1 400 Bad Request\r\n\r\n");
+            socket.destroy();
+            return;
+          }
+
+          const token = url.searchParams.get("token");
+          const reqHeaders = { ...request.headers };
+          if (token) {
+            reqHeaders["cookie"] = `better-auth.session_token=${token}`;
+          }
+
+          const headers = fromNodeHeaders(reqHeaders);
+          const result = await auth.api.getSession({
+            headers,
+          });
+
+          if (!result || !result.user) {
+            logger.warn(`[WEBSOCKET][auth] Unauthorized connection attempt to doc: ${docId}`);
+            socket.write("HTTP/1.1 401 Unauthorized\r\n\r\n");
+            socket.destroy();
+            return;
+          }
+
+          const userId = result.user.id;
+
+          const doc = await prisma.projectDoc.findFirst({
+            where: { id: docId, deleted: false },
+            include: { permissions: true }
+          });
+
+          if (!doc) {
+            logger.warn(`[WEBSOCKET] Document not found: ${docId}`);
+            socket.write("HTTP/1.1 404 Not Found\r\n\r\n");
+            socket.destroy();
+            return;
+          }
+
+          const { rbacService } = await import("@/app/services/rbac.service");
+          const hasPermission = await rbacService.authorize(userId, "project-doc:view", { projectId: doc.projectId });
+          if (!hasPermission) {
+            logger.warn(`[WEBSOCKET] User ${userId} has no view permission for doc ${docId}`);
+            socket.write("HTTP/1.1 403 Forbidden\r\n\r\n");
+            socket.destroy();
+            return;
+          }
+
+          const userPerm = doc.permissions.find(p => p.userId === userId);
+          if (doc.permissions.length > 0 && !userPerm) {
+            const isProjectAdmin = await rbacService.authorize(userId, "project-doc:manage-permissions", { projectId: doc.projectId });
+            if (!isProjectAdmin) {
+              logger.warn(`[WEBSOCKET] User ${userId} blocked by custom doc permissions for doc ${docId}`);
+              socket.write("HTTP/1.1 403 Forbidden\r\n\r\n");
+              socket.destroy();
+              return;
+            }
+          }
+
+          const wssDocs = new WebSocketServer({ noServer: true });
+          wssDocs.handleUpgrade(request, socket, head, (ws) => {
+            setupWSConnection(ws, request, { docName: docId, gc: true });
+          });
+        } catch (error) {
+          logger.error({ error }, "[WEBSOCKET] Error upgrading doc connection");
+          socket.write("HTTP/1.1 500 Internal Server Error\r\n\r\n");
+          socket.destroy();
+        }
+        return;
+      }
+
       if (url.pathname !== "/ws/notifications") {
         return; // Allow other paths or upgrade handlers
       }

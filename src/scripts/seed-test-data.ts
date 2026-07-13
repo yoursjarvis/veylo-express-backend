@@ -213,6 +213,7 @@ async function main() {
         data: selectedPerms.map((p) => ({
           roleId: role.id,
           permissionId: p.id,
+          organizationId: orgId,
         })),
         skipDuplicates: true,
       });
@@ -223,11 +224,12 @@ async function main() {
     for (const u of randomUsers) {
       await prisma.userRoleAssignment.upsert({
         where: {
-          userId_roleId_scopeType_scopeId: {
+          userId_roleId_scopeType_scopeId_organizationId: {
             userId: u.id,
             roleId: role.id,
             scopeType: "ORGANIZATION",
             scopeId: orgId,
+            organizationId: orgId,
           },
         },
         update: {},
@@ -236,6 +238,7 @@ async function main() {
           roleId: role.id,
           scopeType: "ORGANIZATION",
           scopeId: orgId,
+          organizationId: orgId,
         },
       });
     }
@@ -272,15 +275,17 @@ async function main() {
   for (const u of users) {
     await prisma.workspaceMember.upsert({
       where: {
-        workspaceId_userId: {
+        workspaceId_userId_organizationId: {
           workspaceId: workspace.id,
           userId: u.id,
+          organizationId: orgId,
         },
       },
       update: {},
       create: {
         workspaceId: workspace.id,
         userId: u.id,
+        organizationId: orgId,
       },
     });
   }
@@ -316,8 +321,8 @@ async function main() {
         ownerId: users[faker.number.int({ min: 0, max: users.length - 1 })].id,
         status: faker.helpers.arrayElement(["on_track", "at_risk", "off_track", "on_hold"]),
         priority: faker.helpers.arrayElement(["low", "medium", "high"]),
-        startDate: faker.date.past({ years: 0.1 }),
-        endDate: faker.date.future({ years: 0.2 }),
+        startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+        endDate: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000),
       },
     });
 
@@ -327,6 +332,7 @@ async function main() {
         data: {
           projectId: proj.id,
           userId: u.id,
+          organizationId: orgId,
         },
       });
     }
@@ -409,9 +415,9 @@ async function main() {
           name: "Sprint 1 - Foundations",
           goal: "Build core architectural pillars and authentication",
           status: "completed",
-          startDate: faker.date.past({ years: 0.1 }),
-          endDate: faker.date.past({ years: 0.05 }),
-          completedAt: faker.date.past({ years: 0.05 }),
+          startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+          endDate: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000),
+          completedAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
         },
       });
       const sprint2 = await prisma.sprint.create({
@@ -421,8 +427,8 @@ async function main() {
           name: "Sprint 2 - Features & API",
           goal: "Develop key user experience workflows and integrations",
           status: "active",
-          startDate: faker.date.recent({ days: 3 }),
-          endDate: faker.date.soon({ days: 11 }),
+          startDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+          endDate: new Date(Date.now() + 11 * 24 * 60 * 60 * 1000),
         },
       });
       const sprint3 = await prisma.sprint.create({
@@ -446,7 +452,7 @@ async function main() {
         organizationId: orgId,
         title: "Beta Release",
         description: "Deploy basic features to staging environment",
-        dueDate: faker.date.soon({ days: 15 }),
+        dueDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
         isCompleted: false,
       },
     });
@@ -456,7 +462,7 @@ async function main() {
         organizationId: orgId,
         title: "Public Launch v1.0",
         description: "Production launch and marketing press release",
-        dueDate: faker.date.soon({ days: 45 }),
+        dueDate: new Date(Date.now() + 45 * 24 * 60 * 60 * 1000),
         isCompleted: false,
       },
     });
@@ -547,7 +553,7 @@ async function main() {
         position: i * 1000,
         dueDate: faker.helpers.arrayElement([
           null,
-          faker.date.soon({ days: 30 }),
+          new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
         ]),
       },
     });
@@ -568,6 +574,7 @@ async function main() {
         data: {
           taskId: task.id,
           labelId: l.id,
+          organizationId: orgId,
         },
       });
     }
@@ -600,6 +607,7 @@ async function main() {
         data: {
           taskId: task.id,
           userId: randomAssignee.id,
+          organizationId: orgId,
           hoursLogged: faker.number.float({
             min: 0.5,
             max: 8,
