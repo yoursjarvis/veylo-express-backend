@@ -11,5 +11,8 @@ scrape_configs:
       - targets: ["otel-collector:8889"]
 
   - job_name: "backend"
+    scheme: https
+    tls_config:
+      insecure_skip_verify: true
     static_configs:
-      - targets: ["backend:4000"]
+      - targets: ["host.docker.internal:4000"]

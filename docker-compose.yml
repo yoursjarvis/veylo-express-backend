@@ -23,6 +23,8 @@ services:
     depends_on: [otel-collector]
     networks:
       - veylo-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   grafana:
     image: grafana/grafana:latest

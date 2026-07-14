@@ -5,6 +5,7 @@ import database from "./database.config";
 import mail from "./mail.config";
 import notification from "./notification.config";
 import otel from "./otel.config";
+import queue from "./queue.config";
 import storage from "./storage.config";
 
 export default {
@@ -15,5 +16,6 @@ export default {
   mail,
   notification,
   otel,
+  queue,
   storage,
 };

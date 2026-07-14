@@ -18,7 +18,7 @@ export const mailQueue = new Queue<MailQueuePayload>(
       password: config("database.redis.password") || undefined,
       maxRetriesPerRequest: null,
     },
-    prefix: config("mail.queue.prefix"),
+    prefix: config("queue.mail.prefix"),
     telemetry: new BullMQOtel(),
   },
 );

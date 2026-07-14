@@ -24,7 +24,7 @@ const worker = new Worker<MailQueuePayload>(
       password: config("database.redis.password") || undefined,
       maxRetriesPerRequest: null,
     },
-    prefix: config("mail.queue.prefix"),
+    prefix: config("queue.mail.prefix"),
     concurrency: 5,
     telemetry: new BullMQOtel(),
   },
