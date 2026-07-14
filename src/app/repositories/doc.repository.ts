@@ -311,7 +311,7 @@ export const docRepository = {
         },
         reactions: {
           include: {
-            user: { select: { id: true, name: true } }
+            user: { select: { id: true, name: true, image: true } }
           }
         },
         replies: {
@@ -319,7 +319,7 @@ export const docRepository = {
             user: { select: { id: true, name: true, image: true } },
             reactions: {
               include: {
-                user: { select: { id: true, name: true } }
+                user: { select: { id: true, name: true, image: true } }
               }
             }
           },
@@ -342,7 +342,7 @@ export const docRepository = {
         },
         reactions: {
           include: {
-            user: { select: { id: true, name: true } }
+            user: { select: { id: true, name: true, image: true } }
           }
         },
         replies: {
@@ -350,7 +350,7 @@ export const docRepository = {
             user: { select: { id: true, name: true, image: true } },
             reactions: {
               include: {
-                user: { select: { id: true, name: true } }
+                user: { select: { id: true, name: true, image: true } }
               }
             }
           },
@@ -384,7 +384,7 @@ export const docRepository = {
         },
         reactions: {
           include: {
-            user: { select: { id: true, name: true } }
+            user: { select: { id: true, name: true, image: true } }
           }
         },
         replies: {
@@ -394,7 +394,7 @@ export const docRepository = {
             },
             reactions: {
               include: {
-                user: { select: { id: true, name: true } }
+                user: { select: { id: true, name: true, image: true } }
               }
             }
           },
