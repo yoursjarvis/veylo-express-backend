@@ -215,6 +215,7 @@ export const portfolioService = {
           data: data.projectIds.map((projectId) => ({
             portfolioId: portfolio.id,
             projectId,
+            organizationId,
           })),
         });
       }
@@ -247,6 +248,7 @@ export const portfolioService = {
             data: data.projectIds.map((projectId) => ({
               portfolioId: id,
               projectId,
+              organizationId: portfolio.organizationId,
             })),
           });
         }

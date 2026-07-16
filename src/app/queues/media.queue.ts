@@ -15,5 +15,6 @@ export const mediaQueue = new Queue<MediaQueuePayload>("media", {
     password: config("database.redis.password") || undefined,
     maxRetriesPerRequest: null,
   },
+  prefix: config("queue.media.prefix"),
   telemetry: new BullMQOtel(),
 });

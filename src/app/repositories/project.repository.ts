@@ -45,7 +45,9 @@ export const projectRepository = {
         workspaceId: data.workspaceId,
         organizationId: data.organizationId,
         vault: {
-          create: {},
+          create: {
+            organizationId: data.organizationId,
+          },
         },
         taskStatuses: {
           createMany: {
@@ -180,17 +182,43 @@ export const projectRepository = {
     });
   },
 
-  upsertProjectMember(projectId: string, userId: string) {
+  async upsertProjectMember(projectId: string, userId: string) {
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+      select: { organizationId: true },
+    });
+    if (!project) throw new Error("Project not found");
     return prisma.projectMember.upsert({
-      where: { projectId_userId: { projectId, userId } },
+      where: {
+        projectId_userId_organizationId: {
+          projectId,
+          userId,
+          organizationId: project.organizationId,
+        },
+      },
       update: {},
-      create: { projectId, userId },
+      create: {
+        projectId,
+        userId,
+        organizationId: project.organizationId,
+      },
     });
   },
 
-  deleteProjectMember(projectId: string, userId: string) {
+  async deleteProjectMember(projectId: string, userId: string) {
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+      select: { organizationId: true },
+    });
+    if (!project) throw new Error("Project not found");
     return prisma.projectMember.delete({
-      where: { projectId_userId: { projectId, userId } },
+      where: {
+        projectId_userId_organizationId: {
+          projectId,
+          userId,
+          organizationId: project.organizationId,
+        },
+      },
     });
   },
 
@@ -210,9 +238,14 @@ export const projectRepository = {
     });
   },
 
-  createVault(projectId: string) {
+  async createVault(projectId: string) {
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+      select: { organizationId: true },
+    });
+    if (!project) throw new Error("Project not found");
     return prisma.vault.create({
-      data: { projectId },
+      data: { projectId, organizationId: project.organizationId },
       include: {
         services: {
           include: {
@@ -232,11 +265,17 @@ export const projectRepository = {
     });
   },
 
-  createVaultService(vaultId: string, name: string) {
+  async createVaultService(vaultId: string, name: string) {
+    const vault = await prisma.vault.findUnique({
+      where: { id: vaultId },
+      select: { organizationId: true },
+    });
+    if (!vault) throw new Error("Vault not found");
     return prisma.vaultService.create({
       data: {
         vaultId,
         name,
+        organizationId: vault.organizationId,
       },
     });
   },
@@ -247,15 +286,24 @@ export const projectRepository = {
     });
   },
 
-  upsertVaultItem(
+  async upsertVaultItem(
     serviceId: string,
     key: string,
     value: string,
     note: string | null,
   ) {
+    const service = await prisma.vaultService.findUnique({
+      where: { id: serviceId },
+      select: { organizationId: true },
+    });
+    if (!service) throw new Error("Vault service not found");
     return prisma.vaultItem.upsert({
       where: {
-        serviceId_key: { serviceId, key },
+        serviceId_key_organizationId: {
+          serviceId,
+          key,
+          organizationId: service.organizationId,
+        },
       },
       update: {
         value,
@@ -266,6 +314,7 @@ export const projectRepository = {
         key,
         value,
         note,
+        organizationId: service.organizationId,
       },
     });
   },
@@ -306,7 +355,7 @@ export const projectRepository = {
     });
   },
 
-  createAutomationRule(
+  async createAutomationRule(
     projectId: string,
     data: {
       name: string;
@@ -317,9 +366,15 @@ export const projectRepository = {
       isActive?: boolean;
     },
   ) {
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+      select: { organizationId: true },
+    });
+    if (!project) throw new Error("Project not found");
     return prisma.automationRule.create({
       data: {
         projectId,
+        organizationId: project.organizationId,
         name: data.name,
         trigger: data.trigger,
         triggerVal: data.triggerVal ?? null,

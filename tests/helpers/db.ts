@@ -74,4 +74,5 @@ export const prismaMock = {
   permission: standardMock(),
   rolePermission: standardMock(),
   userRoleAssignment: standardMock(),
+  auditLog: standardMock(),
 };

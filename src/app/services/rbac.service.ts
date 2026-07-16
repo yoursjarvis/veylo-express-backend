@@ -383,7 +383,7 @@ async function resolveContextAndCreator(
   // Add SYSTEM scope check
   scopes.push({
     type: "SYSTEM",
-    id: "00000000-0000-0000-0000-0000-000000000000",
+    id: "00000000-0000-0000-0000-000000000000",
   });
 
   return {

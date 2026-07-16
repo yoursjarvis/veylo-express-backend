@@ -14,8 +14,16 @@ export const slackWebhookRepository = {
     channel?: string | null;
     isActive: boolean;
   }) {
+    const project = await prisma.project.findUnique({
+      where: { id: data.projectId },
+      select: { organizationId: true },
+    });
+    if (!project) throw new Error("Project not found");
     return prisma.slackWebhook.create({
-      data,
+      data: {
+        ...data,
+        organizationId: project.organizationId,
+      },
     });
   },
 

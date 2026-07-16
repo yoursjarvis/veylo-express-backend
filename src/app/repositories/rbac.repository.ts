@@ -105,6 +105,15 @@ export const DEFAULT_ROLES = [
       "role:update",
       "role:delete",
       "role:assign",
+      "project-doc:view",
+      "project-doc:create",
+      "project-doc:edit",
+      "project-doc:delete",
+      "project-doc:comment",
+      "project-doc:share",
+      "project-doc:manage-permissions",
+      "project-doc:restore",
+      "project-doc:version-history",
     ],
   },
   {
@@ -210,6 +219,15 @@ export const DEFAULT_ROLES = [
       "role:update",
       "role:delete",
       "role:assign",
+      "project-doc:view",
+      "project-doc:create",
+      "project-doc:edit",
+      "project-doc:delete",
+      "project-doc:comment",
+      "project-doc:share",
+      "project-doc:manage-permissions",
+      "project-doc:restore",
+      "project-doc:version-history",
     ],
   },
   {
@@ -296,6 +314,15 @@ export const DEFAULT_ROLES = [
       "checklist-template:create",
       "checklist-template:update",
       "checklist-template:delete",
+      "project-doc:view",
+      "project-doc:create",
+      "project-doc:edit",
+      "project-doc:delete",
+      "project-doc:comment",
+      "project-doc:share",
+      "project-doc:manage-permissions",
+      "project-doc:restore",
+      "project-doc:version-history",
     ],
   },
   {
@@ -375,6 +402,15 @@ export const DEFAULT_ROLES = [
       "checklist-template:create",
       "checklist-template:update",
       "checklist-template:delete",
+      "project-doc:view",
+      "project-doc:create",
+      "project-doc:edit",
+      "project-doc:delete",
+      "project-doc:comment",
+      "project-doc:share",
+      "project-doc:manage-permissions",
+      "project-doc:restore",
+      "project-doc:version-history",
     ],
   },
   {
@@ -399,6 +435,9 @@ export const DEFAULT_ROLES = [
       "member:read",
       "goal-okrs:read",
       "checklist-template:read",
+      "project-doc:view",
+      "project-doc:edit",
+      "project-doc:comment",
     ],
   },
   {
@@ -409,6 +448,7 @@ export const DEFAULT_ROLES = [
       "task:read",
       "task:comment",
       "member:read",
+      "project-doc:view",
     ],
   },
 ];
@@ -610,6 +650,18 @@ export const rbacRepository = {
         });
       }
 
+      let organizationId: string;
+      if (data.scopeType === "ORGANIZATION") {
+        organizationId = data.scopeId;
+      } else {
+        const project = await tx.project.findUnique({
+          where: { id: data.scopeId },
+          select: { organizationId: true },
+        });
+        if (!project) throw new Error("Project not found");
+        organizationId = project.organizationId;
+      }
+
       if (rolesToAdd.length > 0) {
         await tx.userRoleAssignment.createMany({
           data: rolesToAdd.map((roleId) => ({
@@ -617,6 +669,7 @@ export const rbacRepository = {
             roleId,
             scopeType: data.scopeType,
             scopeId: data.scopeId,
+            organizationId,
           })),
         });
       }

@@ -92,6 +92,7 @@ export const projectService = {
       teamMode?: string;
       projectKey: string;
     },
+    userId?: string,
   ) {
     const existingProject = await prisma.project.findUnique({
       where: { projectKey: data.projectKey },
@@ -133,7 +134,7 @@ export const projectService = {
     const workspace = await projectRepository.findWorkspaceById(workspaceId);
     const organizationId = workspace?.organizationId ?? activeOrgId;
 
-    return projectRepository.createProject(
+    const project = await projectRepository.createProject(
       {
         title: data.title,
         projectKey: data.projectKey,
@@ -147,6 +148,57 @@ export const projectService = {
       resolvedStatuses,
       resolvedCustomFields,
     );
+
+    // Automatically create a root Docs folder when project is created
+    const creatorId = userId || project.ownerId || (await prisma.user.findFirst())?.id;
+    if (creatorId) {
+      await prisma.projectDoc.create({
+        data: {
+          projectId: project.id,
+          organizationId: project.organizationId,
+          title: "Documents",
+          slug: "documents",
+          emoji: "📁",
+          order: 0,
+          createdBy: creatorId,
+          updatedBy: creatorId,
+          children: {
+            create: {
+              projectId: project.id,
+              organizationId: project.organizationId,
+              title: "Welcome to Docs",
+              slug: "welcome-to-docs",
+              emoji: "👋",
+              content: {
+                type: "doc",
+                content: [
+                  {
+                    type: "heading",
+                    attrs: { level: 1 },
+                    content: [{ type: "text", text: "Welcome to Veylo Docs! 👋" }]
+                  },
+                  {
+                    type: "paragraph",
+                    content: [
+                      {
+                        type: "text",
+                        text: "This is your project's collaborative document workspace. Here, you can create, edit, organize, and discuss documents in real time with your team."
+                      }
+                    ]
+                  }
+                ]
+              } as any,
+              plainText: "Welcome to Veylo Docs! This is your project's collaborative document workspace.",
+              order: 0,
+              createdBy: creatorId,
+              updatedBy: creatorId,
+            }
+          }
+        }
+      });
+    }
+
+    return project;
   },
 
   getProjectTemplates() {

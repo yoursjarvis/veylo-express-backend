@@ -1,6 +1,7 @@
 import { Router } from "express";
 
 import { authRoutes } from "@/routes/v1/auth.routes";
+import { docRoutes } from "@/routes/v1/doc.routes";
 import { mediaRoutes } from "@/routes/v1/media.routes";
 import { objectiveRoutes } from "@/routes/v1/objective.routes";
 import { orgRoutes } from "@/routes/v1/org.routes";
@@ -18,6 +19,7 @@ apiV1Routes.use("/media", mediaRoutes);
 apiV1Routes.use("/org", orgRoutes);
 apiV1Routes.use("/workspaces", workspaceRoutes);
 apiV1Routes.use("/", projectRoutes);
+apiV1Routes.use("/", docRoutes);
 apiV1Routes.use("/", taskRoutes);
 apiV1Routes.use("/rbac", rbacRoutes);
 apiV1Routes.use("/", objectiveRoutes);

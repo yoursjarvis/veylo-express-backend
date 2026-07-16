@@ -282,8 +282,20 @@ export const taskExtrasRepository = {
   },
 
   async findCommentReaction(commentId: string, userId: string, emoji: string) {
+    const comment = await prisma.comment.findUnique({
+      where: { id: commentId },
+      select: { organizationId: true },
+    });
+    if (!comment) return null;
     return prisma.commentReaction.findUnique({
-      where: { commentId_userId_emoji: { commentId, userId, emoji } },
+      where: {
+        commentId_userId_emoji_organizationId: {
+          commentId,
+          userId,
+          emoji,
+          organizationId: comment.organizationId,
+        },
+      },
     });
   },
 
@@ -298,8 +310,18 @@ export const taskExtrasRepository = {
     userId: string,
     emoji: string,
   ) {
+    const comment = await prisma.comment.findUnique({
+      where: { id: commentId },
+      select: { organizationId: true },
+    });
+    if (!comment) throw new Error("Comment not found");
     return prisma.commentReaction.create({
-      data: { commentId, userId, emoji },
+      data: {
+        commentId,
+        userId,
+        emoji,
+        organizationId: comment.organizationId,
+      },
     });
   },
 };

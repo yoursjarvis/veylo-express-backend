@@ -33,6 +33,7 @@ export const workLogService = {
         hoursLogged: data.hoursLogged,
         loggedAt: data.loggedAt ? new Date(data.loggedAt) : new Date(),
         description: data.description,
+        organizationId: task.organizationId,
       },
       include: {
         user: {

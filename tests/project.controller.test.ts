@@ -62,6 +62,9 @@ const {
     media: {
       findFirst: vi.fn(),
     },
+    user: {
+      findUnique: vi.fn(),
+    },
   },
   mockMediaService: {
     addMedia: vi.fn(),
@@ -519,6 +522,7 @@ describe("projectController", () => {
   describe("removeProjectMember", () => {
     it("verifies project admin access and deletes project member", async () => {
       prismaMock.projectMember.delete.mockResolvedValueOnce({ id: "pm-1" });
+      prismaMock.user.findUnique.mockResolvedValueOnce({ name: "John Doe" });
 
       const req: any = { params: { id: "proj-123", userId: "user-123" } };
       const res = createRes();

@@ -176,6 +176,7 @@ export const auth = betterAuth({
                     roleId: orgRole.id,
                     scopeType: "ORGANIZATION",
                     scopeId: inv.organizationId,
+                    organizationId: inv.organizationId,
                   },
                 });
               }
@@ -189,6 +190,7 @@ export const auth = betterAuth({
                         data: {
                           projectId,
                           userId: user.id,
+                          organizationId: inv.organizationId,
                         },
                       });
 
@@ -205,6 +207,7 @@ export const auth = betterAuth({
                             roleId: projectRole.id,
                             scopeType: "PROJECT",
                             scopeId: projectId,
+                            organizationId: inv.organizationId,
                           },
                         });
                       }

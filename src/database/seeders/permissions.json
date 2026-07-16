@@ -652,5 +652,59 @@
     "resource": "portfolio",
     "action": "force-delete",
     "description": "Permanently delete portfolios"
+  },
+  {
+    "module": "Project Docs",
+    "resource": "project-doc",
+    "action": "view",
+    "description": "View project documents"
+  },
+  {
+    "module": "Project Docs",
+    "resource": "project-doc",
+    "action": "create",
+    "description": "Create project documents"
+  },
+  {
+    "module": "Project Docs",
+    "resource": "project-doc",
+    "action": "edit",
+    "description": "Edit project documents"
+  },
+  {
+    "module": "Project Docs",
+    "resource": "project-doc",
+    "action": "delete",
+    "description": "Soft delete project documents"
+  },
+  {
+    "module": "Project Docs",
+    "resource": "project-doc",
+    "action": "comment",
+    "description": "Comment on project documents"
+  },
+  {
+    "module": "Project Docs",
+    "resource": "project-doc",
+    "action": "share",
+    "description": "Share project documents"
+  },
+  {
+    "module": "Project Docs",
+    "resource": "project-doc",
+    "action": "manage-permissions",
+    "description": "Manage project document permissions"
+  },
+  {
+    "module": "Project Docs",
+    "resource": "project-doc",
+    "action": "restore",
+    "description": "Restore soft-deleted project documents"
+  },
+  {
+    "module": "Project Docs",
+    "resource": "project-doc",
+    "action": "version-history",
+    "description": "View and restore project document versions"
   }
 ]

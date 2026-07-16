@@ -79,6 +79,7 @@ export const mediaWorker = new Worker<MediaQueuePayload>(
       password: config("database.redis.password") || undefined,
       maxRetriesPerRequest: null,
     },
+    prefix: config("queue.media.prefix"),
     concurrency: 5,
     telemetry: new BullMQOtel(),
   },

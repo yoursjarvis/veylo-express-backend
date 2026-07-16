@@ -1,5 +1,6 @@
 import type { Request } from "express";
 
+import { auditLogWriteQueue } from "@/app/queues/audit-log.queue";
 import { notificationService } from "@/app/services/notification.service";
 import prisma from "@/lib/prisma";
 
@@ -13,6 +14,20 @@ export interface AuditLogFilters {
   search?: string;
   page?: number;
   limit?: number;
+}
+
+export interface AuditLogWritePayload {
+  workspaceId?: string | null;
+  organizationId: string;
+  userId: string;
+  action: string;
+  entityType: string;
+  entityId?: string | null;
+  entityName?: string | null;
+  description: string;
+  metadata?: Record<string, unknown>;
+  ipAddress?: string | null;
+  userAgent?: string | null;
 }
 
 export const auditLogService = {
@@ -31,37 +46,39 @@ export const auditLogService = {
     metadata?: Record<string, unknown>;
     req?: Request;
   }): Promise<void> {
-    setImmediate(async () => {
-      try {
-        const ipAddress = data.req
-          ? ((data.req.headers["x-forwarded-for"] as string) ||
-            data.req.ip ||
-            null)
-          : null;
-        const userAgent = data.req
-          ? (data.req.headers["user-agent"] || null)
-          : null;
+    try {
+      const ipAddress = data.req
+        ? ((data.req.headers["x-forwarded-for"] as string) ||
+          data.req.ip ||
+          null)
+        : null;
+      const userAgent = data.req
+        ? (data.req.headers["user-agent"] || null)
+        : null;
 
-        await prisma.auditLog.create({
-          data: {
-            workspaceId: data.workspaceId ?? null,
-            organizationId: data.organizationId,
-            userId: data.userId,
-            action: data.action,
-            entityType: data.entityType,
-            entityId: data.entityId ?? null,
-            entityName: data.entityName ?? null,
-            description: data.description,
-            metadata: data.metadata ?? undefined,
-            ipAddress,
-            userAgent,
-          },
-        });
-      } catch (error) {
-        // Don't crash main execution if auditing fails, but log to stderr
-        console.error("[AUDIT LOG ERROR] Failed to write audit log asynchronously:", error);
-      }
-    });
+      await auditLogWriteQueue.add(
+        "write-log",
+        {
+          workspaceId: data.workspaceId ?? null,
+          organizationId: data.organizationId,
+          userId: data.userId,
+          action: data.action,
+          entityType: data.entityType,
+          entityId: data.entityId ?? null,
+          entityName: data.entityName ?? null,
+          description: data.description,
+          metadata: data.metadata ?? undefined,
+          ipAddress,
+          userAgent,
+        },
+        {
+          removeOnComplete: true,
+          removeOnFail: false,
+        },
+      );
+    } catch (error) {
+      console.error("[AUDIT LOG ERROR] Failed to enqueue audit log:", error);
+    }
   },
 
   /**
@@ -210,6 +227,27 @@ export const auditLogService = {
       success: true,
       jobId: String(job.id),
     };
+  },
+
+  /**
+   * Process background writing of audit logs.
+   */
+  async processWriteJob(data: AuditLogWritePayload): Promise<void> {
+    await prisma.auditLog.create({
+      data: {
+        workspaceId: data.workspaceId ?? null,
+        organizationId: data.organizationId,
+        userId: data.userId,
+        action: data.action,
+        entityType: data.entityType,
+        entityId: data.entityId ?? null,
+        entityName: data.entityName ?? null,
+        description: data.description,
+        metadata: data.metadata ?? undefined,
+        ipAddress: data.ipAddress ?? null,
+        userAgent: data.userAgent ?? null,
+      },
+    });
   },
 
   /**
