@@ -10,12 +10,14 @@ const {
   mockImpersonate,
   mockCreateInvitation,
   mockCancelInvitation,
+  mockSetUserPassword,
   prismaMock,
 } = vi.hoisted(() => ({
   mockGetSession: vi.fn(),
   mockImpersonate: vi.fn(),
   mockCreateInvitation: vi.fn(),
   mockCancelInvitation: vi.fn(),
+  mockSetUserPassword: vi.fn(),
   prismaMock: {
     member: {
       findFirst: vi.fn(),
@@ -28,6 +30,7 @@ const {
     session: {
       deleteMany: vi.fn(),
       create: vi.fn(),
+      findMany: vi.fn(),
     },
     invitation: {
       findUnique: vi.fn(),
@@ -50,6 +53,7 @@ vi.mock("../src/lib/auth/auth", () => ({
       impersonateUser: mockImpersonate,
       createInvitation: mockCreateInvitation,
       cancelInvitation: mockCancelInvitation,
+      setUserPassword: mockSetUserPassword,
     },
   },
 }));
@@ -514,6 +518,222 @@ describe("orgMembersController", () => {
         message: "Invitation revoked successfully",
         data: { id: "inv-1" },
       });
+    });
+  });
+
+  describe("setPassword, getSessions, revokeSession & updateProfile", () => {
+    it("sets password successfully", async () => {
+      mockGetSession.mockResolvedValueOnce({
+        user: { id: "u1" },
+        session: { activeOrganizationId: "org1" },
+      });
+      prismaMock.member.findFirst.mockResolvedValueOnce({
+        id: "caller-mem",
+        role: "owner",
+      });
+      mockSetUserPassword.mockResolvedValueOnce({});
+
+      const req: any = {
+        params: { id: "target-user" },
+        body: { password: "newpassword123" },
+      };
+      const res = createRes();
+
+      await (orgMembersController.setPassword as any)(req, res);
+
+      expect(mockSetUserPassword).toHaveBeenCalled();
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+        success: true,
+        message: "Password updated successfully",
+      }));
+    });
+
+    it("gets user sessions successfully", async () => {
+      mockGetSession.mockResolvedValueOnce({
+        user: { id: "u1" },
+        session: { activeOrganizationId: "org1" },
+      });
+      prismaMock.member.findFirst.mockResolvedValueOnce({
+        id: "caller-mem",
+        role: "owner",
+      });
+      prismaMock.session.findMany.mockResolvedValueOnce([{ id: "s1" }]);
+
+      const req: any = { params: { id: "target-user" } };
+      const res = createRes();
+
+      await (orgMembersController.getSessions as any)(req, res);
+
+      expect(prismaMock.session.findMany).toHaveBeenCalled();
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+        success: true,
+        data: [{ id: "s1" }],
+      }));
+    });
+
+    it("revokes user session successfully", async () => {
+      mockGetSession.mockResolvedValueOnce({
+        user: { id: "u1" },
+        session: { activeOrganizationId: "org1" },
+      });
+      prismaMock.member.findFirst.mockResolvedValueOnce({
+        id: "caller-mem",
+        role: "owner",
+      });
+      prismaMock.session.deleteMany.mockResolvedValueOnce({ count: 1 });
+
+      const req: any = { params: { id: "target-user", sessionId: "s1" } };
+      const res = createRes();
+
+      await (orgMembersController.revokeSession as any)(req, res);
+
+      expect(prismaMock.session.deleteMany).toHaveBeenCalled();
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+        success: true,
+        message: "Session revoked successfully",
+      }));
+    });
+
+    it("updates profile successfully", async () => {
+      mockGetSession.mockResolvedValueOnce({
+        user: { id: "u1" },
+        session: { activeOrganizationId: "org1" },
+      });
+      prismaMock.member.findFirst
+        .mockResolvedValueOnce({ id: "caller-mem", role: "owner" }) // for verifyAdminAccess caller
+        .mockResolvedValueOnce({ id: "target-mem" }); // for verifyAdminAccess target or user org membership check
+      prismaMock.user.update.mockResolvedValueOnce({});
+
+      const req: any = {
+        params: { id: "target-user" },
+        body: {
+          firstName: "John",
+          lastName: "Doe",
+          email: "john@example.com",
+        },
+      };
+      const res = createRes();
+
+      await (orgMembersController.updateProfile as any)(req, res);
+
+      expect(prismaMock.user.update).toHaveBeenCalled();
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+        success: true,
+        message: "Profile updated successfully",
+      }));
+    });
+  });
+
+  describe("updatePhoto, resendInvitation & error handler edge cases", () => {
+    it("updatePhoto returns 400 if no file uploaded", async () => {
+      mockGetSession.mockResolvedValueOnce({
+        user: { id: "u1" },
+        session: { activeOrganizationId: "org1" },
+      });
+
+      const req: any = { params: { id: "target-user" } };
+      const res = createRes();
+
+      await (orgMembersController.updatePhoto as any)(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+    });
+
+    it("updatePhoto updates photo successfully if file uploaded", async () => {
+      const { orgMembersService } = await import("../src/app/services/org-members.service");
+      vi.spyOn(orgMembersService, "updatePhoto").mockResolvedValueOnce("http://example.com/avatar.png");
+
+      mockGetSession.mockResolvedValueOnce({
+        user: { id: "u1" },
+        session: { activeOrganizationId: "org1" },
+      });
+
+      const req: any = {
+        params: { id: "target-user" },
+        file: {
+          buffer: Buffer.from("img"),
+          originalname: "pic.png",
+          mimetype: "image/png",
+          size: 100,
+        },
+      };
+      const res = createRes();
+
+      await (orgMembersController.updatePhoto as any)(req, res);
+
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+        success: true,
+        message: "Photo updated successfully",
+        data: { url: "http://example.com/avatar.png" },
+      }));
+    });
+
+    it("inviteMember triggers error handler for CONFLICT", async () => {
+      const { orgMembersService } = await import("../src/app/services/org-members.service");
+      vi.spyOn(orgMembersService, "verifyAdminAccess").mockResolvedValueOnce({} as any);
+      vi.spyOn(orgMembersService, "inviteMember").mockRejectedValueOnce(
+        Object.assign(new Error("Email already registered"), { status: "CONFLICT", code: "ALREADY_EXISTS" })
+      );
+
+      mockGetSession.mockResolvedValueOnce({
+        user: { id: "u1" },
+        session: { activeOrganizationId: "org1" },
+      });
+
+      const req: any = {
+        body: { email: "new@example.com", role: "member" },
+      };
+      const res = createRes();
+
+      await (orgMembersController.inviteMember as any)(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(409);
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+        message: "Email already registered",
+        code: "ALREADY_EXISTS",
+      }));
+    });
+
+    it("resendInvitation resends successfully", async () => {
+      const { orgMembersService } = await import("../src/app/services/org-members.service");
+      vi.spyOn(orgMembersService, "resendInvitation").mockResolvedValueOnce({ id: "inv-1" });
+
+      mockGetSession.mockResolvedValueOnce({
+        user: { id: "u1" },
+        session: { activeOrganizationId: "org1" },
+      });
+
+      const req: any = { params: { id: "inv-1" } };
+      const res = createRes();
+
+      await (orgMembersController.resendInvitation as any)(req, res);
+
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+        success: true,
+        message: "Invitation resent successfully",
+      }));
+    });
+
+    it("resendInvitation triggers catch block error handler for BAD_REQUEST", async () => {
+      const { orgMembersService } = await import("../src/app/services/org-members.service");
+      vi.spyOn(orgMembersService, "resendInvitation").mockRejectedValueOnce(
+        Object.assign(new Error("Invalid link"), { status: "BAD_REQUEST" })
+      );
+
+      mockGetSession.mockResolvedValueOnce({
+        user: { id: "u1" },
+        session: { activeOrganizationId: "org1" },
+      });
+
+      const req: any = { params: { id: "inv-1" } };
+      const res = createRes();
+
+      await (orgMembersController.resendInvitation as any)(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+        message: "Invalid link",
+      }));
     });
   });
 });

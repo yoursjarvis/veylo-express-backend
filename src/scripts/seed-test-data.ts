@@ -5,6 +5,7 @@ import { faker } from "@faker-js/faker";
 import { hashPassword } from "better-auth/crypto";
 
 import prisma from "../lib/prisma";
+import { getDefaultStatusColorAndWeight } from "../utils/status-defaults";
 
 const PASSWORD = "123456789012";
 
@@ -360,19 +361,22 @@ async function main() {
       { name: "Done", category: "done", order: 4 },
     ];
 
-    const statuses = [];
-    for (const stat of statusesData) {
-      const createdStatus = await prisma.taskStatus.create({
-        data: {
-          projectId: proj.id,
-          organizationId: orgId,
-          name: stat.name,
-          category: stat.category,
-          order: stat.order,
-        },
-      });
-      statuses.push(createdStatus);
-    }
+     const statuses = [];
+     for (const stat of statusesData) {
+       const defaults = getDefaultStatusColorAndWeight(stat.name, stat.category);
+       const createdStatus = await prisma.taskStatus.create({
+         data: {
+           projectId: proj.id,
+           organizationId: orgId,
+           name: stat.name,
+           category: stat.category,
+           order: stat.order,
+           color: defaults.color,
+           progressWeight: defaults.progressWeight,
+         },
+       });
+       statuses.push(createdStatus);
+     }
     allProjectStatuses[proj.id] = statuses;
 
     // B. Epics

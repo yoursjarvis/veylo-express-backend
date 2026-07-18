@@ -51,6 +51,7 @@ const {
     },
     vaultService: {
       findFirst: vi.fn(),
+      findUnique: vi.fn(),
       create: vi.fn(),
       delete: vi.fn(),
     },
@@ -64,6 +65,7 @@ const {
     },
     user: {
       findUnique: vi.fn(),
+      findFirst: vi.fn(),
     },
   },
   mockMediaService: {
@@ -221,7 +223,7 @@ describe("projectController", () => {
           teamMode: "software",
           workspaceId: "ws-123",
           organizationId: "org-123",
-          vault: { create: {} },
+          vault: { create: { organizationId: "org-123" } },
           taskStatuses: {
             createMany: {
               data: [
@@ -230,6 +232,8 @@ describe("projectController", () => {
                   category: "backlog",
                   order: 0,
                   organizationId: "org-123",
+                  color: "#ef4444",
+                  progressWeight: 0,
                 },
               ],
             },
@@ -295,12 +299,16 @@ describe("projectController", () => {
                     category: "todo",
                     order: 0,
                     organizationId: "org-123",
+                    color: "#3b82f6",
+                    progressWeight: 0,
                   },
                   {
                     name: "Done",
                     category: "done",
                     order: 1,
                     organizationId: "org-123",
+                    color: "#10b981",
+                    progressWeight: 100,
                   },
                 ],
               },
@@ -491,6 +499,7 @@ describe("projectController", () => {
     });
 
     it("upserts project member records if in workspace", async () => {
+      prismaMock.project.findUnique.mockResolvedValueOnce({ organizationId: "org-123" });
       prismaMock.workspaceMember.findMany.mockResolvedValueOnce([
         { userId: "user-123" },
       ]);
@@ -506,10 +515,10 @@ describe("projectController", () => {
 
       expect(prismaMock.projectMember.upsert).toHaveBeenCalledWith({
         where: {
-          projectId_userId: { projectId: "proj-123", userId: "user-123" },
+          projectId_userId_organizationId: { projectId: "proj-123", userId: "user-123", organizationId: "org-123" },
         },
         update: {},
-        create: { projectId: "proj-123", userId: "user-123" },
+        create: { projectId: "proj-123", userId: "user-123", organizationId: "org-123" },
       });
       expect(res.json).toHaveBeenCalledWith({
         success: true,
@@ -521,6 +530,7 @@ describe("projectController", () => {
 
   describe("removeProjectMember", () => {
     it("verifies project admin access and deletes project member", async () => {
+      prismaMock.project.findUnique.mockResolvedValueOnce({ organizationId: "org-123" });
       prismaMock.projectMember.delete.mockResolvedValueOnce({ id: "pm-1" });
       prismaMock.user.findUnique.mockResolvedValueOnce({ name: "John Doe" });
 
@@ -532,7 +542,7 @@ describe("projectController", () => {
       expect(mockVerifyProjectAdmin).toHaveBeenCalledWith(req, "proj-123");
       expect(prismaMock.projectMember.delete).toHaveBeenCalledWith({
         where: {
-          projectId_userId: { projectId: "proj-123", userId: "user-123" },
+          projectId_userId_organizationId: { projectId: "proj-123", userId: "user-123", organizationId: "org-123" },
         },
       });
       expect(res.json).toHaveBeenCalledWith({
@@ -596,6 +606,7 @@ describe("projectController", () => {
     });
 
     it("creates vault automatically if not present", async () => {
+      prismaMock.project.findUnique.mockResolvedValueOnce({ organizationId: "org-123" });
       prismaMock.vault.findUnique.mockResolvedValueOnce(null);
       const createdVault = { id: "v-123", projectId: "proj-123", services: [] };
       prismaMock.vault.create.mockResolvedValueOnce(createdVault);
@@ -606,7 +617,7 @@ describe("projectController", () => {
       await (projectController.getProjectVault as any)(req, res);
 
       expect(prismaMock.vault.create).toHaveBeenCalledWith({
-        data: { projectId: "proj-123" },
+        data: { projectId: "proj-123", organizationId: "org-123" },
         include: expect.any(Object),
       });
       expect(res.json).toHaveBeenCalledWith({
@@ -705,7 +716,8 @@ describe("projectController", () => {
     });
 
     it("creates service successfully", async () => {
-      prismaMock.vault.findUnique.mockResolvedValueOnce({ id: "v-123" });
+      prismaMock.vault.findUnique.mockResolvedValueOnce({ id: "v-123", organizationId: "org-123" });
+      prismaMock.vault.findUnique.mockResolvedValueOnce({ id: "v-123", organizationId: "org-123" });
       prismaMock.vaultService.findFirst.mockResolvedValueOnce(null);
       const newService = { id: "s-new", name: "service-1" };
       prismaMock.vaultService.create.mockResolvedValueOnce(newService);
@@ -719,7 +731,7 @@ describe("projectController", () => {
       await (projectController.addVaultService as any)(req, res);
 
       expect(prismaMock.vaultService.create).toHaveBeenCalledWith({
-        data: { vaultId: "v-123", name: "service-1" },
+        data: { vaultId: "v-123", name: "service-1", organizationId: "org-123" },
       });
       expect(res.json).toHaveBeenCalledWith({
         success: true,
@@ -751,6 +763,7 @@ describe("projectController", () => {
 
   describe("addOrUpdateVaultItem", () => {
     it("encrypts and upserts vault item", async () => {
+      prismaMock.vaultService.findUnique.mockResolvedValueOnce({ organizationId: "org-123" });
       const upsertedItem = {
         id: "i-123",
         key: "apiKey",
@@ -770,13 +783,14 @@ describe("projectController", () => {
       await (projectController.addOrUpdateVaultItem as any)(req, res);
 
       expect(prismaMock.vaultItem.upsert).toHaveBeenCalledWith({
-        where: { serviceId_key: { serviceId: "s-123", key: "apiKey" } },
+        where: { serviceId_key_organizationId: { serviceId: "s-123", key: "apiKey", organizationId: "org-123" } },
         update: { value: "encrypted_plainSecret", note: "encrypted_plainNote" },
         create: {
           serviceId: "s-123",
           key: "apiKey",
           value: "encrypted_plainSecret",
           note: "encrypted_plainNote",
+          organizationId: "org-123",
         },
       });
       expect(res.json).toHaveBeenCalledWith({

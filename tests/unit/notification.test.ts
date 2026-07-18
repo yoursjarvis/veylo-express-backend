@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { Notification, notificationService } from "../../src/core/notification";
 
@@ -117,5 +117,36 @@ describe("Notification System", () => {
       "test.event",
       { foo: "bar" },
     );
+  });
+
+  it("should extend and register custom drivers", () => {
+    const customDriver = { send: vi.fn() };
+    notificationService.extend("custom", customDriver);
+    expect(notificationService.driver("custom")).toBe(customDriver);
+  });
+
+  it("should throw error for unsupported driver names", () => {
+    expect(() => notificationService.driver("unsupported")).toThrow("Notification driver [unsupported] is not supported.");
+  });
+
+  it("should handle error gracefully if a driver execution fails", async () => {
+    const brokenDriver = {
+      send: vi.fn().mockRejectedValueOnce(new Error("Driver failed")),
+    };
+    notificationService.extend("broken", brokenDriver);
+
+    class BrokenNotification extends Notification {
+      via() {
+        return ["broken"];
+      }
+    }
+
+    const notifiable = {
+      id: "recipient-123-uuid",
+      email: "recipient@example.com",
+    };
+
+    // Should not throw, promise is caught in try-catch in send()
+    await expect(notificationService.send(notifiable, new BrokenNotification())).resolves.not.toThrow();
   });
 });

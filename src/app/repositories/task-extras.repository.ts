@@ -21,6 +21,7 @@ export const taskExtrasRepository = {
     projectId: string;
     organizationId: string;
     color?: string;
+    progressWeight?: number;
   }) {
     return prisma.taskStatus.create({
       data,

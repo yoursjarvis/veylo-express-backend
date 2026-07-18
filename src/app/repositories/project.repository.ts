@@ -31,7 +31,7 @@ export const projectRepository = {
       workspaceId: string;
       organizationId: string;
     },
-    resolvedStatuses: { name: string; category: string; order: number }[],
+    resolvedStatuses: { name: string; category: string; order: number; color?: string; progressWeight?: number }[],
     resolvedCustomFields: { name: string; type: string }[],
   ) {
     return prisma.project.create({

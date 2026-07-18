@@ -16,6 +16,9 @@ const { mockVerifyProjectAccess, prismaMock } = vi.hoisted(() => ({
       findUnique: vi.fn(),
       update: vi.fn(),
       delete: vi.fn(),
+      findUniqueWithTrashed: vi.fn(),
+      restore: vi.fn(),
+      forceDelete: vi.fn(),
     },
   },
 }));
@@ -171,6 +174,72 @@ describe("milestoneController", () => {
 
       await expect(
         (milestoneController.deleteMilestone as any)(req, res),
+      ).rejects.toThrow("Milestone not found");
+    });
+  });
+
+  describe("restoreMilestone", () => {
+    it("restores milestone successfully", async () => {
+      const milestone = { id: "m1", projectId: "p1" };
+      prismaMock.milestone.findUniqueWithTrashed.mockResolvedValue(milestone);
+
+      const req: any = { params: { id: "m1" } };
+      const res = createRes();
+
+      await (milestoneController.restoreMilestone as any)(req, res);
+
+      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1");
+      expect(prismaMock.milestone.restore).toHaveBeenCalledWith({
+        where: { id: "m1" },
+      });
+      expect(res.json).toHaveBeenCalledWith({
+        success: true,
+        message: "Milestone restored successfully",
+        data: {},
+      });
+    });
+
+    it("throws NotFoundException if milestone not found", async () => {
+      prismaMock.milestone.findUniqueWithTrashed.mockResolvedValueOnce(null);
+
+      const req: any = { params: { id: "m1" } };
+      const res = createRes();
+
+      await expect(
+        (milestoneController.restoreMilestone as any)(req, res),
+      ).rejects.toThrow("Milestone not found");
+    });
+  });
+
+  describe("forceDeleteMilestone", () => {
+    it("force deletes milestone successfully", async () => {
+      const milestone = { id: "m1", projectId: "p1" };
+      prismaMock.milestone.findUniqueWithTrashed.mockResolvedValue(milestone);
+
+      const req: any = { params: { id: "m1" } };
+      const res = createRes();
+
+      await (milestoneController.forceDeleteMilestone as any)(req, res);
+
+      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1");
+      expect(prismaMock.milestone.forceDelete).toHaveBeenCalledWith({
+        where: { id: "m1" },
+      });
+      expect(res.json).toHaveBeenCalledWith({
+        success: true,
+        message: "Milestone permanently deleted",
+        data: {},
+      });
+    });
+
+    it("throws NotFoundException if milestone not found", async () => {
+      prismaMock.milestone.findUniqueWithTrashed.mockResolvedValueOnce(null);
+
+      const req: any = { params: { id: "m1" } };
+      const res = createRes();
+
+      await expect(
+        (milestoneController.forceDeleteMilestone as any)(req, res),
       ).rejects.toThrow("Milestone not found");
     });
   });

@@ -58,6 +58,9 @@ const { mockVerifyProjectAccess, prismaMock, mockNotificationService } =
         findMany: vi.fn(),
         findUnique: vi.fn(),
         delete: vi.fn(),
+        findUniqueWithTrashed: vi.fn(),
+        restore: vi.fn(),
+        forceDelete: vi.fn(),
       },
       commentReaction: {
         findMany: vi.fn(),
@@ -109,13 +112,23 @@ describe("taskExtrasController", () => {
 
       const req: any = {
         params: { projectId: "p1" },
-        body: { name: "Backlog", category: "backlog" },
+        body: { name: "Backlog", category: "backlog", progressWeight: 20 },
       };
       const res = createRes();
 
       await (taskExtrasController.createStatus as any)(req, res);
 
-      expect(prismaMock.taskStatus.create).toHaveBeenCalled();
+      expect(prismaMock.taskStatus.create).toHaveBeenCalledWith({
+        data: {
+          name: "Backlog",
+          category: "backlog",
+          order: 0,
+          color: "#ef4444",
+          progressWeight: 20,
+          projectId: "p1",
+          organizationId: "org-123",
+        },
+      });
     });
 
     it("throws BadRequestException if status already exists", async () => {
@@ -130,6 +143,30 @@ describe("taskExtrasController", () => {
       await expect(
         (taskExtrasController.createStatus as any)(req, res),
       ).rejects.toThrow("Status name already exists in this project");
+    });
+  });
+
+  describe("updateStatus", () => {
+    it("updates status with progressWeight successfully", async () => {
+      prismaMock.taskStatus.findUnique.mockResolvedValueOnce({
+        id: "s1",
+        projectId: "p1",
+      });
+      const mockStatus = { id: "s1", name: "Backlog", progressWeight: 30 };
+      prismaMock.taskStatus.update.mockResolvedValueOnce(mockStatus);
+
+      const req: any = {
+        params: { id: "s1" },
+        body: { progressWeight: 30 },
+      };
+      const res = createRes();
+
+      await (taskExtrasController.updateStatus as any)(req, res);
+
+      expect(prismaMock.taskStatus.update).toHaveBeenCalledWith({
+        where: { id: "s1" },
+        data: { progressWeight: 30 },
+      });
     });
   });
 
@@ -299,8 +336,9 @@ describe("taskExtrasController", () => {
 
   describe("comment reactions", () => {
     it("toggles reaction on", async () => {
-      prismaMock.comment.findUnique.mockResolvedValueOnce({
+      prismaMock.comment.findUnique.mockResolvedValue({
         id: "c1",
+        organizationId: "org-123",
         task: { projectId: "p1" },
       });
       prismaMock.commentReaction.findUnique.mockResolvedValueOnce(null);
@@ -315,8 +353,9 @@ describe("taskExtrasController", () => {
     });
 
     it("toggles reaction off if already exists", async () => {
-      prismaMock.comment.findUnique.mockResolvedValueOnce({
+      prismaMock.comment.findUnique.mockResolvedValue({
         id: "c1",
+        organizationId: "org-123",
         task: { projectId: "p1" },
       });
       prismaMock.commentReaction.findUnique.mockResolvedValueOnce({ id: "r1" });
@@ -327,6 +366,80 @@ describe("taskExtrasController", () => {
       await (taskExtrasController.toggleCommentReaction as any)(req, res);
 
       expect(prismaMock.commentReaction.delete).toHaveBeenCalled();
+    });
+
+    it("gets reaction users successfully", async () => {
+      prismaMock.comment.findUnique.mockResolvedValueOnce({
+        id: "c1",
+        task: { projectId: "p1" },
+      });
+      prismaMock.commentReaction.findMany.mockResolvedValueOnce([{
+        user: { id: "u1", name: "Alice" },
+      }]);
+
+      const req: any = { params: { commentId: "c1", emoji: "👍" } };
+      const res = createRes();
+
+      await (taskExtrasController.getReactionUsers as any)(req, res);
+
+      expect(prismaMock.commentReaction.findMany).toHaveBeenCalled();
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+        success: true,
+        data: [{ id: "u1", name: "Alice" }],
+      }));
+    });
+  });
+
+  describe("custom fields retrieve and delete", () => {
+    it("gets custom fields successfully", async () => {
+      prismaMock.customFieldDefinition.findMany.mockResolvedValueOnce([{ id: "cf-1" }]);
+
+      const req: any = { params: { projectId: "p1" } };
+      const res = createRes();
+
+      await (taskExtrasController.getCustomFields as any)(req, res);
+
+      expect(prismaMock.customFieldDefinition.findMany).toHaveBeenCalled();
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ success: true }));
+    });
+
+    it("deletes custom field successfully", async () => {
+      prismaMock.customFieldDefinition.findUnique.mockResolvedValueOnce({ id: "cf-1", projectId: "p1" });
+      prismaMock.customFieldDefinition.delete.mockResolvedValueOnce({ id: "cf-1" });
+
+      const req: any = { params: { id: "cf-1" } };
+      const res = createRes();
+
+      await (taskExtrasController.deleteCustomField as any)(req, res);
+
+      expect(prismaMock.customFieldDefinition.delete).toHaveBeenCalled();
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ success: true }));
+    });
+
+    it("restores custom field successfully", async () => {
+      prismaMock.customFieldDefinition.findUniqueWithTrashed.mockResolvedValue({ id: "cf-1", projectId: "p1" });
+      prismaMock.customFieldDefinition.restore.mockResolvedValueOnce({ id: "cf-1" });
+
+      const req: any = { params: { id: "cf-1" } };
+      const res = createRes();
+
+      await (taskExtrasController.restoreCustomField as any)(req, res);
+
+      expect(prismaMock.customFieldDefinition.restore).toHaveBeenCalled();
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ success: true }));
+    });
+
+    it("force deletes custom field successfully", async () => {
+      prismaMock.customFieldDefinition.findUniqueWithTrashed.mockResolvedValue({ id: "cf-1", projectId: "p1" });
+      prismaMock.customFieldDefinition.forceDelete.mockResolvedValueOnce({ id: "cf-1" });
+
+      const req: any = { params: { id: "cf-1" } };
+      const res = createRes();
+
+      await (taskExtrasController.forceDeleteCustomField as any)(req, res);
+
+      expect(prismaMock.customFieldDefinition.forceDelete).toHaveBeenCalled();
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ success: true }));
     });
   });
 });

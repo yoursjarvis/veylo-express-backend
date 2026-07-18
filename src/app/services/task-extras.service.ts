@@ -6,6 +6,7 @@ import {
   NotFoundException,
   ForbiddenException,
 } from "@/utils/app-error";
+import { getDefaultStatusColorAndWeight } from "@/utils/status-defaults";
 
 export const taskExtrasService = {
   // --- STATUS CODES ---
@@ -16,6 +17,8 @@ export const taskExtrasService = {
       name: string;
       category: "backlog" | "todo" | "in_progress" | "done";
       order: number;
+      color?: string;
+      progressWeight?: number;
     },
   ) {
     const existing = await taskExtrasRepository.findStatusByNameAndProjectId(
@@ -28,10 +31,16 @@ export const taskExtrasService = {
       );
     }
 
+    const defaults = getDefaultStatusColorAndWeight(validatedData.name, validatedData.category);
+    const color = validatedData.color || defaults.color;
+    const progressWeight = validatedData.progressWeight !== undefined ? validatedData.progressWeight : defaults.progressWeight;
+
     return taskExtrasRepository.createStatus({
       name: validatedData.name,
       category: validatedData.category,
       order: validatedData.order,
+      color,
+      progressWeight,
       projectId,
       organizationId,
     });

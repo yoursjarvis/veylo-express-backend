@@ -5,6 +5,7 @@ export const statusSchema = z.object({
   category: z.enum(["backlog", "todo", "in_progress", "done"]),
   order: z.number().int().optional().default(0),
   color: z.string().optional(),
+  progressWeight: z.number().int().min(0).max(100).optional().default(0),
 });
 
 export const statusUpdateSchema = z.object({
@@ -12,6 +13,7 @@ export const statusUpdateSchema = z.object({
   category: z.enum(["backlog", "todo", "in_progress", "done"]).optional(),
   order: z.number().int().optional(),
   color: z.string().optional(),
+  progressWeight: z.number().int().min(0).max(100).optional(),
 });
 
 export const subtaskSchema = z.object({

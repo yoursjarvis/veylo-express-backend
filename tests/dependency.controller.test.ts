@@ -141,7 +141,8 @@ describe("dependencyController", () => {
       const mockDepTask = { id: "t2", projectId: "proj-1", title: "Dep Task" };
       prismaMock.task.findUnique
         .mockResolvedValueOnce(mockTask)
-        .mockResolvedValueOnce(mockDepTask);
+        .mockResolvedValueOnce(mockDepTask)
+        .mockResolvedValueOnce(mockTask);
       prismaMock.taskDependency.findFirst.mockResolvedValue(null);
       prismaMock.taskDependency.create.mockResolvedValueOnce({ id: "d1" });
 
@@ -161,6 +162,7 @@ describe("dependencyController", () => {
           blockingTaskId: "t1",
           blockedTaskId: "t2",
           dependencyType: "blocks",
+          organizationId: "org-1",
         },
       });
       expect(prismaMock.taskActivity.create).toHaveBeenCalled();
