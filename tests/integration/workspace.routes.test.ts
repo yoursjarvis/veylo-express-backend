@@ -1,5 +1,5 @@
 import request from "supertest";
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import app from "@/app";
 
@@ -21,9 +21,9 @@ vi.mock("../../src/app/http/middlewares/rate-limit.middleware", () => ({
 
 import prisma from "@/lib/prisma";
 
-import { setMockUser, clearMockUser } from "../helpers/auth";
-const prismaMock = prisma as any;
+import { clearMockUser, setMockUser } from "../helpers/auth";
 import { createUser, createWorkspace } from "../helpers/factories";
+const prismaMock = prisma as any;
 
 import { rbacService } from "@/app/services/rbac.service";
 
@@ -138,6 +138,7 @@ describe("Workspace API Endpoint Integration Tests (/api/v1/workspaces)", () => 
           members: {
             create: {
               userId: "user-123",
+              organizationId: "org-123",
             },
           },
         },
@@ -280,6 +281,10 @@ describe("Workspace API Endpoint Integration Tests (/api/v1/workspaces)", () => 
 
   describe("POST /api/v1/workspaces/:id/members (Add Members)", () => {
     it("INT-WS-MEM-POST-01: successfully adds valid org members to the workspace", async () => {
+      prismaMock.workspace.findUnique.mockResolvedValue({
+        id: "ws-1",
+        organizationId: "org-123",
+      });
       prismaMock.member.findFirst.mockResolvedValueOnce({
         id: "mem-1",
         role: "admin",
@@ -346,6 +351,10 @@ describe("Workspace API Endpoint Integration Tests (/api/v1/workspaces)", () => 
 
   describe("DELETE /api/v1/workspaces/:id/members/:userId (Remove Member)", () => {
     it("INT-WS-MEM-DEL-01: successfully removes workspace member", async () => {
+      prismaMock.workspace.findUnique.mockResolvedValueOnce({
+        id: "ws-1",
+        organizationId: "org-123",
+      });
       prismaMock.member.findFirst.mockResolvedValueOnce({
         id: "mem-1",
         role: "admin",
@@ -363,9 +372,10 @@ describe("Workspace API Endpoint Integration Tests (/api/v1/workspaces)", () => 
       expect(res.body.message).toBe("Member removed from workspace");
       expect(prismaMock.workspaceMember.delete).toHaveBeenCalledWith({
         where: {
-          workspaceId_userId: {
+          workspaceId_userId_organizationId: {
             workspaceId: "ws-1",
             userId: "user-1",
+            organizationId: "org-123",
           },
         },
       });

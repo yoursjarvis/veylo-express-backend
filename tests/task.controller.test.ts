@@ -19,6 +19,9 @@ const { mockVerifyProjectAccess, prismaMock, mockNotificationService } =
         update: vi.fn(),
         delete: vi.fn(),
         updateMany: vi.fn(),
+        findUniqueWithTrashed: vi.fn(),
+        restore: vi.fn(),
+        forceDelete: vi.fn(),
       },
       taskStatus: {
         findFirst: vi.fn(),
@@ -264,6 +267,46 @@ describe("taskController", () => {
       await (taskController.deleteTask as any)(req, res);
 
       expect(prismaMock.task.delete).toHaveBeenCalled();
+    });
+  });
+
+  describe("restoreTask & forceDeleteTask", () => {
+    it("restores task successfully", async () => {
+      prismaMock.task.findUniqueWithTrashed.mockResolvedValue({
+        id: "task-1",
+        projectId: "p1",
+      });
+      prismaMock.task.restore.mockResolvedValue({ id: "task-1" });
+
+      const req: any = { params: { id: "task-1" } };
+      const res = createRes();
+
+      await (taskController.restoreTask as any)(req, res);
+
+      expect(prismaMock.task.restore).toHaveBeenCalled();
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+        success: true,
+        message: "Task restored successfully",
+      }));
+    });
+
+    it("permanently deletes task successfully", async () => {
+      prismaMock.task.findUniqueWithTrashed.mockResolvedValue({
+        id: "task-1",
+        projectId: "p1",
+      });
+      prismaMock.task.forceDelete.mockResolvedValue({ id: "task-1" });
+
+      const req: any = { params: { id: "task-1" } };
+      const res = createRes();
+
+      await (taskController.forceDeleteTask as any)(req, res);
+
+      expect(prismaMock.task.forceDelete).toHaveBeenCalled();
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+        success: true,
+        message: "Task permanently deleted",
+      }));
     });
   });
 });

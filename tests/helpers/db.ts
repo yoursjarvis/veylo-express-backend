@@ -27,11 +27,17 @@ const standardMock = () => ({
         ...(args?.create || args?.update || {}),
       }),
     ),
+  findUniqueWithTrashed: vi.fn().mockResolvedValue(null),
+  findFirstWithTrashed: vi.fn().mockResolvedValue(null),
+  findManyWithTrashed: vi.fn().mockResolvedValue([]),
+  restore: vi.fn().mockImplementation(() => Promise.resolve({ id: "mock-id" })),
+  forceDelete: vi.fn().mockImplementation(() => Promise.resolve({ id: "mock-id" })),
 });
 
 export const prismaMock = {
   // Mock transaction interface to execute callbacks using the same mock layer
   $transaction: vi.fn().mockImplementation((cb) => cb(prismaMock)),
+  $queryRaw: vi.fn(),
 
   member: standardMock(),
   workspaceMember: standardMock(),
@@ -41,6 +47,18 @@ export const prismaMock = {
     updateMany: vi.fn().mockResolvedValue({ count: 1 }),
   },
   project: standardMock(),
+  objective: {
+    ...standardMock(),
+    findFirstWithTrashed: vi.fn().mockResolvedValue(null),
+    findUniqueWithTrashed: vi.fn().mockResolvedValue(null),
+  },
+  projectDoc: standardMock(),
+  projectDocFavorite: standardMock(),
+  projectDocVersion: standardMock(),
+  projectDocComment: standardMock(),
+  projectDocActivity: standardMock(),
+  projectDocPermission: standardMock(),
+  projectDocCommentReaction: standardMock(),
   projectMember: standardMock(),
   projectTemplate: standardMock(),
   user: standardMock(),
@@ -58,6 +76,7 @@ export const prismaMock = {
   milestone: standardMock(),
   label: standardMock(),
   sprint: standardMock(),
+  workLog: standardMock(),
   media: standardMock(),
   verification: standardMock(),
   account: standardMock(),
@@ -75,4 +94,10 @@ export const prismaMock = {
   rolePermission: standardMock(),
   userRoleAssignment: standardMock(),
   auditLog: standardMock(),
+  keyResult: standardMock(),
+  automationRule: standardMock(),
+  portfolio: standardMock(),
+  portfolioProject: standardMock(),
+  annotation: standardMock(),
+  checklistTemplate: standardMock(),
 };

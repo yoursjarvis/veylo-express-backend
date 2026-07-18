@@ -511,6 +511,7 @@ model TaskStatus {
   color          String? // custom hex color
   category       String // backlog, todo, in_progress, done
   order          Int       @default(0) // Order of columns on Kanban boards
+  progressWeight Int       @default(0) @map("progress_weight")
   deletedAt      DateTime? @map("deleted_at") @db.Timestamptz(6)
   createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)

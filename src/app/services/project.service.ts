@@ -6,6 +6,7 @@ import { mediaService } from "@/core/media";
 import prisma from "@/lib/prisma";
 import { BadRequestException, NotFoundException } from "@/utils/app-error";
 import { decrypt, encrypt } from "@/utils/crypto";
+import { getDefaultStatusColorAndWeight } from "@/utils/status-defaults";
 
 // Malicious files filtering constants
 const DISALLOWED_EXTENSIONS = [
@@ -134,6 +135,18 @@ export const projectService = {
     const workspace = await projectRepository.findWorkspaceById(workspaceId);
     const organizationId = workspace?.organizationId ?? activeOrgId;
 
+    // Populate default colors and weights for resolved statuses
+    const finalizedStatuses = resolvedStatuses.map((s) => {
+      const defaults = getDefaultStatusColorAndWeight(s.name, s.category);
+      return {
+        name: s.name,
+        category: s.category,
+        order: s.order,
+        color: (s as any).color || defaults.color,
+        progressWeight: (s as any).progressWeight !== undefined ? (s as any).progressWeight : defaults.progressWeight,
+      };
+    });
+
     const project = await projectRepository.createProject(
       {
         title: data.title,
@@ -145,7 +158,7 @@ export const projectService = {
         workspaceId,
         organizationId,
       },
-      resolvedStatuses,
+      finalizedStatuses,
       resolvedCustomFields,
     );
 

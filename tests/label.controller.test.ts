@@ -17,6 +17,9 @@ const { mockVerifyProjectAccess, prismaMock } = vi.hoisted(() => ({
       findFirst: vi.fn(),
       update: vi.fn(),
       delete: vi.fn(),
+      findUniqueWithTrashed: vi.fn(),
+      restore: vi.fn(),
+      forceDelete: vi.fn(),
     },
   },
 }));
@@ -196,6 +199,72 @@ describe("labelController", () => {
 
       await expect(
         (labelController.deleteLabel as any)(req, res),
+      ).rejects.toThrow("Label not found");
+    });
+  });
+
+  describe("restoreLabel", () => {
+    it("restores label successfully", async () => {
+      const label = { id: "l1", projectId: "p1" };
+      prismaMock.label.findUniqueWithTrashed.mockResolvedValue(label);
+
+      const req: any = { params: { id: "l1" } };
+      const res = createRes();
+
+      await (labelController.restoreLabel as any)(req, res);
+
+      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1");
+      expect(prismaMock.label.restore).toHaveBeenCalledWith({
+        where: { id: "l1" },
+      });
+      expect(res.json).toHaveBeenCalledWith({
+        success: true,
+        message: "Label restored successfully",
+        data: {},
+      });
+    });
+
+    it("throws NotFoundException if label not found", async () => {
+      prismaMock.label.findUniqueWithTrashed.mockResolvedValueOnce(null);
+
+      const req: any = { params: { id: "l1" } };
+      const res = createRes();
+
+      await expect(
+        (labelController.restoreLabel as any)(req, res),
+      ).rejects.toThrow("Label not found");
+    });
+  });
+
+  describe("forceDeleteLabel", () => {
+    it("force deletes label successfully", async () => {
+      const label = { id: "l1", projectId: "p1" };
+      prismaMock.label.findUniqueWithTrashed.mockResolvedValue(label);
+
+      const req: any = { params: { id: "l1" } };
+      const res = createRes();
+
+      await (labelController.forceDeleteLabel as any)(req, res);
+
+      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1");
+      expect(prismaMock.label.forceDelete).toHaveBeenCalledWith({
+        where: { id: "l1" },
+      });
+      expect(res.json).toHaveBeenCalledWith({
+        success: true,
+        message: "Label permanently deleted",
+        data: {},
+      });
+    });
+
+    it("throws NotFoundException if label not found", async () => {
+      prismaMock.label.findUniqueWithTrashed.mockResolvedValueOnce(null);
+
+      const req: any = { params: { id: "l1" } };
+      const res = createRes();
+
+      await expect(
+        (labelController.forceDeleteLabel as any)(req, res),
       ).rejects.toThrow("Label not found");
     });
   });
