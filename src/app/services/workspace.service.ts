@@ -71,7 +71,7 @@ export const workspaceService = {
   async createWorkspace(
     activeOrgId: string | null | undefined,
     userId: string,
-    data: { name: string; slug: string; icon?: string },
+    data: { name: string; slug: string; icon?: string; kpiEnabled?: boolean },
   ) {
     await verifyOrgAdmin(activeOrgId, userId);
 
@@ -87,6 +87,7 @@ export const workspaceService = {
       slug: data.slug,
       organizationId: activeOrgId!,
       creatorUserId: userId,
+      kpiEnabled: data.kpiEnabled,
     });
 
     try {
@@ -102,7 +103,7 @@ export const workspaceService = {
     activeOrgId: string | null | undefined,
     userId: string,
     id: string,
-    data: { name?: string; slug?: string; icon?: string },
+    data: { name?: string; slug?: string; icon?: string; kpiEnabled?: boolean },
   ) {
     await verifyWorkspaceAction(activeOrgId, userId, id, "workspace:update");
 

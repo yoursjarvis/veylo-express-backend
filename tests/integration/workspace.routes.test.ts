@@ -135,6 +135,7 @@ describe("Workspace API Endpoint Integration Tests (/api/v1/workspaces)", () => 
           name: "Acme Web",
           slug: "acme-web",
           organizationId: "org-123",
+          kpiEnabled: false,
           members: {
             create: {
               userId: "user-123",

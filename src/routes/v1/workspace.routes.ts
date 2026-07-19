@@ -2,6 +2,7 @@ import { Router } from "express";
 
 import { auditLogController } from "@/app/http/controllers/audit-log.controller";
 import { workspaceController } from "@/app/http/controllers/workspace.controller";
+import { kpiController } from "@/app/http/controllers/kpi.controller";
 import { requireAuth } from "@/app/http/middlewares/require-auth.middleware";
 
 export const workspaceRoutes = Router();
@@ -58,4 +59,28 @@ workspaceRoutes.post(
   "/:id/audit-logs/export",
   requireAuth,
   auditLogController.exportLogs,
+);
+
+workspaceRoutes.get(
+  "/:id/kpi/leaderboard",
+  requireAuth,
+  kpiController.getLeaderboard,
+);
+
+workspaceRoutes.get(
+  "/:id/kpi/transactions",
+  requireAuth,
+  kpiController.getTransactions,
+);
+
+workspaceRoutes.get(
+  "/:id/kpi/stats",
+  requireAuth,
+  kpiController.getUserStats,
+);
+
+workspaceRoutes.get(
+  "/:id/kpi/accessible-projects",
+  requireAuth,
+  kpiController.getAccessibleProjects,
 );
