@@ -58,7 +58,7 @@ export const taskService = {
       epicId?: string | null;
       milestoneId?: string | null;
       type: "task" | "bug" | "feature" | "subtask";
-      priority: "low" | "medium" | "high" | "urgent";
+      priority: "lowest" | "low" | "medium" | "high" | "highest" | "urgent";
       estimate?: number | null;
       startDate?: string | null;
       dueDate?: string | null;
@@ -470,7 +470,7 @@ export const taskService = {
       epicId?: string | null;
       milestoneId?: string | null;
       type?: "task" | "bug" | "feature" | "subtask";
-      priority?: "low" | "medium" | "high" | "urgent";
+      priority?: "lowest" | "low" | "medium" | "high" | "highest" | "urgent";
       estimate?: number | null;
       startDate?: string | null;
       dueDate?: string | null;
