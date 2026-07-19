@@ -86,12 +86,14 @@ export const workspaceRepository = {
     slug: string;
     organizationId: string;
     creatorUserId: string;
+    kpiEnabled?: boolean;
   }) {
     return prisma.workspace.create({
       data: {
         name: data.name,
         slug: data.slug,
         organizationId: data.organizationId,
+        kpiEnabled: data.kpiEnabled ?? false,
         members: {
           create: {
             userId: data.creatorUserId,

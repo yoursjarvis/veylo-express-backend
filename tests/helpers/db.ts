@@ -100,4 +100,9 @@ export const prismaMock = {
   portfolioProject: standardMock(),
   annotation: standardMock(),
   checklistTemplate: standardMock(),
+  kpiLedgerEntry: {
+    ...standardMock(),
+    groupBy: vi.fn().mockResolvedValue([]),
+    aggregate: vi.fn().mockResolvedValue({ _sum: { points: 0 } }),
+  },
 };

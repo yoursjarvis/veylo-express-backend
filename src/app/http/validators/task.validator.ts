@@ -9,10 +9,12 @@ export const taskCreateSchema = z.object({
   milestoneId: z.uuid().optional().nullable(),
   type: z.enum(["task", "bug", "feature", "subtask"]).default("task"),
   priority: z
-    .enum(["low", "medium", "high", "urgent"])
+    .enum(["lowest", "low", "medium", "high", "highest", "urgent"])
     .optional()
     .default("medium"),
   estimate: z.number().optional().nullable(),
+  estimatedPoints: z.number().int().nonnegative().optional().default(0),
+  awardedPoints: z.number().int().nonnegative().optional().default(0),
   startDate: z.string().datetime().optional().nullable(),
   dueDate: z.string().datetime().optional().nullable(),
   assigneeId: z.uuid().optional().nullable(),
@@ -32,8 +34,10 @@ export const taskUpdateSchema = z.object({
   epicId: z.uuid().optional().nullable(),
   milestoneId: z.uuid().optional().nullable(),
   type: z.enum(["task", "bug", "feature", "subtask"]).optional(),
-  priority: z.enum(["low", "medium", "high", "urgent"]).optional(),
+  priority: z.enum(["lowest", "low", "medium", "high", "highest", "urgent"]).optional(),
   estimate: z.number().optional().nullable(),
+  estimatedPoints: z.number().int().nonnegative().optional(),
+  awardedPoints: z.number().int().nonnegative().optional(),
   dueDate: z.iso.datetime().optional().nullable(),
   startDate: z.iso.datetime().optional().nullable(),
   assigneeId: z.uuid().optional().nullable(),

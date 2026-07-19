@@ -10,4 +10,5 @@ export const workspaceSchema = z.object({
       "Slug can only contain lowercase letters, numbers, and hyphens",
     ),
   icon: z.string().optional(),
+  kpiEnabled: z.boolean().optional(),
 });

@@ -69,6 +69,7 @@ model User {
   docActivities         ProjectDocActivity[]
   docFavorites          ProjectDocFavorite[]
   docCommentReactions   ProjectDocCommentReaction[]
+  kpiLedgerEntries      KpiLedgerEntry[]
 
   @@index([email], map: "idx_users_email")
   @@index([isActive], map: "idx_users_is_active")
@@ -195,6 +196,7 @@ model Organization {
   workLogs                   WorkLog[]
   keyResults                 KeyResult[]
   portfolioProjects          PortfolioProject[]
+  kpiLedgerEntries           KpiLedgerEntry[]
 
   @@map("organizations")
 }
@@ -219,6 +221,7 @@ model Workspace {
   slug           String    @unique
   icon           String?
   organizationId String    @map("organization_id") @db.Uuid
+  kpiEnabled     Boolean   @default(false) @map("kpi_enabled")
   deletedAt      DateTime? @map("deleted_at") @db.Timestamptz(6)
   createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
@@ -229,6 +232,7 @@ model Workspace {
   checklistTemplates ChecklistTemplate[]
   auditLogs          AuditLog[]
   portfolios         Portfolio[]
+  kpiLedgerEntries   KpiLedgerEntry[]
 
   @@map("workspaces")
 }
@@ -446,31 +450,33 @@ model VaultItem {
 }
 
 model Task {
-  id             String    @id @default(uuid(7)) @db.Uuid
-  taskKey        String    @unique @map("task_key")
-  title          String
-  description    String?   @db.Text
-  projectId      String    @map("project_id") @db.Uuid
-  organizationId String    @map("organization_id") @db.Uuid
-  epicId         String?   @map("epic_id") @db.Uuid // Epic / Initiative grouping
-  milestoneId    String?   @map("milestone_id") @db.Uuid // Milestone link
-  sprintId       String?   @map("sprint_id") @db.Uuid
-  statusId       String    @map("status_id") @db.Uuid
-  position       Float     @default(0) @map("position")
-  type           String    @default("task") // task, bug, feature, story
-  priority       String    @default("medium") // low, medium, high, urgent
-  estimate       Float? // Story points or hours
-  startDate      DateTime? @map("start_date") @db.Timestamptz(6)
-  dueDate        DateTime? @map("due_date") @db.Timestamptz(6)
-  creatorId      String    @map("creator_id") @db.Uuid
-  assigneeId     String?   @map("assignee_id") @db.Uuid
-  reporterId     String?   @map("reporter_id") @db.Uuid
-  parentTaskId   String?   @map("parent_task_id") @db.Uuid
-  customFields   Json?     @default("{}") @map("custom_fields") // JSONB storage
-  isPrivate      Boolean   @default(false) @map("is_private")
-  deletedAt      DateTime? @map("deleted_at") @db.Timestamptz(6)
-  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  id              String    @id @default(uuid(7)) @db.Uuid
+  taskKey         String    @unique @map("task_key")
+  title           String
+  description     String?   @db.Text
+  projectId       String    @map("project_id") @db.Uuid
+  organizationId  String    @map("organization_id") @db.Uuid
+  epicId          String?   @map("epic_id") @db.Uuid // Epic / Initiative grouping
+  milestoneId     String?   @map("milestone_id") @db.Uuid // Milestone link
+  sprintId        String?   @map("sprint_id") @db.Uuid
+  statusId        String    @map("status_id") @db.Uuid
+  position        Float     @default(0) @map("position")
+  type            String    @default("task") // task, bug, feature, story
+  priority        String    @default("medium") // low, medium, high, urgent
+  estimate        Float? // Story points or hours
+  estimatedPoints Int       @default(0) @map("estimated_points")
+  awardedPoints   Int       @default(0) @map("awarded_points")
+  startDate       DateTime? @map("start_date") @db.Timestamptz(6)
+  dueDate         DateTime? @map("due_date") @db.Timestamptz(6)
+  creatorId       String    @map("creator_id") @db.Uuid
+  assigneeId      String?   @map("assignee_id") @db.Uuid
+  reporterId      String?   @map("reporter_id") @db.Uuid
+  parentTaskId    String?   @map("parent_task_id") @db.Uuid
+  customFields    Json?     @default("{}") @map("custom_fields") // JSONB storage
+  isPrivate       Boolean   @default(false) @map("is_private")
+  deletedAt       DateTime? @map("deleted_at") @db.Timestamptz(6)
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   project               Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
   organization          Organization     @relation(fields: [organizationId], references: [id])
@@ -490,6 +496,7 @@ model Task {
   blockingDependencies  TaskDependency[] @relation("BlockingTasks")
   notifications         Notification[]
   workLogs              WorkLog[]
+  kpiLedgerEntries      KpiLedgerEntry[]
 
   @@index([organizationId], map: "idx_tasks_org_id")
   @@index([projectId], map: "idx_tasks_project_id")
@@ -1192,4 +1199,25 @@ model ProjectDocCommentReaction {
 
   @@unique([commentId, userId, emoji])
   @@map("project_doc_comment_reactions")
+}
+
+model KpiLedgerEntry {
+  id             String   @id @default(uuid(7)) @db.Uuid
+  userId         String   @map("user_id") @db.Uuid
+  taskId         String?  @map("task_id") @db.Uuid
+  workspaceId    String   @map("workspace_id") @db.Uuid
+  organizationId String   @map("organization_id") @db.Uuid
+  points         Int
+  reason         String
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  task         Task?        @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  workspace    Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([workspaceId])
+  @@index([organizationId])
+  @@map("kpi_ledger_entries")
 }

@@ -3,6 +3,7 @@ import { automationService } from "@/app/services/automation.service";
 import { notificationService } from "@/app/services/notification.service";
 import { workflowService } from "@/app/services/workflow.service";
 import { mediaService } from "@/core/media";
+import prisma from "@/lib/prisma";
 import {
   BadRequestException,
   NotFoundException,
@@ -58,8 +59,10 @@ export const taskService = {
       epicId?: string | null;
       milestoneId?: string | null;
       type: "task" | "bug" | "feature" | "subtask";
-      priority: "low" | "medium" | "high" | "urgent";
+      priority: "lowest" | "low" | "medium" | "high" | "highest" | "urgent";
       estimate?: number | null;
+      estimatedPoints?: number;
+      awardedPoints?: number;
       startDate?: string | null;
       dueDate?: string | null;
       assigneeId?: string | null;
@@ -134,6 +137,8 @@ export const taskService = {
       type: data.type,
       priority: data.priority,
       estimate: data.estimate,
+      estimatedPoints: data.estimatedPoints ?? 0,
+      awardedPoints: data.awardedPoints ?? 0,
       startDate: data.startDate ? new Date(data.startDate) : null,
       dueDate: data.dueDate ? new Date(data.dueDate) : null,
       creatorId: userId,
@@ -173,6 +178,41 @@ export const taskService = {
       .catch((err) =>
         console.error("Error running task_created automation:", err),
       );
+
+    // KPI point awarding if created in Done category status
+    try {
+      const project = await prisma.project.findUnique({
+        where: { id: projectId },
+        select: {
+          workspace: {
+            select: {
+              id: true,
+              kpiEnabled: true,
+            },
+          },
+        },
+      });
+
+      if (project?.workspace?.kpiEnabled && status.category === "done") {
+        const estimatedPoints = data.estimatedPoints ?? 0;
+        if (estimatedPoints > 0 && data.assigneeId) {
+          await prisma.kpiLedgerEntry.create({
+            data: {
+              userId: data.assigneeId,
+              taskId: task.id,
+              workspaceId: project.workspace.id,
+              organizationId,
+              points: estimatedPoints,
+              reason: `Task Completed (Created in Done state): ${task.taskKey} - ${task.title}`,
+            },
+          });
+          await taskRepository.updateTask(task.id, { awardedPoints: estimatedPoints });
+          task.awardedPoints = estimatedPoints;
+        }
+      }
+    } catch (err) {
+      console.error("Error processing KPI points on task creation:", err);
+    }
 
     return task;
   },
@@ -462,25 +502,7 @@ export const taskService = {
   async updateTask(
     taskId: string,
     userId: string,
-    data: {
-      title?: string;
-      description?: string | null;
-      statusId?: string;
-      sprintId?: string | null;
-      epicId?: string | null;
-      milestoneId?: string | null;
-      type?: "task" | "bug" | "feature" | "subtask";
-      priority?: "low" | "medium" | "high" | "urgent";
-      estimate?: number | null;
-      startDate?: string | null;
-      dueDate?: string | null;
-      assigneeId?: string | null;
-      reporterId?: string | null;
-      position?: number;
-      customFields?: Record<string, unknown>;
-      labelIds?: string[];
-      isPrivate?: boolean;
-    },
+    data: TaskUpdateRequest,
   ) {
     const existingTask = await taskRepository.findTaskWithRelations(taskId);
     if (!existingTask) {
@@ -721,6 +743,8 @@ export const taskService = {
     if (data.customFields !== undefined)
       updateData.customFields = data.customFields;
     if (data.position !== undefined) updateData.position = data.position;
+    if (data.estimatedPoints !== undefined) updateData.estimatedPoints = data.estimatedPoints;
+    if (data.awardedPoints !== undefined) updateData.awardedPoints = data.awardedPoints;
     if (data.isPrivate !== undefined) {
       updateData.isPrivate = data.isPrivate;
       await logActivity(
@@ -730,6 +754,122 @@ export const taskService = {
         existingTask.isPrivate ? "Private" : "Public",
         data.isPrivate ? "Private" : "Public",
       );
+    }
+
+    // KPI point calculation
+    try {
+      const project = await prisma.project.findUnique({
+        where: { id: existingTask.projectId },
+        select: {
+          workspace: {
+            select: {
+              id: true,
+              kpiEnabled: true,
+            },
+          },
+        },
+      });
+
+      if (project?.workspace?.kpiEnabled) {
+        const oldCategory = existingTask.status.category;
+        let newCategory = oldCategory;
+        if (data.statusId && data.statusId !== existingTask.statusId) {
+          const newStatus = await taskRepository.findTaskStatusById(
+            data.statusId,
+            existingTask.projectId,
+          );
+          newCategory = newStatus?.category || oldCategory;
+        }
+
+        const wasCompleted = oldCategory !== "done" && newCategory === "done";
+        const wasReopened = oldCategory === "done" && newCategory !== "done";
+
+        const oldAssigneeId = existingTask.assigneeId;
+        const newAssigneeId = data.assigneeId !== undefined ? data.assigneeId : oldAssigneeId;
+        const assigneeChanged = data.assigneeId !== undefined && data.assigneeId !== oldAssigneeId;
+
+        const currentEstPoints = data.estimatedPoints !== undefined ? data.estimatedPoints : existingTask.estimatedPoints;
+
+        if (wasCompleted) {
+          if (newAssigneeId) {
+            await prisma.kpiLedgerEntry.create({
+              data: {
+                userId: newAssigneeId,
+                taskId,
+                workspaceId: project.workspace.id,
+                organizationId: existingTask.organizationId,
+                points: currentEstPoints,
+                reason: `Task Completed: ${existingTask.taskKey} - ${data.title || existingTask.title}`,
+              },
+            });
+            updateData.awardedPoints = currentEstPoints;
+          }
+        } else if (wasReopened) {
+          const pointsToDeduct = existingTask.awardedPoints;
+          if (pointsToDeduct > 0 && oldAssigneeId) {
+            await prisma.kpiLedgerEntry.create({
+              data: {
+                userId: oldAssigneeId,
+                taskId,
+                workspaceId: project.workspace.id,
+                organizationId: existingTask.organizationId,
+                points: -pointsToDeduct,
+                reason: `Task Reopened: ${existingTask.taskKey} - ${data.title || existingTask.title}`,
+              },
+            });
+          }
+          updateData.awardedPoints = 0;
+        } else if (oldCategory === "done" && assigneeChanged) {
+          const pointsToDeduct = existingTask.awardedPoints;
+          const pointsToAward = currentEstPoints;
+
+          if (pointsToDeduct > 0 && oldAssigneeId) {
+            await prisma.kpiLedgerEntry.create({
+              data: {
+                userId: oldAssigneeId,
+                taskId,
+                workspaceId: project.workspace.id,
+                organizationId: existingTask.organizationId,
+                points: -pointsToDeduct,
+                reason: `Task Reassigned (Points Removed): ${existingTask.taskKey} - ${data.title || existingTask.title}`,
+              },
+            });
+          }
+
+          if (pointsToAward > 0 && newAssigneeId) {
+            await prisma.kpiLedgerEntry.create({
+              data: {
+                userId: newAssigneeId,
+                taskId,
+                workspaceId: project.workspace.id,
+                organizationId: existingTask.organizationId,
+                points: pointsToAward,
+                reason: `Task Reassigned (Points Awarded): ${existingTask.taskKey} - ${data.title || existingTask.title}`,
+              },
+            });
+            updateData.awardedPoints = pointsToAward;
+          } else {
+            updateData.awardedPoints = 0;
+          }
+        } else if (oldCategory === "done" && data.estimatedPoints !== undefined && data.estimatedPoints !== existingTask.estimatedPoints) {
+          const adjustment = data.estimatedPoints - existingTask.estimatedPoints;
+          if (adjustment !== 0 && newAssigneeId) {
+            await prisma.kpiLedgerEntry.create({
+              data: {
+                userId: newAssigneeId,
+                taskId,
+                workspaceId: project.workspace.id,
+                organizationId: existingTask.organizationId,
+                points: adjustment,
+                reason: `Task points adjusted: ${existingTask.taskKey} - ${data.title || existingTask.title}`,
+              },
+            });
+          }
+          updateData.awardedPoints = data.estimatedPoints;
+        }
+      }
+    } catch (err) {
+      console.error("Error processing KPI points in updateTask:", err);
     }
 
     const updatedTask = await taskRepository.updateTask(taskId, updateData);
