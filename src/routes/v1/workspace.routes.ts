@@ -84,3 +84,9 @@ workspaceRoutes.get(
   requireAuth,
   kpiController.getAccessibleProjects,
 );
+
+workspaceRoutes.get(
+  "/:id/kpi/all-projects",
+  requireAuth,
+  kpiController.getAllProjects,
+);

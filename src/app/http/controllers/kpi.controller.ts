@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth/auth";
 import { betterAuthHeaders } from "@/lib/auth/node-headers";
 import { UnauthorizedException, NotFoundException } from "@/utils/app-error";
 import { ok } from "@/utils/http-response";
+import { rbacService } from "@/app/services/rbac.service";
 
 export const kpiController = {
   getLeaderboard: asyncHandler(async (req: Request, res: Response) => {
@@ -255,11 +256,28 @@ export const kpiController = {
       }
     });
 
+    // 4. Check if the requesting user is an admin / owner in this workspace scope
+    const workspace = await prisma.workspace.findUnique({
+      where: { id: workspaceId },
+      select: { organizationId: true },
+    });
+    const isAdminOrOwner = workspace
+      ? await rbacService.authorize(
+          session.user.id,
+          "member:read",
+          {
+            workspaceId,
+            organizationId: workspace.organizationId,
+          }
+        ).catch(() => false)
+      : false;
+
     return ok(res, "User KPI stats fetched successfully", {
       userId,
       totalPoints,
       rank,
       weeklyPoints,
+      isAdminOrOwner,
     });
   }),
 
@@ -289,5 +307,25 @@ export const kpiController = {
     const projects = projectMembers.map((pm) => pm.project);
 
     return ok(res, "Accessible projects fetched successfully", projects);
+  }),
+
+  getAllProjects: asyncHandler(async (req: Request, res: Response) => {
+    const workspaceId = req.params.id as string;
+    const session = await auth.api.getSession({
+      headers: betterAuthHeaders(req),
+    });
+
+    if (!session?.user) {
+      throw new UnauthorizedException();
+    }
+
+    // Admins/owners can see all projects in the workspace for filtering
+    const projects = await prisma.project.findMany({
+      where: { workspaceId },
+      select: { id: true, title: true },
+      orderBy: { title: "asc" },
+    });
+
+    return ok(res, "All workspace projects fetched successfully", projects);
   }),
 };
