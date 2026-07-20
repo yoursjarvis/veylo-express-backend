@@ -480,6 +480,18 @@
     "description": "Change a member's password"
   },
   {
+    "module": "KPI",
+    "resource": "kpi",
+    "action": "view-admin",
+    "description": "View KPI dashboard as an administrator"
+  },
+  {
+    "module": "KPI",
+    "resource": "kpi",
+    "action": "view-member",
+    "description": "View personal KPI dashboard"
+  },
+  {
     "module": "Goal & Okrs",
     "resource": "goal-okrs",
     "action": "read",

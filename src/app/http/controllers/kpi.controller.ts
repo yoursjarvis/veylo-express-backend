@@ -7,6 +7,19 @@ import { UnauthorizedException, NotFoundException } from "@/utils/app-error";
 import { ok } from "@/utils/http-response";
 import { rbacService } from "@/app/services/rbac.service";
 
+async function checkKpiAccess(userId: string, workspaceId: string, isAdminRoute = false) {
+  const hasAdmin = await rbacService.authorize(userId, "kpi:view-admin", { workspaceId });
+  if (isAdminRoute && !hasAdmin) {
+    throw new UnauthorizedException("You do not have permission to view KPIs as an administrator.");
+  }
+  if (!isAdminRoute) {
+    const hasMember = await rbacService.authorize(userId, "kpi:view-member", { workspaceId });
+    if (!hasAdmin && !hasMember) {
+      throw new UnauthorizedException("You do not have permission to view KPIs.");
+    }
+  }
+}
+
 export const kpiController = {
   getLeaderboard: asyncHandler(async (req: Request, res: Response) => {
     const workspaceId = req.params.id as string;
@@ -17,6 +30,8 @@ export const kpiController = {
     if (!session?.user) {
       throw new UnauthorizedException();
     }
+
+    await checkKpiAccess(session.user.id, workspaceId);
 
     const workspace = await prisma.workspace.findUnique({
       where: { id: workspaceId },
@@ -118,6 +133,8 @@ export const kpiController = {
       throw new UnauthorizedException();
     }
 
+    await checkKpiAccess(session.user.id, workspaceId);
+
     const userIdFilter = req.query.userId as string | undefined;
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 20;
@@ -196,6 +213,8 @@ export const kpiController = {
     if (!session?.user) {
       throw new UnauthorizedException();
     }
+
+    await checkKpiAccess(session.user.id, workspaceId);
 
     const userId = (req.query.userId as string) || session.user.id;
 
@@ -291,6 +310,8 @@ export const kpiController = {
       throw new UnauthorizedException();
     }
 
+    await checkKpiAccess(session.user.id, workspaceId);
+
     // Return only projects in this workspace where the current user is a member
     const projectMembers = await prisma.projectMember.findMany({
       where: {
@@ -318,6 +339,8 @@ export const kpiController = {
     if (!session?.user) {
       throw new UnauthorizedException();
     }
+
+    await checkKpiAccess(session.user.id, workspaceId, true);
 
     // Admins/owners can see all projects in the workspace for filtering
     const projects = await prisma.project.findMany({
