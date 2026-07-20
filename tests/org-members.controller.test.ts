@@ -86,7 +86,7 @@ import { rbacService } from "@/app/services/rbac.service";
 import { orgMembersController } from "../src/app/http/controllers/org-members.controller";
 
 function createRes() {
-  const res: any = {};
+  const res: unknown = {};
   res.status = vi.fn().mockReturnValue(res);
   res.json = vi.fn().mockReturnValue(res);
   res.setHeader = vi.fn();
@@ -106,11 +106,11 @@ describe("orgMembersController", () => {
     it("throws UnauthorizedException if session has no user", async () => {
       mockGetSession.mockResolvedValueOnce(null);
 
-      const req: any = { params: { id: "target-user" }, body: {} };
+      const req: unknown = { params: { id: "target-user" }, body: {} };
       const res = createRes();
 
       await expect(
-        (orgMembersController.banMember as any)(req, res),
+        (orgMembersController.banMember as unknown)(req, res),
       ).rejects.toThrow("Unauthorized");
     });
 
@@ -120,11 +120,11 @@ describe("orgMembersController", () => {
         session: { activeOrganizationId: null },
       });
 
-      const req: any = { params: { id: "target-user" }, body: {} };
+      const req: unknown = { params: { id: "target-user" }, body: {} };
       const res = createRes();
 
       await expect(
-        (orgMembersController.banMember as any)(req, res),
+        (orgMembersController.banMember as unknown)(req, res),
       ).rejects.toThrow("No active organization found");
     });
 
@@ -139,11 +139,11 @@ describe("orgMembersController", () => {
       }); // not admin/owner
       vi.mocked(rbacService.authorize).mockResolvedValueOnce(false);
 
-      const req: any = { params: { id: "target-user" }, body: {} };
+      const req: unknown = { params: { id: "target-user" }, body: {} };
       const res = createRes();
 
       await expect(
-        (orgMembersController.banMember as any)(req, res),
+        (orgMembersController.banMember as unknown)(req, res),
       ).rejects.toThrow("Forbidden: You must be an organization admin");
     });
 
@@ -156,11 +156,11 @@ describe("orgMembersController", () => {
         .mockResolvedValueOnce({ id: "caller-mem", role: "owner" }) // caller
         .mockResolvedValueOnce(null); // target
 
-      const req: any = { params: { id: "target-user" }, body: {} };
+      const req: unknown = { params: { id: "target-user" }, body: {} };
       const res = createRes();
 
       await expect(
-        (orgMembersController.banMember as any)(req, res),
+        (orgMembersController.banMember as unknown)(req, res),
       ).rejects.toThrow("Not Found: User is not a member of this organization");
     });
 
@@ -176,11 +176,11 @@ describe("orgMembersController", () => {
         .mockResolvedValueOnce({ role: { name: "admin" } }) // caller is admin
         .mockResolvedValueOnce({ role: { name: "admin" } }); // target is admin
 
-      const req: any = { params: { id: "target-user" }, body: {} };
+      const req: unknown = { params: { id: "target-user" }, body: {} };
       const res = createRes();
 
       await expect(
-        (orgMembersController.banMember as any)(req, res),
+        (orgMembersController.banMember as unknown)(req, res),
       ).rejects.toThrow(
         "Forbidden: Admins cannot modify other admins or owners",
       );
@@ -199,13 +199,13 @@ describe("orgMembersController", () => {
       prismaMock.user.update.mockResolvedValueOnce({});
       prismaMock.session.deleteMany.mockResolvedValueOnce({});
 
-      const req: any = {
+      const req: unknown = {
         params: { id: "target-user" },
         body: { reason: "test reason" },
       };
       const res = createRes();
 
-      await (orgMembersController.banMember as any)(req, res);
+      await (orgMembersController.banMember as unknown)(req, res);
 
       expect(prismaMock.user.update).toHaveBeenCalledWith({
         where: { id: "target-user" },
@@ -233,10 +233,10 @@ describe("orgMembersController", () => {
         .mockResolvedValueOnce({ id: "target-mem", role: "member" });
       prismaMock.user.update.mockResolvedValueOnce({});
 
-      const req: any = { params: { id: "target-user" } };
+      const req: unknown = { params: { id: "target-user" } };
       const res = createRes();
 
-      await (orgMembersController.unbanMember as any)(req, res);
+      await (orgMembersController.unbanMember as unknown)(req, res);
 
       expect(prismaMock.user.update).toHaveBeenCalledWith({
         where: { id: "target-user" },
@@ -261,10 +261,10 @@ describe("orgMembersController", () => {
         .mockResolvedValueOnce({ id: "target-mem", role: "member" });
       prismaMock.session.deleteMany.mockResolvedValueOnce({});
 
-      const req: any = { params: { id: "target-user" } };
+      const req: unknown = { params: { id: "target-user" } };
       const res = createRes();
 
-      await (orgMembersController.revokeSessions as any)(req, res);
+      await (orgMembersController.revokeSessions as unknown)(req, res);
 
       expect(prismaMock.session.deleteMany).toHaveBeenCalledWith({
         where: { userId: "target-user" },
@@ -288,10 +288,10 @@ describe("orgMembersController", () => {
         .mockResolvedValueOnce({ id: "target-mem", role: "member" });
       mockImpersonate.mockResolvedValueOnce({ token: "impers-tok" });
 
-      const req: any = { params: { id: "target-user" } };
+      const req: unknown = { params: { id: "target-user" } };
       const res = createRes();
 
-      await (orgMembersController.impersonateUser as any)(req, res);
+      await (orgMembersController.impersonateUser as unknown)(req, res);
 
       expect(mockImpersonate).toHaveBeenCalled();
       expect(res.json).toHaveBeenCalledWith({
@@ -315,10 +315,10 @@ describe("orgMembersController", () => {
         token: "man-tok",
       });
 
-      const req: any = { params: { id: "target-user" }, body: {} };
+      const req: unknown = { params: { id: "target-user" }, body: {} };
       const res = createRes();
 
-      await (orgMembersController.impersonateUser as any)(req, res);
+      await (orgMembersController.impersonateUser as unknown)(req, res);
 
       expect(prismaMock.session.create).toHaveBeenCalled();
       expect(res.setHeader).toHaveBeenCalledWith(
@@ -339,10 +339,10 @@ describe("orgMembersController", () => {
         role: "owner",
       });
 
-      const req: any = {};
+      const req: unknown = {};
       const res = createRes();
 
-      await (orgMembersController.bulkInvite as any)(req, res);
+      await (orgMembersController.bulkInvite as unknown)(req, res);
 
       expect(res.status).toHaveBeenCalledWith(400);
       expect(res.json).toHaveBeenCalledWith({ message: "No file uploaded" });
@@ -359,7 +359,7 @@ describe("orgMembersController", () => {
       });
       mockCreateInvitation.mockResolvedValueOnce({ id: "inv-1" });
 
-      const req: any = {
+      const req: unknown = {
         file: {
           mimetype: "text/csv",
           originalname: "invites.csv",
@@ -368,7 +368,7 @@ describe("orgMembersController", () => {
       };
       const res = createRes();
 
-      await (orgMembersController.bulkInvite as any)(req, res);
+      await (orgMembersController.bulkInvite as unknown)(req, res);
 
       expect(mockCreateInvitation).toHaveBeenCalled();
       expect(res.json).toHaveBeenCalledWith({
@@ -391,10 +391,10 @@ describe("orgMembersController", () => {
       });
       mockCreateInvitation.mockResolvedValueOnce({ id: "inv-1" });
 
-      const req: any = { body: { email: "new@example.com", role: "member" } };
+      const req: unknown = { body: { email: "new@example.com", role: "member" } };
       const res = createRes();
 
-      await (orgMembersController.inviteMember as any)(req, res);
+      await (orgMembersController.inviteMember as unknown)(req, res);
 
       expect(mockCreateInvitation).toHaveBeenCalled();
       expect(res.json).toHaveBeenCalledWith({
@@ -417,10 +417,10 @@ describe("orgMembersController", () => {
       });
       prismaMock.member.findMany.mockResolvedValueOnce([{ id: "mem-1" }]);
 
-      const req: any = { query: {} };
+      const req: unknown = { query: {} };
       const res = createRes();
 
-      await (orgMembersController.getMembers as any)(req, res);
+      await (orgMembersController.getMembers as unknown)(req, res);
 
       expect(prismaMock.member.findMany).toHaveBeenCalled();
       expect(res.json).toHaveBeenCalledWith({
@@ -443,10 +443,10 @@ describe("orgMembersController", () => {
       };
       prismaMock.invitation.findUnique.mockResolvedValueOnce(invitation);
 
-      const req: any = { params: { id: "inv-1" } };
+      const req: unknown = { params: { id: "inv-1" } };
       const res = createRes();
 
-      await (orgMembersController.getInvitationPublic as any)(req, res);
+      await (orgMembersController.getInvitationPublic as unknown)(req, res);
 
       expect(res.json).toHaveBeenCalledWith({
         success: true,
@@ -461,10 +461,10 @@ describe("orgMembersController", () => {
     it("returns 404 if invitation not found", async () => {
       prismaMock.invitation.findUnique.mockResolvedValueOnce(null);
 
-      const req: any = { params: { id: "inv-1" } };
+      const req: unknown = { params: { id: "inv-1" } };
       const res = createRes();
 
-      await (orgMembersController.getInvitationPublic as any)(req, res);
+      await (orgMembersController.getInvitationPublic as unknown)(req, res);
 
       expect(res.status).toHaveBeenCalledWith(404);
       expect(res.json).toHaveBeenCalledWith({
@@ -485,10 +485,10 @@ describe("orgMembersController", () => {
       });
       prismaMock.invitation.findMany.mockResolvedValueOnce([{ id: "inv-1" }]);
 
-      const req: any = {};
+      const req: unknown = {};
       const res = createRes();
 
-      await (orgMembersController.getPendingInvitations as any)(req, res);
+      await (orgMembersController.getPendingInvitations as unknown)(req, res);
 
       expect(prismaMock.invitation.findMany).toHaveBeenCalled();
     });
@@ -507,10 +507,10 @@ describe("orgMembersController", () => {
       prismaMock.invitation.findFirst.mockResolvedValueOnce({ id: "inv-1" });
       mockCancelInvitation.mockResolvedValueOnce({ id: "inv-1" });
 
-      const req: any = { params: { id: "inv-1" } };
+      const req: unknown = { params: { id: "inv-1" } };
       const res = createRes();
 
-      await (orgMembersController.revokeInvitation as any)(req, res);
+      await (orgMembersController.revokeInvitation as unknown)(req, res);
 
       expect(mockCancelInvitation).toHaveBeenCalled();
       expect(res.json).toHaveBeenCalledWith({
@@ -533,13 +533,13 @@ describe("orgMembersController", () => {
       });
       mockSetUserPassword.mockResolvedValueOnce({});
 
-      const req: any = {
+      const req: unknown = {
         params: { id: "target-user" },
         body: { password: "newpassword123" },
       };
       const res = createRes();
 
-      await (orgMembersController.setPassword as any)(req, res);
+      await (orgMembersController.setPassword as unknown)(req, res);
 
       expect(mockSetUserPassword).toHaveBeenCalled();
       expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
@@ -559,10 +559,10 @@ describe("orgMembersController", () => {
       });
       prismaMock.session.findMany.mockResolvedValueOnce([{ id: "s1" }]);
 
-      const req: any = { params: { id: "target-user" } };
+      const req: unknown = { params: { id: "target-user" } };
       const res = createRes();
 
-      await (orgMembersController.getSessions as any)(req, res);
+      await (orgMembersController.getSessions as unknown)(req, res);
 
       expect(prismaMock.session.findMany).toHaveBeenCalled();
       expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
@@ -582,10 +582,10 @@ describe("orgMembersController", () => {
       });
       prismaMock.session.deleteMany.mockResolvedValueOnce({ count: 1 });
 
-      const req: any = { params: { id: "target-user", sessionId: "s1" } };
+      const req: unknown = { params: { id: "target-user", sessionId: "s1" } };
       const res = createRes();
 
-      await (orgMembersController.revokeSession as any)(req, res);
+      await (orgMembersController.revokeSession as unknown)(req, res);
 
       expect(prismaMock.session.deleteMany).toHaveBeenCalled();
       expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
@@ -604,7 +604,7 @@ describe("orgMembersController", () => {
         .mockResolvedValueOnce({ id: "target-mem" }); // for verifyAdminAccess target or user org membership check
       prismaMock.user.update.mockResolvedValueOnce({});
 
-      const req: any = {
+      const req: unknown = {
         params: { id: "target-user" },
         body: {
           firstName: "John",
@@ -614,7 +614,7 @@ describe("orgMembersController", () => {
       };
       const res = createRes();
 
-      await (orgMembersController.updateProfile as any)(req, res);
+      await (orgMembersController.updateProfile as unknown)(req, res);
 
       expect(prismaMock.user.update).toHaveBeenCalled();
       expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
@@ -631,10 +631,10 @@ describe("orgMembersController", () => {
         session: { activeOrganizationId: "org1" },
       });
 
-      const req: any = { params: { id: "target-user" } };
+      const req: unknown = { params: { id: "target-user" } };
       const res = createRes();
 
-      await (orgMembersController.updatePhoto as any)(req, res);
+      await (orgMembersController.updatePhoto as unknown)(req, res);
 
       expect(res.status).toHaveBeenCalledWith(400);
     });
@@ -648,7 +648,7 @@ describe("orgMembersController", () => {
         session: { activeOrganizationId: "org1" },
       });
 
-      const req: any = {
+      const req: unknown = {
         params: { id: "target-user" },
         file: {
           buffer: Buffer.from("img"),
@@ -659,7 +659,7 @@ describe("orgMembersController", () => {
       };
       const res = createRes();
 
-      await (orgMembersController.updatePhoto as any)(req, res);
+      await (orgMembersController.updatePhoto as unknown)(req, res);
 
       expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
         success: true,
@@ -670,7 +670,7 @@ describe("orgMembersController", () => {
 
     it("inviteMember triggers error handler for CONFLICT", async () => {
       const { orgMembersService } = await import("../src/app/services/org-members.service");
-      vi.spyOn(orgMembersService, "verifyAdminAccess").mockResolvedValueOnce({} as any);
+      vi.spyOn(orgMembersService, "verifyAdminAccess").mockResolvedValueOnce({} as unknown);
       vi.spyOn(orgMembersService, "inviteMember").mockRejectedValueOnce(
         Object.assign(new Error("Email already registered"), { status: "CONFLICT", code: "ALREADY_EXISTS" })
       );
@@ -680,12 +680,12 @@ describe("orgMembersController", () => {
         session: { activeOrganizationId: "org1" },
       });
 
-      const req: any = {
+      const req: unknown = {
         body: { email: "new@example.com", role: "member" },
       };
       const res = createRes();
 
-      await (orgMembersController.inviteMember as any)(req, res);
+      await (orgMembersController.inviteMember as unknown)(req, res);
 
       expect(res.status).toHaveBeenCalledWith(409);
       expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
@@ -703,10 +703,10 @@ describe("orgMembersController", () => {
         session: { activeOrganizationId: "org1" },
       });
 
-      const req: any = { params: { id: "inv-1" } };
+      const req: unknown = { params: { id: "inv-1" } };
       const res = createRes();
 
-      await (orgMembersController.resendInvitation as any)(req, res);
+      await (orgMembersController.resendInvitation as unknown)(req, res);
 
       expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
         success: true,
@@ -725,10 +725,10 @@ describe("orgMembersController", () => {
         session: { activeOrganizationId: "org1" },
       });
 
-      const req: any = { params: { id: "inv-1" } };
+      const req: unknown = { params: { id: "inv-1" } };
       const res = createRes();
 
-      await (orgMembersController.resendInvitation as any)(req, res);
+      await (orgMembersController.resendInvitation as unknown)(req, res);
 
       expect(res.status).toHaveBeenCalledWith(400);
       expect(res.json).toHaveBeenCalledWith(expect.objectContaining({

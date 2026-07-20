@@ -96,7 +96,7 @@ vi.mock("../src/app/services/notification.service", () => ({
 import { taskController } from "../src/app/http/controllers/task.controller";
 
 function createRes() {
-  const res: any = {};
+  const res: unknown = {};
   res.status = vi.fn().mockReturnValue(res);
   res.json = vi.fn().mockReturnValue(res);
   return res;
@@ -123,7 +123,7 @@ describe("taskController", () => {
       };
       prismaMock.task.create.mockResolvedValueOnce(createdTask);
 
-      const req: any = {
+      const req: unknown = {
         params: { projectId: "p1" },
         body: {
           title: "New Task",
@@ -135,7 +135,7 @@ describe("taskController", () => {
       };
       const res = createRes();
 
-      await (taskController.createTask as any)(req, res);
+      await (taskController.createTask as unknown)(req, res);
 
       expect(prismaMock.task.create).toHaveBeenCalled();
       expect(mockNotificationService.handleTaskCreated).toHaveBeenCalledWith(
@@ -149,13 +149,13 @@ describe("taskController", () => {
     it("fetches tasks successfully", async () => {
       prismaMock.task.findMany.mockResolvedValueOnce([{ id: "task-1" }]);
 
-      const req: any = {
+      const req: unknown = {
         params: { projectId: "p1" },
         query: { search: "test" },
       };
       const res = createRes();
 
-      await (taskController.getTasks as any)(req, res);
+      await (taskController.getTasks as unknown)(req, res);
 
       expect(prismaMock.task.findMany).toHaveBeenCalled();
     });
@@ -168,10 +168,10 @@ describe("taskController", () => {
         projectId: "p1",
       });
 
-      const req: any = { params: { id: "task-1" } };
+      const req: unknown = { params: { id: "task-1" } };
       const res = createRes();
 
-      await (taskController.getTask as any)(req, res);
+      await (taskController.getTask as unknown)(req, res);
 
       expect(prismaMock.task.findUnique).toHaveBeenCalled();
     });
@@ -179,10 +179,10 @@ describe("taskController", () => {
     it("throws NotFoundException if task not found", async () => {
       prismaMock.task.findUnique.mockResolvedValueOnce(null);
 
-      const req: any = { params: { id: "task-1" } };
+      const req: unknown = { params: { id: "task-1" } };
       const res = createRes();
 
-      await expect((taskController.getTask as any)(req, res)).rejects.toThrow(
+      await expect((taskController.getTask as unknown)(req, res)).rejects.toThrow(
         "Task not found",
       );
     });
@@ -205,13 +205,13 @@ describe("taskController", () => {
       prismaMock.subtask.count.mockResolvedValueOnce(0); // no incomplete subtasks
       prismaMock.task.update.mockResolvedValueOnce({ id: "task-1" });
 
-      const req: any = {
+      const req: unknown = {
         params: { id: "task-1" },
         body: { statusId: "550e8400-e29b-41d4-a716-446655440002" },
       };
       const res = createRes();
 
-      await (taskController.updateTask as any)(req, res);
+      await (taskController.updateTask as unknown)(req, res);
 
       expect(prismaMock.task.update).toHaveBeenCalled();
       expect(mockNotificationService.handleTaskUpdated).toHaveBeenCalled();
@@ -234,13 +234,13 @@ describe("taskController", () => {
         statusId: "550e8400-e29b-41d4-a716-446655440002",
       });
 
-      const req: any = {
+      const req: unknown = {
         params: { id: "task-1" },
         body: { statusId: "550e8400-e29b-41d4-a716-446655440002" },
       };
       const res = createRes();
 
-      await (taskController.updateTask as any)(req, res);
+      await (taskController.updateTask as unknown)(req, res);
 
       expect(prismaMock.task.updateMany).toHaveBeenCalledWith({
         where: {
@@ -261,10 +261,10 @@ describe("taskController", () => {
         title: "Task 1",
       });
 
-      const req: any = { params: { id: "task-1" } };
+      const req: unknown = { params: { id: "task-1" } };
       const res = createRes();
 
-      await (taskController.deleteTask as any)(req, res);
+      await (taskController.deleteTask as unknown)(req, res);
 
       expect(prismaMock.task.delete).toHaveBeenCalled();
     });
@@ -278,10 +278,10 @@ describe("taskController", () => {
       });
       prismaMock.task.restore.mockResolvedValue({ id: "task-1" });
 
-      const req: any = { params: { id: "task-1" } };
+      const req: unknown = { params: { id: "task-1" } };
       const res = createRes();
 
-      await (taskController.restoreTask as any)(req, res);
+      await (taskController.restoreTask as unknown)(req, res);
 
       expect(prismaMock.task.restore).toHaveBeenCalled();
       expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
@@ -297,10 +297,10 @@ describe("taskController", () => {
       });
       prismaMock.task.forceDelete.mockResolvedValue({ id: "task-1" });
 
-      const req: any = { params: { id: "task-1" } };
+      const req: unknown = { params: { id: "task-1" } };
       const res = createRes();
 
-      await (taskController.forceDeleteTask as any)(req, res);
+      await (taskController.forceDeleteTask as unknown)(req, res);
 
       expect(prismaMock.task.forceDelete).toHaveBeenCalled();
       expect(res.json).toHaveBeenCalledWith(expect.objectContaining({

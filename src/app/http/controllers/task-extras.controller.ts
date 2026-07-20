@@ -19,7 +19,7 @@ export const taskExtrasController = {
   // --- TASK STATUS CODES ---
   createStatus: asyncHandler(async (req: Request, res: Response) => {
     const projectId = req.params.projectId as string;
-    const { project } = await verifyProjectAccess(req, projectId);
+    const { project } = await verifyProjectAccess(req, projectId, "project-status:create");
     const { organizationId } = project;
 
     const validatedData = statusSchema.parse(req.body);
@@ -35,7 +35,7 @@ export const taskExtrasController = {
 
   getStatuses: asyncHandler(async (req: Request, res: Response) => {
     const projectId = req.params.projectId as string;
-    await verifyProjectAccess(req, projectId);
+    await verifyProjectAccess(req, projectId, "project-status:read");
 
     const statuses = await taskExtrasService.getStatuses(projectId);
 
@@ -50,7 +50,7 @@ export const taskExtrasController = {
       throw new NotFoundException("Status not found");
     }
 
-    await verifyProjectAccess(req, existingStatus.projectId);
+    await verifyProjectAccess(req, existingStatus.projectId, "project-status:update");
 
     const validatedData = statusUpdateSchema.parse(req.body);
 
@@ -70,7 +70,7 @@ export const taskExtrasController = {
       throw new NotFoundException("Status not found");
     }
 
-    await verifyProjectAccess(req, existingStatus.projectId);
+    await verifyProjectAccess(req, existingStatus.projectId, "project-status:delete");
 
     await taskExtrasService.deleteStatus(statusId);
 
@@ -86,7 +86,7 @@ export const taskExtrasController = {
       throw new NotFoundException("Status not found");
     }
 
-    await verifyProjectAccess(req, status.projectId);
+    await verifyProjectAccess(req, status.projectId, "project-status:restore");
 
     await taskExtrasService.restoreStatus(statusId);
 
@@ -102,7 +102,7 @@ export const taskExtrasController = {
       throw new NotFoundException("Status not found");
     }
 
-    await verifyProjectAccess(req, status.projectId);
+    await verifyProjectAccess(req, status.projectId, "project-status:force-delete");
 
     await taskExtrasService.forceDeleteStatus(statusId);
 
@@ -118,7 +118,7 @@ export const taskExtrasController = {
       throw new NotFoundException("Parent task not found");
     }
 
-    const { userId, project } = await verifyProjectAccess(req, task.projectId);
+    const { userId, project } = await verifyProjectAccess(req, task.projectId, "task:create");
     const { organizationId } = project;
     const validatedData = subtaskSchema.parse(req.body);
 
@@ -143,6 +143,7 @@ export const taskExtrasController = {
     const { userId } = await verifyProjectAccess(
       req,
       subtask.parentTask!.projectId,
+      "task:update"
     );
     const validatedData = subtaskSchema.partial().parse(req.body);
 
@@ -170,6 +171,7 @@ export const taskExtrasController = {
     const { userId } = await verifyProjectAccess(
       req,
       subtask.parentTask!.projectId,
+      "task:delete"
     );
 
     await taskExtrasService.deleteSubtask(
@@ -189,7 +191,7 @@ export const taskExtrasController = {
       throw new NotFoundException("Task not found");
     }
 
-    const { userId, project } = await verifyProjectAccess(req, task.projectId);
+    const { userId, project } = await verifyProjectAccess(req, task.projectId, "task:comment");
     const { organizationId } = project;
     const validatedData = commentSchema.parse(req.body);
 
@@ -214,6 +216,7 @@ export const taskExtrasController = {
     const { userId, activeOrgId } = await verifyProjectAccess(
       req,
       comment.task.projectId,
+      "task:delete-own-comment"
     );
 
     await taskExtrasService.deleteComment(comment, userId, activeOrgId);
@@ -230,7 +233,7 @@ export const taskExtrasController = {
       throw new NotFoundException("Comment not found");
     }
 
-    await verifyProjectAccess(req, comment.task.projectId);
+    await verifyProjectAccess(req, comment.task.projectId, "task:delete-own-comment");
 
     await taskExtrasService.restoreComment(commentId);
 
@@ -246,7 +249,7 @@ export const taskExtrasController = {
       throw new NotFoundException("Comment not found");
     }
 
-    await verifyProjectAccess(req, comment.task.projectId);
+    await verifyProjectAccess(req, comment.task.projectId, "task:delete-own-comment");
 
     await taskExtrasService.forceDeleteComment(commentId);
 
@@ -261,7 +264,7 @@ export const taskExtrasController = {
       throw new NotFoundException("Comment not found");
     }
 
-    const { userId } = await verifyProjectAccess(req, comment.task.projectId);
+    const { userId } = await verifyProjectAccess(req, comment.task.projectId, "task:comment");
     const validatedData = commentSchema.parse(req.body);
 
     const updatedComment = await taskExtrasService.updateComment(
@@ -276,7 +279,7 @@ export const taskExtrasController = {
   // --- CUSTOM FIELDS ---
   createCustomField: asyncHandler(async (req: Request, res: Response) => {
     const projectId = req.params.projectId as string;
-    const { project } = await verifyProjectAccess(req, projectId);
+    const { project } = await verifyProjectAccess(req, projectId, "project-custom-field:create");
     const { organizationId } = project;
 
     const validatedData = customFieldSchema.parse(req.body);
@@ -292,7 +295,7 @@ export const taskExtrasController = {
 
   getCustomFields: asyncHandler(async (req: Request, res: Response) => {
     const projectId = req.params.projectId as string;
-    await verifyProjectAccess(req, projectId);
+    await verifyProjectAccess(req, projectId, "project-custom-field:read");
 
     const fields = await taskExtrasService.getCustomFields(projectId);
 
@@ -307,7 +310,7 @@ export const taskExtrasController = {
       throw new NotFoundException("Custom field not found");
     }
 
-    await verifyProjectAccess(req, field.projectId);
+    await verifyProjectAccess(req, field.projectId, "project-custom-field:delete");
 
     await taskExtrasService.deleteCustomField(fieldId);
 
@@ -323,7 +326,7 @@ export const taskExtrasController = {
       throw new NotFoundException("Custom field not found");
     }
 
-    await verifyProjectAccess(req, field.projectId);
+    await verifyProjectAccess(req, field.projectId, "project-custom-field:restore");
 
     await taskExtrasService.restoreCustomField(fieldId);
 
@@ -339,7 +342,7 @@ export const taskExtrasController = {
       throw new NotFoundException("Custom field not found");
     }
 
-    await verifyProjectAccess(req, field.projectId);
+    await verifyProjectAccess(req, field.projectId, "project-custom-field:force-delete");
 
     await taskExtrasService.forceDeleteCustomField(fieldId);
 
@@ -355,7 +358,7 @@ export const taskExtrasController = {
       throw new NotFoundException("Comment not found");
     }
 
-    await verifyProjectAccess(req, comment.task.projectId);
+    await verifyProjectAccess(req, comment.task.projectId, "task:read");
 
     const users = await taskExtrasService.getReactionUsers(commentId, emoji);
 
@@ -376,7 +379,7 @@ export const taskExtrasController = {
       throw new NotFoundException("Comment not found");
     }
 
-    const { userId } = await verifyProjectAccess(req, comment.task.projectId);
+    const { userId } = await verifyProjectAccess(req, comment.task.projectId, "task:comment");
 
     const result = await taskExtrasService.toggleCommentReaction(
       commentId,

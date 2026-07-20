@@ -40,9 +40,9 @@ describe("App MediaService", () => {
   });
 
   it("should upload avatar successfully", async () => {
-    vi.mocked(coreMediaService.addMedia).mockResolvedValueOnce({ id: "media-1" } as any);
+    vi.mocked(coreMediaService.addMedia).mockResolvedValueOnce({ id: "media-1" } as unknown);
     vi.mocked(coreMediaService.getUrl).mockResolvedValueOnce("https://cdn.com/avatar.png");
-    vi.mocked(mediaRepository.updateUserAvatar).mockResolvedValueOnce({} as any);
+    vi.mocked(mediaRepository.updateUserAvatar).mockResolvedValueOnce({} as unknown);
 
     const result = await mediaService.uploadAvatar("user-1", mockFile);
 
@@ -52,14 +52,14 @@ describe("App MediaService", () => {
   });
 
   it("should throw error if avatar URL generation fails", async () => {
-    vi.mocked(coreMediaService.addMedia).mockResolvedValueOnce({ id: "media-1" } as any);
+    vi.mocked(coreMediaService.addMedia).mockResolvedValueOnce({ id: "media-1" } as unknown);
     vi.mocked(coreMediaService.getUrl).mockResolvedValueOnce(null);
 
     await expect(mediaService.uploadAvatar("user-1", mockFile)).rejects.toThrow("Failed to generate avatar URL");
   });
 
   it("should upload org logo if authorized", async () => {
-    vi.mocked(coreMediaService.addMedia).mockResolvedValueOnce({ id: "media-1" } as any);
+    vi.mocked(coreMediaService.addMedia).mockResolvedValueOnce({ id: "media-1" } as unknown);
     vi.mocked(coreMediaService.getUrl).mockResolvedValueOnce("https://cdn.com/logo.png");
 
     const result = await mediaService.uploadOrgLogo("user-1", "org-1", mockFile);
@@ -75,7 +75,7 @@ describe("App MediaService", () => {
   });
 
   it("should upload workspace icon if authorized", async () => {
-    vi.mocked(coreMediaService.addMedia).mockResolvedValueOnce({ id: "media-1" } as any);
+    vi.mocked(coreMediaService.addMedia).mockResolvedValueOnce({ id: "media-1" } as unknown);
     vi.mocked(coreMediaService.getUrl).mockResolvedValueOnce("https://cdn.com/icon.png");
 
     const result = await mediaService.uploadWorkspaceIcon("ws-1", "user-1", "org-1", mockFile);
@@ -92,8 +92,8 @@ describe("App MediaService", () => {
   });
 
   it("should upload project icon if authorized", async () => {
-    vi.mocked(mediaRepository.findProjectById).mockResolvedValueOnce({ id: "proj-1", workspaceId: "ws-1" } as any);
-    vi.mocked(coreMediaService.addMedia).mockResolvedValueOnce({ id: "media-1" } as any);
+    vi.mocked(mediaRepository.findProjectById).mockResolvedValueOnce({ id: "proj-1", workspaceId: "ws-1" } as unknown);
+    vi.mocked(coreMediaService.addMedia).mockResolvedValueOnce({ id: "media-1" } as unknown);
     vi.mocked(coreMediaService.getUrl).mockResolvedValueOnce("https://cdn.com/icon.png");
 
     const result = await mediaService.uploadProjectIcon("proj-1", "user-1", "org-1", mockFile);
@@ -110,7 +110,7 @@ describe("App MediaService", () => {
   });
 
   it("should throw ForbiddenException if project icon upload is unauthorized", async () => {
-    vi.mocked(mediaRepository.findProjectById).mockResolvedValueOnce({ id: "proj-1", workspaceId: "ws-1" } as any);
+    vi.mocked(mediaRepository.findProjectById).mockResolvedValueOnce({ id: "proj-1", workspaceId: "ws-1" } as unknown);
     vi.mocked(rbacService.authorize).mockResolvedValueOnce(false);
 
     await expect(
@@ -119,7 +119,7 @@ describe("App MediaService", () => {
   });
 
   it("should upload file attachments", async () => {
-    vi.mocked(coreMediaService.addMedia).mockResolvedValueOnce({ id: "media-1" } as any);
+    vi.mocked(coreMediaService.addMedia).mockResolvedValueOnce({ id: "media-1" } as unknown);
     vi.mocked(coreMediaService.getUrl).mockResolvedValueOnce("https://cdn.com/file.png");
 
     const result = await mediaService.uploadFile("user-1", mockFile);
@@ -134,7 +134,7 @@ describe("App MediaService", () => {
       collectionName: "docs",
     });
     prismaMock.media.findFirst.mockResolvedValueOnce({ version: 2 });
-    vi.mocked(coreMediaService.addMedia).mockResolvedValueOnce({ id: "version-2" } as any);
+    vi.mocked(coreMediaService.addMedia).mockResolvedValueOnce({ id: "version-2" } as unknown);
     prismaMock.media.update.mockResolvedValueOnce({ id: "version-2", version: 3, name: "test-v3.png" });
     vi.mocked(coreMediaService.getUrl).mockResolvedValueOnce("https://cdn.com/v3.png");
 

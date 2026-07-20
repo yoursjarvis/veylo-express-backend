@@ -22,7 +22,7 @@ export const workLogController = {
       throw new NotFoundException("Task not found");
     }
 
-    const { userId } = await verifyProjectAccess(req, task.projectId);
+    const { userId } = await verifyProjectAccess(req, task.projectId, "timesheet:create");
     const validatedData = workLogCreateSchema.parse(req.body);
 
     const workLog = await workLogService.createWorkLog(
@@ -40,14 +40,14 @@ export const workLogController = {
       throw new NotFoundException("Task not found");
     }
 
-    await verifyProjectAccess(req, task.projectId);
+    await verifyProjectAccess(req, task.projectId, "timesheet:read");
     const logs = await workLogService.getTaskWorkLogs(taskId);
     return ok(res, "Task work logs fetched successfully", logs);
   }),
 
   getProjectWorkLogs: asyncHandler(async (req: Request, res: Response) => {
     const projectId = req.params.projectId as string;
-    await verifyProjectAccess(req, projectId);
+    await verifyProjectAccess(req, projectId, "timesheet:read");
 
     const logs = await workLogService.getProjectWorkLogs(projectId);
     return ok(res, "Project work logs fetched successfully", logs);

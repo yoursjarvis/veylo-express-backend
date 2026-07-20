@@ -64,7 +64,7 @@ describe("OrgMembersService", () => {
 
     it("should bypass permission check if self-modifying and allowSelf is true", async () => {
       const member = { id: "m-1", userId: "user-1", organizationId: "org-1" };
-      vi.mocked(orgMembersRepository.findCallerMember).mockResolvedValueOnce(member as any);
+      vi.mocked(orgMembersRepository.findCallerMember).mockResolvedValueOnce(member as unknown);
 
       const result = await orgMembersService.verifyAdminAccess("org-1", "user-1", "user-1", "update", true);
       expect(result).toEqual(member);
@@ -72,7 +72,7 @@ describe("OrgMembersService", () => {
 
     it("should throw ForbiddenException if RBAC authorization fails", async () => {
       const member = { id: "m-1", userId: "user-1", organizationId: "org-1" };
-      vi.mocked(orgMembersRepository.findCallerMember).mockResolvedValueOnce(member as any);
+      vi.mocked(orgMembersRepository.findCallerMember).mockResolvedValueOnce(member as unknown);
       vi.mocked(rbacService.authorize).mockResolvedValueOnce(false);
 
       await expect(
@@ -82,7 +82,7 @@ describe("OrgMembersService", () => {
 
     it("should throw NotFoundException if target user is not in organization", async () => {
       const member = { id: "m-1", userId: "user-1", organizationId: "org-1" };
-      vi.mocked(orgMembersRepository.findCallerMember).mockResolvedValueOnce(member as any);
+      vi.mocked(orgMembersRepository.findCallerMember).mockResolvedValueOnce(member as unknown);
       vi.mocked(rbacService.authorize).mockResolvedValueOnce(true);
       vi.mocked(orgMembersRepository.findTargetMember).mockResolvedValueOnce(null);
 
@@ -95,9 +95,9 @@ describe("OrgMembersService", () => {
       const caller = { id: "m-1", userId: "user-1", organizationId: "org-1" };
       const target = { id: "m-2", userId: "user-2", organizationId: "org-1" };
 
-      vi.mocked(orgMembersRepository.findCallerMember).mockResolvedValueOnce(caller as any);
+      vi.mocked(orgMembersRepository.findCallerMember).mockResolvedValueOnce(caller as unknown);
       vi.mocked(rbacService.authorize).mockResolvedValueOnce(true);
-      vi.mocked(orgMembersRepository.findTargetMember).mockResolvedValueOnce(target as any);
+      vi.mocked(orgMembersRepository.findTargetMember).mockResolvedValueOnce(target as unknown);
 
       prisma.organization.findUnique = vi.fn().mockResolvedValue({ ownerId: "user-owner" });
       prisma.userRoleAssignment.findFirst = vi.fn()
@@ -113,9 +113,9 @@ describe("OrgMembersService", () => {
   describe("Operations", () => {
     it("should ban and unban members", async () => {
       const caller = { id: "m-1", userId: "user-1", organizationId: "org-1" };
-      vi.mocked(orgMembersRepository.findCallerMember).mockResolvedValue(caller as any);
+      vi.mocked(orgMembersRepository.findCallerMember).mockResolvedValue(caller as unknown);
       vi.mocked(rbacService.authorize).mockResolvedValue(true);
-      vi.mocked(orgMembersRepository.findTargetMember).mockResolvedValue({ id: "m-2" } as any);
+      vi.mocked(orgMembersRepository.findTargetMember).mockResolvedValue({ id: "m-2" } as unknown);
 
       await orgMembersService.banMember("org-1", "user-1", "user-2", "reason");
       expect(orgMembersRepository.banUser).toHaveBeenCalledWith("user-2", "reason");
@@ -126,9 +126,9 @@ describe("OrgMembersService", () => {
 
     it("should revoke sessions and get sessions", async () => {
       const caller = { id: "m-1", userId: "user-1", organizationId: "org-1" };
-      vi.mocked(orgMembersRepository.findCallerMember).mockResolvedValue(caller as any);
+      vi.mocked(orgMembersRepository.findCallerMember).mockResolvedValue(caller as unknown);
       vi.mocked(rbacService.authorize).mockResolvedValue(true);
-      vi.mocked(orgMembersRepository.findTargetMember).mockResolvedValue({ id: "m-2" } as any);
+      vi.mocked(orgMembersRepository.findTargetMember).mockResolvedValue({ id: "m-2" } as unknown);
 
       await orgMembersService.revokeSessions("org-1", "user-1", "user-2");
       expect(orgMembersRepository.deleteSessionsByUserId).toHaveBeenCalledWith("user-2");
@@ -140,18 +140,18 @@ describe("OrgMembersService", () => {
 
     it("should impersonate user (with Better Auth and manual fallback)", async () => {
       const caller = { id: "m-1", userId: "user-1", organizationId: "org-1" };
-      vi.mocked(orgMembersRepository.findCallerMember).mockResolvedValue(caller as any);
+      vi.mocked(orgMembersRepository.findCallerMember).mockResolvedValue(caller as unknown);
       vi.mocked(rbacService.authorize).mockResolvedValue(true);
-      vi.mocked(orgMembersRepository.findTargetMember).mockResolvedValue({ id: "m-2" } as any);
+      vi.mocked(orgMembersRepository.findTargetMember).mockResolvedValue({ id: "m-2" } as unknown);
 
       // Case 1: Better Auth success
-      vi.mocked(auth.api.impersonateUser as any).mockResolvedValueOnce({ sessionToken: "token" });
+      vi.mocked(auth.api.impersonateUser as unknown).mockResolvedValueOnce({ sessionToken: "token" });
       const res1 = await orgMembersService.impersonateUser("org-1", "user-1", "user-2", {});
       expect(res1.success).toBe(true);
 
       // Case 2: Better Auth fail -> fallback manual
-      vi.mocked(auth.api.impersonateUser as any).mockRejectedValueOnce(new Error("Error"));
-      vi.mocked(orgMembersRepository.createSession).mockResolvedValueOnce({ id: "sess-fallback" } as any);
+      vi.mocked(auth.api.impersonateUser as unknown).mockRejectedValueOnce(new Error("Error"));
+      vi.mocked(orgMembersRepository.createSession).mockResolvedValueOnce({ id: "sess-fallback" } as unknown);
       const res2 = await orgMembersService.impersonateUser("org-1", "user-1", "user-2", {});
       expect(res2.success).toBe(false);
       expect(res2.fallback).toBeDefined();
@@ -159,19 +159,19 @@ describe("OrgMembersService", () => {
 
     it("should set password", async () => {
       const caller = { id: "m-1", userId: "user-1", organizationId: "org-1" };
-      vi.mocked(orgMembersRepository.findCallerMember).mockResolvedValue(caller as any);
+      vi.mocked(orgMembersRepository.findCallerMember).mockResolvedValue(caller as unknown);
       vi.mocked(rbacService.authorize).mockResolvedValue(true);
-      vi.mocked(orgMembersRepository.findTargetMember).mockResolvedValue({ id: "m-2" } as any);
+      vi.mocked(orgMembersRepository.findTargetMember).mockResolvedValue({ id: "m-2" } as unknown);
 
       await orgMembersService.setPassword("org-1", "user-1", "user-2", "new-pass", {});
-      expect(auth.api.setUserPassword as any).toHaveBeenCalled();
+      expect(auth.api.setUserPassword as unknown).toHaveBeenCalled();
     });
 
     it("should revoke session", async () => {
       const caller = { id: "m-1", userId: "user-1", organizationId: "org-1" };
-      vi.mocked(orgMembersRepository.findCallerMember).mockResolvedValue(caller as any);
+      vi.mocked(orgMembersRepository.findCallerMember).mockResolvedValue(caller as unknown);
       vi.mocked(rbacService.authorize).mockResolvedValue(true);
-      vi.mocked(orgMembersRepository.findTargetMember).mockResolvedValue({ id: "m-2" } as any);
+      vi.mocked(orgMembersRepository.findTargetMember).mockResolvedValue({ id: "m-2" } as unknown);
 
       prisma.session.deleteMany = vi.fn().mockResolvedValueOnce({ count: 1 });
       await orgMembersService.revokeSession("org-1", "user-1", "user-2", "sess-1", {});
@@ -180,11 +180,11 @@ describe("OrgMembersService", () => {
 
     it("should update photo", async () => {
       const caller = { id: "m-1", userId: "user-1", organizationId: "org-1" };
-      vi.mocked(orgMembersRepository.findCallerMember).mockResolvedValue(caller as any);
+      vi.mocked(orgMembersRepository.findCallerMember).mockResolvedValue(caller as unknown);
       vi.mocked(rbacService.authorize).mockResolvedValue(true);
-      vi.mocked(orgMembersRepository.findTargetMember).mockResolvedValue({ id: "m-2" } as any);
+      vi.mocked(orgMembersRepository.findTargetMember).mockResolvedValue({ id: "m-2" } as unknown);
 
-      vi.mocked(mediaService.uploadAvatar).mockResolvedValueOnce({ url: "https://newphoto.png" } as any);
+      vi.mocked(mediaService.uploadAvatar).mockResolvedValueOnce({ url: "https://newphoto.png" } as unknown);
       const url = await orgMembersService.updatePhoto("org-1", "user-1", "user-2", {
         buffer: Buffer.from(""),
         originalname: "photo.jpg",
@@ -196,9 +196,9 @@ describe("OrgMembersService", () => {
 
     it("should update profile", async () => {
       const caller = { id: "m-1", userId: "user-1", organizationId: "org-1" };
-      vi.mocked(orgMembersRepository.findCallerMember).mockResolvedValue(caller as any);
+      vi.mocked(orgMembersRepository.findCallerMember).mockResolvedValue(caller as unknown);
       vi.mocked(rbacService.authorize).mockResolvedValue(true);
-      vi.mocked(orgMembersRepository.findTargetMember).mockResolvedValue({ id: "m-2" } as any);
+      vi.mocked(orgMembersRepository.findTargetMember).mockResolvedValue({ id: "m-2" } as unknown);
 
       prisma.member.findFirst = vi.fn().mockResolvedValueOnce({ id: "m-2" });
       prisma.user.update = vi.fn().mockResolvedValueOnce({ id: "user-2" });
@@ -213,9 +213,9 @@ describe("OrgMembersService", () => {
 
     it("should list members", async () => {
       const caller = { id: "m-1", userId: "user-1", organizationId: "org-1" };
-      vi.mocked(orgMembersRepository.findCallerMember).mockResolvedValue(caller as any);
+      vi.mocked(orgMembersRepository.findCallerMember).mockResolvedValue(caller as unknown);
       vi.mocked(rbacService.authorize).mockResolvedValue(true);
-      vi.mocked(orgMembersRepository.findMembers).mockResolvedValue([{ id: "m-1" }, { id: "m-2" }] as any);
+      vi.mocked(orgMembersRepository.findMembers).mockResolvedValue([{ id: "m-1" }, { id: "m-2" }] as unknown);
 
       const result = await orgMembersService.getMembers("org-1", "user-1", { limit: 1 });
       expect(result.members).toHaveLength(1);
@@ -231,27 +231,27 @@ describe("OrgMembersService", () => {
         expiresAt: new Date(),
         organization: { name: "OrgName", slug: "orgslug" },
       };
-      vi.mocked(orgMembersRepository.findInvitationById).mockResolvedValueOnce(invitation as any);
+      vi.mocked(orgMembersRepository.findInvitationById).mockResolvedValueOnce(invitation as unknown);
 
       const res = await orgMembersService.getInvitationPublic("invite-1");
       expect(res.organizationName).toBe("OrgName");
 
       // Inactive invitation case
-      vi.mocked(orgMembersRepository.findInvitationById).mockResolvedValueOnce({ status: "cancelled" } as any);
+      vi.mocked(orgMembersRepository.findInvitationById).mockResolvedValueOnce({ status: "cancelled" } as unknown);
       await expect(orgMembersService.getInvitationPublic("invite-1")).rejects.toThrow("Invitation is no longer active");
     });
 
     it("should get pending invitations", async () => {
       const caller = { id: "m-1", userId: "user-1", organizationId: "org-1" };
-      vi.mocked(orgMembersRepository.findCallerMember).mockResolvedValue(caller as any);
+      vi.mocked(orgMembersRepository.findCallerMember).mockResolvedValue(caller as unknown);
       vi.mocked(rbacService.authorize).mockResolvedValue(true);
-      vi.mocked(orgMembersRepository.findPendingInvitations).mockResolvedValueOnce([{ id: "inv-1" }] as any);
+      vi.mocked(orgMembersRepository.findPendingInvitations).mockResolvedValueOnce([{ id: "inv-1" }] as unknown);
 
       expect(await orgMembersService.getPendingInvitations("org-1", "user-1")).toHaveLength(1);
     });
 
     it("should invite member", async () => {
-      vi.mocked(auth.api.createInvitation as any).mockResolvedValueOnce({ id: "inv-1" });
+      vi.mocked(auth.api.createInvitation as unknown).mockResolvedValueOnce({ id: "inv-1" });
       prisma.invitation.update = vi.fn().mockResolvedValueOnce({});
 
       const invite = await orgMembersService.inviteMember("org-1", "guest@example.com", "member", ["proj-1"], {});
@@ -261,11 +261,11 @@ describe("OrgMembersService", () => {
 
     it("should bulk invite members via CSV/Excel", async () => {
       const caller = { id: "m-1", userId: "user-1", organizationId: "org-1" };
-      vi.mocked(orgMembersRepository.findCallerMember).mockResolvedValue(caller as any);
+      vi.mocked(orgMembersRepository.findCallerMember).mockResolvedValue(caller as unknown);
       vi.mocked(rbacService.authorize).mockResolvedValue(true);
 
       // CSV bulk invite
-      vi.mocked(auth.api.createInvitation as any).mockResolvedValueOnce({ id: "inv-1" });
+      vi.mocked(auth.api.createInvitation as unknown).mockResolvedValueOnce({ id: "inv-1" });
       const csvBuffer = Buffer.from("email,role\ntest@example.com,member\n");
       const resultCsv = await orgMembersService.bulkInvite("org-1", "user-1", {
         buffer: csvBuffer,
@@ -286,10 +286,10 @@ describe("OrgMembersService", () => {
 
     it("should cancel/revoke invitation", async () => {
       const caller = { id: "m-1", userId: "user-1", organizationId: "org-1" };
-      vi.mocked(orgMembersRepository.findCallerMember).mockResolvedValue(caller as any);
+      vi.mocked(orgMembersRepository.findCallerMember).mockResolvedValue(caller as unknown);
       vi.mocked(rbacService.authorize).mockResolvedValue(true);
-      vi.mocked(orgMembersRepository.findInvitationInOrg).mockResolvedValueOnce({ id: "inv-1" } as any);
-      vi.mocked(auth.api.cancelInvitation as any).mockResolvedValueOnce({ success: true });
+      vi.mocked(orgMembersRepository.findInvitationInOrg).mockResolvedValueOnce({ id: "inv-1" } as unknown);
+      vi.mocked(auth.api.cancelInvitation as unknown).mockResolvedValueOnce({ success: true });
 
       const result = await orgMembersService.revokeInvitation("org-1", "user-1", "inv-1", {});
       expect(result).toBeDefined();
@@ -303,16 +303,16 @@ describe("OrgMembersService", () => {
 
     it("should resend invitation", async () => {
       const caller = { id: "m-1", userId: "user-1", organizationId: "org-1" };
-      vi.mocked(orgMembersRepository.findCallerMember).mockResolvedValue(caller as any);
+      vi.mocked(orgMembersRepository.findCallerMember).mockResolvedValue(caller as unknown);
       vi.mocked(rbacService.authorize).mockResolvedValue(true);
       vi.mocked(orgMembersRepository.findInvitationInOrg).mockResolvedValueOnce({
         id: "inv-1",
         email: "guest@example.com",
         role: "member",
         projectIds: ["proj-1"],
-      } as any);
+      } as unknown);
 
-      vi.mocked(auth.api.createInvitation as any).mockResolvedValueOnce({ id: "inv-new" });
+      vi.mocked(auth.api.createInvitation as unknown).mockResolvedValueOnce({ id: "inv-new" });
       prisma.invitation.update = vi.fn().mockResolvedValueOnce({});
 
       const result = await orgMembersService.resendInvitation("org-1", "user-1", "inv-1", {});
@@ -322,7 +322,7 @@ describe("OrgMembersService", () => {
 
     it("should throw NotFoundException on resendInvitation if invitation not found", async () => {
       const caller = { id: "m-1", userId: "user-1", organizationId: "org-1" };
-      vi.mocked(orgMembersRepository.findCallerMember).mockResolvedValue(caller as any);
+      vi.mocked(orgMembersRepository.findCallerMember).mockResolvedValue(caller as unknown);
       vi.mocked(rbacService.authorize).mockResolvedValue(true);
       vi.mocked(orgMembersRepository.findInvitationInOrg).mockResolvedValueOnce(null);
 
@@ -333,12 +333,12 @@ describe("OrgMembersService", () => {
 
     it("should handle bulk invite with missing email in CSV row and invite failure", async () => {
       const caller = { id: "m-1", userId: "user-1", organizationId: "org-1" };
-      vi.mocked(orgMembersRepository.findCallerMember).mockResolvedValue(caller as any);
+      vi.mocked(orgMembersRepository.findCallerMember).mockResolvedValue(caller as unknown);
       vi.mocked(rbacService.authorize).mockResolvedValue(true);
 
       // CSV with missing email row
       const csvBuffer = Buffer.from("email,role\n,member\ntest@example.com,member\n");
-      vi.mocked(auth.api.createInvitation as any)
+      vi.mocked(auth.api.createInvitation as unknown)
         .mockRejectedValueOnce(new Error("Invite error")); // first valid invite fails
 
       const result = await orgMembersService.bulkInvite("org-1", "user-1", {
@@ -353,9 +353,9 @@ describe("OrgMembersService", () => {
 
     it("should throw NotFoundException on updateProfile if member not in org", async () => {
       const caller = { id: "m-1", userId: "user-1", organizationId: "org-1" };
-      vi.mocked(orgMembersRepository.findCallerMember).mockResolvedValue(caller as any);
+      vi.mocked(orgMembersRepository.findCallerMember).mockResolvedValue(caller as unknown);
       vi.mocked(rbacService.authorize).mockResolvedValue(true);
-      vi.mocked(orgMembersRepository.findTargetMember).mockResolvedValue({ id: "m-2" } as any);
+      vi.mocked(orgMembersRepository.findTargetMember).mockResolvedValue({ id: "m-2" } as unknown);
 
       prisma.member.findFirst = vi.fn().mockResolvedValueOnce(null); // not a member
 
@@ -376,7 +376,7 @@ describe("OrgMembersService", () => {
     });
 
     it("inviteMember: skips invitation update if no projectIds", async () => {
-      vi.mocked(auth.api.createInvitation as any).mockResolvedValueOnce({ id: "inv-1" });
+      vi.mocked(auth.api.createInvitation as unknown).mockResolvedValueOnce({ id: "inv-1" });
       prisma.invitation.update = vi.fn();
 
       const invite = await orgMembersService.inviteMember("org-1", "guest@example.com", "member", undefined, {});

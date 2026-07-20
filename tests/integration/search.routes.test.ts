@@ -22,7 +22,7 @@ vi.mock("@/lib/prisma", async () => {
 });
 
 vi.mock("../../src/app/http/middlewares/rate-limit.middleware", () => ({
-  rateLimit: () => (req: any, res: any, next: any) => next(),
+  rateLimit: () => (req: unknown, res: unknown, next: unknown) => next(),
 }));
 
 import { setMockUser } from "../helpers/auth";

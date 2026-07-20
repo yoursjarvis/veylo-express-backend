@@ -19,7 +19,7 @@ export const docController = {
     const userId = req.auth!.user.id as string;
     const validatedData = createDocSchema.parse(req.body);
 
-    const doc = await docService.createDoc(projectId, validatedData, userId);
+    const doc = await docService.createDoc(projectId, validatedData as unknown as Parameters<typeof docService.createDoc>[1], userId);
     return ok(res, "Document created successfully", doc, 201);
   }),
 
@@ -36,7 +36,7 @@ export const docController = {
     const userId = req.auth!.user.id as string;
     const validatedData = updateDocSchema.parse(req.body);
 
-    const doc = await docService.updateDoc(id, validatedData, userId);
+    const doc = await docService.updateDoc(id, validatedData as unknown as Parameters<typeof docService.updateDoc>[1], userId);
     return ok(res, "Document updated successfully", doc);
   }),
 

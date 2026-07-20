@@ -14,7 +14,7 @@ export const dependencyController = {
 
     const result = await dependencyService.getDependencies(taskId);
 
-    await verifyProjectAccess(req, result.projectId);
+    await verifyProjectAccess(req, result.projectId, "task:read");
 
     return ok(res, "Task dependencies fetched successfully", result.data);
   }),
@@ -36,8 +36,8 @@ export const dependencyController = {
       throw new NotFoundException("One or both tasks not found");
     }
 
-    const { userId } = await verifyProjectAccess(req, task.projectId);
-    await verifyProjectAccess(req, depTask.projectId);
+    const { userId } = await verifyProjectAccess(req, task.projectId, "task:update");
+    await verifyProjectAccess(req, depTask.projectId, "task:update");
 
     const dependency = await dependencyService.createDependency(
       task,
@@ -62,8 +62,9 @@ export const dependencyController = {
     const { userId } = await verifyProjectAccess(
       req,
       dependency.blockingTask.projectId,
+      "task:update"
     );
-    await verifyProjectAccess(req, dependency.blockedTask.projectId);
+    await verifyProjectAccess(req, dependency.blockedTask.projectId, "task:update");
 
     await dependencyService.deleteDependency(dependency, userId);
 

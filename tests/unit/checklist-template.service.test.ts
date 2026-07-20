@@ -34,7 +34,7 @@ describe("ChecklistTemplateService", () => {
     it("returns all templates for a workspace", async () => {
       prismaMock.checklistTemplate.findMany.mockResolvedValueOnce([
         { id: "t-1", name: "Bug Template" },
-      ] as any);
+      ] as unknown);
 
       const result = await checklistTemplateService.getTemplates("ws-1");
       expect(prismaMock.checklistTemplate.findMany).toHaveBeenCalledWith(
@@ -51,7 +51,7 @@ describe("ChecklistTemplateService", () => {
     });
 
     it("returns a template by ID", async () => {
-      prismaMock.checklistTemplate.findUnique.mockResolvedValueOnce({ id: "t-1", name: "Bug Template" } as any);
+      prismaMock.checklistTemplate.findUnique.mockResolvedValueOnce({ id: "t-1", name: "Bug Template" } as unknown);
       const result = await checklistTemplateService.getTemplate("t-1");
       expect(result).toEqual({ id: "t-1", name: "Bug Template" });
     });
@@ -59,7 +59,7 @@ describe("ChecklistTemplateService", () => {
 
   describe("createTemplate", () => {
     it("creates a checklist template", async () => {
-      prismaMock.checklistTemplate.create.mockResolvedValueOnce({ id: "t-1" } as any);
+      prismaMock.checklistTemplate.create.mockResolvedValueOnce({ id: "t-1" } as unknown);
 
       const result = await checklistTemplateService.createTemplate({
         name: "Bug Template",
@@ -86,8 +86,8 @@ describe("ChecklistTemplateService", () => {
     });
 
     it("updates template fields", async () => {
-      prismaMock.checklistTemplate.findUnique.mockResolvedValueOnce({ id: "t-1" } as any);
-      prismaMock.checklistTemplate.update.mockResolvedValueOnce({ id: "t-1", name: "Updated" } as any);
+      prismaMock.checklistTemplate.findUnique.mockResolvedValueOnce({ id: "t-1" } as unknown);
+      prismaMock.checklistTemplate.update.mockResolvedValueOnce({ id: "t-1", name: "Updated" } as unknown);
 
       const result = await checklistTemplateService.updateTemplate("t-1", { name: "Updated" });
       expect(prismaMock.checklistTemplate.update).toHaveBeenCalledWith(
@@ -104,8 +104,8 @@ describe("ChecklistTemplateService", () => {
     });
 
     it("deletes template", async () => {
-      prismaMock.checklistTemplate.findUnique.mockResolvedValueOnce({ id: "t-1" } as any);
-      prismaMock.checklistTemplate.delete.mockResolvedValueOnce({ id: "t-1" } as any);
+      prismaMock.checklistTemplate.findUnique.mockResolvedValueOnce({ id: "t-1" } as unknown);
+      prismaMock.checklistTemplate.delete.mockResolvedValueOnce({ id: "t-1" } as unknown);
       await checklistTemplateService.deleteTemplate("t-1");
       expect(prismaMock.checklistTemplate.delete).toHaveBeenCalledWith({ where: { id: "t-1" } });
     });
@@ -120,7 +120,7 @@ describe("ChecklistTemplateService", () => {
     });
 
     it("throws NotFoundException if parent task not found", async () => {
-      prismaMock.checklistTemplate.findUnique.mockResolvedValueOnce({ id: "t-1", items: [] } as any);
+      prismaMock.checklistTemplate.findUnique.mockResolvedValueOnce({ id: "t-1", items: [] } as unknown);
       taskExtrasRepositoryMock.findTaskById.mockResolvedValueOnce(null);
 
       await expect(
@@ -131,7 +131,7 @@ describe("ChecklistTemplateService", () => {
     it("throws NotFoundException if no status found", async () => {
       prismaMock.checklistTemplate.findUnique.mockResolvedValueOnce({
         id: "t-1", items: ["Item 1"],
-      } as any);
+      } as unknown);
       taskExtrasRepositoryMock.findTaskById.mockResolvedValueOnce({
         id: "task-1", projectId: "proj-1", organizationId: "org-1",
       });
@@ -145,7 +145,7 @@ describe("ChecklistTemplateService", () => {
     it("creates subtasks from template items and uses todo status", async () => {
       prismaMock.checklistTemplate.findUnique.mockResolvedValueOnce({
         id: "t-1", items: ["Reproduce", "Fix"],
-      } as any);
+      } as unknown);
       taskExtrasRepositoryMock.findTaskById.mockResolvedValueOnce({
         id: "task-1", projectId: "proj-1", organizationId: "org-1",
       });
@@ -174,7 +174,7 @@ describe("ChecklistTemplateService", () => {
     it("uses first status if no todo status found", async () => {
       prismaMock.checklistTemplate.findUnique.mockResolvedValueOnce({
         id: "t-1", items: ["Step 1"],
-      } as any);
+      } as unknown);
       taskExtrasRepositoryMock.findTaskById.mockResolvedValueOnce({
         id: "task-1", projectId: "proj-1", organizationId: "org-1",
       });

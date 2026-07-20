@@ -142,8 +142,8 @@ export const projectService = {
         name: s.name,
         category: s.category,
         order: s.order,
-        color: (s as any).color || defaults.color,
-        progressWeight: (s as any).progressWeight !== undefined ? (s as any).progressWeight : defaults.progressWeight,
+        color: (s as { color?: string }).color || defaults.color,
+        progressWeight: (s as { progressWeight?: number }).progressWeight !== undefined ? (s as { progressWeight?: number }).progressWeight : defaults.progressWeight,
       };
     });
 
@@ -200,7 +200,7 @@ export const projectService = {
                     ]
                   }
                 ]
-              } as any,
+              } as Record<string, unknown>,
               plainText: "Welcome to Veylo Docs! This is your project's collaborative document workspace.",
               order: 0,
               createdBy: creatorId,

@@ -1,4 +1,5 @@
 import { taskRepository } from "@/app/repositories/task.repository";
+import { TaskUpdateRequest } from "@/app/http/validators/task.validator";
 import { automationService } from "@/app/services/automation.service";
 import { notificationService } from "@/app/services/notification.service";
 import { workflowService } from "@/app/services/workflow.service";
@@ -725,7 +726,7 @@ export const taskService = {
     if (data.labelIds !== undefined) {
       updateData.labels = {
         deleteMany: {},
-        create: data.labelIds.map((labelId) => ({ labelId })),
+        create: data.labelIds.map((labelId: string) => ({ labelId })),
       };
     }
 

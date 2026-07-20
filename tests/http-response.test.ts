@@ -4,7 +4,7 @@ import { fail } from "../src/utils/http-response";
 
 describe("http-response", () => {
   it("fail: uses default status code 400", () => {
-    const res: any = {};
+    const res: unknown = {};
     res.status = vi.fn().mockReturnValue(res);
     res.json = vi.fn().mockReturnValue(res);
 
@@ -16,7 +16,7 @@ describe("http-response", () => {
   });
 
   it("fail: accepts custom status code", () => {
-    const res: any = {};
+    const res: unknown = {};
     res.status = vi.fn().mockReturnValue(res);
     res.json = vi.fn().mockReturnValue(res);
 

@@ -100,7 +100,8 @@ export const rbacController = {
         });
     }
 
-    const roles = await rbacService.getOrganizationRoles(orgId as string);
+    const search = req.query.search as string | undefined;
+    const roles = await rbacService.getOrganizationRoles(orgId as string, search);
     return res.status(200).json({ data: roles });
   }),
 

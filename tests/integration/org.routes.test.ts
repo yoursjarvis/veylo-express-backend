@@ -15,12 +15,12 @@ vi.mock("../../src/lib/auth/auth", async () => {
 });
 
 vi.mock("../../src/app/http/middlewares/rate-limit.middleware", () => ({
-  rateLimit: () => (req: any, res: any, next: any) => next(),
+  rateLimit: () => (req: unknown, res: unknown, next: unknown) => next(),
 }));
 
 import prisma from "@/lib/prisma";
 
-const prismaMock = prisma as any;
+const prismaMock = prisma as unknown;
 import { setMockUser } from "../helpers/auth";
 import { createUser, createOrganization } from "../helpers/factories";
 
@@ -66,7 +66,7 @@ describe("Org API Endpoint Integration Tests (/api/v1/org)", () => {
   describe("POST /api/v1/org/members/:id/ban", () => {
     it("bans user successfully", async () => {
       prismaMock.member.findFirst.mockReset();
-      prismaMock.member.findFirst.mockImplementation((args: any) => {
+      prismaMock.member.findFirst.mockImplementation((args: unknown) => {
         console.log(
           "DEBUG Mock findFirst called with:",
           JSON.stringify(args, null, 2),
@@ -96,7 +96,7 @@ describe("Org API Endpoint Integration Tests (/api/v1/org)", () => {
 
   describe("POST /api/v1/org/members/invite", () => {
     it("returns 400 if email is missing", async () => {
-      prismaMock.member.findFirst.mockImplementation((args: any) => {
+      prismaMock.member.findFirst.mockImplementation((args: unknown) => {
         if (args?.where?.userId === "user-123") {
           return Promise.resolve({ id: "caller", role: "owner" });
         }

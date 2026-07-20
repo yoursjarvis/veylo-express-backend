@@ -11,7 +11,7 @@ export const docRepository = {
     emoji?: string | null;
     icon?: string | null;
     coverImage?: string | null;
-    content?: any;
+    content?: Record<string, unknown>;
     plainText?: string | null;
     order?: number;
     createdBy: string;
@@ -27,7 +27,7 @@ export const docRepository = {
         emoji: data.emoji ?? null,
         icon: data.icon ?? null,
         coverImage: data.coverImage ?? null,
-        content: data.content ?? null,
+        content: (data.content ?? null) as unknown as object,
         plainText: data.plainText ?? null,
         order: data.order ?? 0,
         createdBy: data.createdBy,
@@ -80,7 +80,7 @@ export const docRepository = {
     emoji?: string | null;
     icon?: string | null;
     coverImage?: string | null;
-    content?: any;
+    content?: Record<string, unknown>;
     plainText?: string | null;
     order?: number;
     archived?: boolean;
@@ -248,7 +248,7 @@ export const docRepository = {
   },
 
   // Versions
-  async createVersion(data: { docId: string; organizationId: string; content: any; createdBy: string; version: number }) {
+  async createVersion(data: { docId: string; organizationId: string; content: Record<string, unknown>; createdBy: string; version: number }) {
     return prisma.projectDocVersion.create({
       data: {
         docId: data.docId,
@@ -406,14 +406,14 @@ export const docRepository = {
   },
 
   // Activities
-  async createActivity(data: { docId: string; userId: string; organizationId: string; action: string; metadata?: any }) {
+  async createActivity(data: { docId: string; userId: string; organizationId: string; action: string; metadata?: Record<string, unknown> }) {
     return prisma.projectDocActivity.create({
       data: {
         docId: data.docId,
         userId: data.userId,
         organizationId: data.organizationId,
         action: data.action,
-        metadata: data.metadata ?? null,
+        metadata: (data.metadata ?? null) as unknown as object,
       },
       include: {
         user: {

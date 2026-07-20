@@ -41,7 +41,7 @@ vi.mock("@/lib/prisma", () => ({
 import { sprintController } from "../src/app/http/controllers/sprint.controller";
 
 function createRes() {
-  const res: any = {};
+  const res: unknown = {};
   res.status = vi.fn().mockReturnValue(res);
   res.json = vi.fn().mockReturnValue(res);
   return res;
@@ -62,7 +62,7 @@ describe("sprintController", () => {
       };
       prismaMock.sprint.create.mockResolvedValueOnce(sprint);
 
-      const req: any = {
+      const req: unknown = {
         params: { projectId: "p1" },
         body: {
           name: "Sprint 1",
@@ -72,8 +72,9 @@ describe("sprintController", () => {
       };
       const res = createRes();
 
-      await (sprintController.createSprint as any)(req, res);
+      await (sprintController.createSprint as unknown)(req, res);
 
+      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1", "sprint:create");
       expect(prismaMock.sprint.create).toHaveBeenCalledWith({
         data: {
           name: "Sprint 1",
@@ -98,11 +99,12 @@ describe("sprintController", () => {
       const sprints = [{ id: "s1", name: "Sprint 1" }];
       prismaMock.sprint.findMany.mockResolvedValueOnce(sprints);
 
-      const req: any = { params: { projectId: "p1" } };
+      const req: unknown = { params: { projectId: "p1" } };
       const res = createRes();
 
-      await (sprintController.getSprints as any)(req, res);
+      await (sprintController.getSprints as unknown)(req, res);
 
+      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1", "sprint:read");
       expect(res.json).toHaveBeenCalledWith({
         success: true,
         message: "Sprints fetched successfully",
@@ -116,11 +118,12 @@ describe("sprintController", () => {
       const sprint = { id: "s1", name: "Sprint 1", projectId: "p1" };
       prismaMock.sprint.findUnique.mockResolvedValueOnce(sprint);
 
-      const req: any = { params: { id: "s1" } };
+      const req: unknown = { params: { id: "s1" } };
       const res = createRes();
 
-      await (sprintController.getSprint as any)(req, res);
+      await (sprintController.getSprint as unknown)(req, res);
 
+      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1", "sprint:read");
       expect(res.json).toHaveBeenCalledWith({
         success: true,
         message: "Sprint details fetched successfully",
@@ -131,11 +134,11 @@ describe("sprintController", () => {
     it("throws NotFoundException if sprint not found", async () => {
       prismaMock.sprint.findUnique.mockResolvedValueOnce(null);
 
-      const req: any = { params: { id: "s1" } };
+      const req: unknown = { params: { id: "s1" } };
       const res = createRes();
 
       await expect(
-        (sprintController.getSprint as any)(req, res),
+        (sprintController.getSprint as unknown)(req, res),
       ).rejects.toThrow("Sprint not found");
     });
   });
@@ -144,11 +147,11 @@ describe("sprintController", () => {
     it("throws NotFoundException if sprint not found", async () => {
       prismaMock.sprint.findUnique.mockResolvedValueOnce(null);
 
-      const req: any = { params: { id: "s1" }, body: { name: "New Name" } };
+      const req: unknown = { params: { id: "s1" }, body: { name: "New Name" } };
       const res = createRes();
 
       await expect(
-        (sprintController.updateSprint as any)(req, res),
+        (sprintController.updateSprint as unknown)(req, res),
       ).rejects.toThrow("Sprint not found");
     });
 
@@ -163,11 +166,12 @@ describe("sprintController", () => {
       const updated = { ...existing, name: "New Sprint" };
       prismaMock.sprint.update.mockResolvedValueOnce(updated);
 
-      const req: any = { params: { id: "s1" }, body: { name: "New Sprint" } };
+      const req: unknown = { params: { id: "s1" }, body: { name: "New Sprint" } };
       const res = createRes();
 
-      await (sprintController.updateSprint as any)(req, res);
+      await (sprintController.updateSprint as unknown)(req, res);
 
+      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1", "sprint:update");
       expect(prismaMock.sprint.update).toHaveBeenCalledWith({
         where: { id: "s1" },
         data: { name: "New Sprint" },
@@ -187,11 +191,11 @@ describe("sprintController", () => {
         id: "s-other-active",
       });
 
-      const req: any = { params: { id: "s1" }, body: { status: "active" } };
+      const req: unknown = { params: { id: "s1" }, body: { status: "active" } };
       const res = createRes();
 
       await expect(
-        (sprintController.updateSprint as any)(req, res),
+        (sprintController.updateSprint as unknown)(req, res),
       ).rejects.toThrow(
         "An active sprint already exists. Close it before starting a new one.",
       );
@@ -223,7 +227,7 @@ describe("sprintController", () => {
         status: "completed",
       });
 
-      const req: any = {
+      const req: unknown = {
         params: { id: "s1" },
         body: {
           status: "completed",
@@ -232,8 +236,9 @@ describe("sprintController", () => {
       };
       const res = createRes();
 
-      await (sprintController.updateSprint as any)(req, res);
+      await (sprintController.updateSprint as unknown)(req, res);
 
+      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1", "sprint:update");
       expect(prismaMock.task.updateMany).toHaveBeenCalledWith({
         where: { id: { in: ["t1", "t2"] } },
         data: { sprintId: "550e8400-e29b-41d4-a716-446655440002" },
@@ -247,11 +252,12 @@ describe("sprintController", () => {
       const sprint = { id: "s1", projectId: "p1" };
       prismaMock.sprint.findUnique.mockResolvedValueOnce(sprint);
 
-      const req: any = { params: { id: "s1" } };
+      const req: unknown = { params: { id: "s1" } };
       const res = createRes();
 
-      await (sprintController.deleteSprint as any)(req, res);
+      await (sprintController.deleteSprint as unknown)(req, res);
 
+      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1", "sprint:delete");
       expect(prismaMock.sprint.delete).toHaveBeenCalledWith({
         where: { id: "s1" },
       });
@@ -265,11 +271,11 @@ describe("sprintController", () => {
     it("throws NotFoundException if sprint not found", async () => {
       prismaMock.sprint.findUnique.mockResolvedValueOnce(null);
 
-      const req: any = { params: { id: "s1" } };
+      const req: unknown = { params: { id: "s1" } };
       const res = createRes();
 
       await expect(
-        (sprintController.deleteSprint as any)(req, res),
+        (sprintController.deleteSprint as unknown)(req, res),
       ).rejects.toThrow("Sprint not found");
     });
   });

@@ -29,7 +29,7 @@ vi.mock("../src/utils/config", () => ({ config: configMock }));
 import { authController } from "../src/app/http/controllers/auth.controller";
 
 function createRes() {
-  const res: any = {};
+  const res: unknown = {};
   res.status = vi.fn().mockReturnValue(res);
   res.json = vi.fn().mockReturnValue(res);
   return res;
@@ -44,7 +44,7 @@ describe("authController", () => {
   it("signup: validates input, calls service, and returns ok", async () => {
     authServiceMock.signUp.mockResolvedValueOnce(undefined);
 
-    const req: any = {
+    const req: unknown = {
       body: {
         first_name: "Jane",
         last_name: "Doe",
@@ -54,7 +54,7 @@ describe("authController", () => {
     };
     const res = createRes();
 
-    await (authController.signup as any)(req, res);
+    await (authController.signup as unknown)(req, res);
 
     expect(authServiceMock.signUp).toHaveBeenCalledWith(req, res, {
       firstName: "Jane",
@@ -73,12 +73,12 @@ describe("authController", () => {
   it("login: validates input, calls service, and returns ok", async () => {
     authServiceMock.login.mockResolvedValueOnce(undefined);
 
-    const req: any = {
+    const req: unknown = {
       body: { email: "jane@example.com", password: "password" },
     };
     const res = createRes();
 
-    await (authController.login as any)(req, res);
+    await (authController.login as unknown)(req, res);
 
     expect(authServiceMock.login).toHaveBeenCalledWith(req, res, {
       email: "jane@example.com",
@@ -93,10 +93,10 @@ describe("authController", () => {
 
   it("logout: calls service and returns ok", async () => {
     authServiceMock.logout.mockResolvedValueOnce(undefined);
-    const req: any = {};
+    const req: unknown = {};
     const res = createRes();
 
-    await (authController.logout as any)(req, res);
+    await (authController.logout as unknown)(req, res);
 
     expect(authServiceMock.logout).toHaveBeenCalledWith(req, res);
     expect(res.json).toHaveBeenCalledWith({
@@ -108,10 +108,10 @@ describe("authController", () => {
 
   it("logoutAll: calls service and returns ok", async () => {
     authServiceMock.logoutAll.mockResolvedValueOnce(undefined);
-    const req: any = {};
+    const req: unknown = {};
     const res = createRes();
 
-    await (authController.logoutAll as any)(req, res);
+    await (authController.logoutAll as unknown)(req, res);
 
     expect(authServiceMock.logoutAll).toHaveBeenCalledWith(req, res);
     expect(res.json).toHaveBeenCalledWith({
@@ -127,10 +127,10 @@ describe("authController", () => {
       session: { id: "s1" },
     });
 
-    const req: any = {};
+    const req: unknown = {};
     const res = createRes();
 
-    await (authController.me as any)(req, res);
+    await (authController.me as unknown)(req, res);
 
     expect(authServiceMock.me).toHaveBeenCalledWith(req, res);
     expect(res.json).toHaveBeenCalledWith({
@@ -142,10 +142,10 @@ describe("authController", () => {
 
   it("me: returns nulls when service returns nothing", async () => {
     authServiceMock.me.mockResolvedValueOnce(undefined);
-    const req: any = {};
+    const req: unknown = {};
     const res = createRes();
 
-    await (authController.me as any)(req, res);
+    await (authController.me as unknown)(req, res);
 
     expect(res.json).toHaveBeenCalledWith({
       success: true,
@@ -160,10 +160,10 @@ describe("authController", () => {
       session: { id: "s2" },
     });
 
-    const req: any = {};
+    const req: unknown = {};
     const res = createRes();
 
-    await (authController.refresh as any)(req, res);
+    await (authController.refresh as unknown)(req, res);
 
     expect(authServiceMock.me).toHaveBeenCalledWith(req, res);
     expect(res.json).toHaveBeenCalledWith({
@@ -175,10 +175,10 @@ describe("authController", () => {
 
   it("refresh: returns nulls when service returns nothing", async () => {
     authServiceMock.me.mockResolvedValueOnce(undefined);
-    const req: any = {};
+    const req: unknown = {};
     const res = createRes();
 
-    await (authController.refresh as any)(req, res);
+    await (authController.refresh as unknown)(req, res);
 
     expect(res.json).toHaveBeenCalledWith({
       success: true,
@@ -190,12 +190,12 @@ describe("authController", () => {
   it("forgotPassword: uses provided redirect_to without reading config", async () => {
     authServiceMock.requestPasswordReset.mockResolvedValueOnce(undefined);
 
-    const req: any = {
+    const req: unknown = {
       body: { email: "jane@example.com", redirect_to: "https://acme.com/r" },
     };
     const res = createRes();
 
-    await (authController.forgotPassword as any)(req, res);
+    await (authController.forgotPassword as unknown)(req, res);
 
     expect(configMock).not.toHaveBeenCalled();
     expect(authServiceMock.requestPasswordReset).toHaveBeenCalledWith(req, {
@@ -218,10 +218,10 @@ describe("authController", () => {
       throw new Error(`unexpected config key: ${key}`);
     });
 
-    const req: any = { body: { email: "jane@example.com" } };
+    const req: unknown = { body: { email: "jane@example.com" } };
     const res = createRes();
 
-    await (authController.forgotPassword as any)(req, res);
+    await (authController.forgotPassword as unknown)(req, res);
 
     expect(authServiceMock.requestPasswordReset).toHaveBeenCalledWith(req, {
       email: "jane@example.com",
@@ -237,10 +237,10 @@ describe("authController", () => {
       throw new Error(`unexpected config key: ${key}`);
     });
 
-    const req: any = { body: { email: "jane@example.com" } };
+    const req: unknown = { body: { email: "jane@example.com" } };
     const res = createRes();
 
-    await (authController.forgotPassword as any)(req, res);
+    await (authController.forgotPassword as unknown)(req, res);
 
     expect(authServiceMock.requestPasswordReset).toHaveBeenCalledWith(req, {
       email: "jane@example.com",
@@ -250,7 +250,7 @@ describe("authController", () => {
 
   it("resetPassword: validates input, calls service, and returns ok", async () => {
     authServiceMock.resetPassword.mockResolvedValueOnce(undefined);
-    const req: any = {
+    const req: unknown = {
       body: {
         token: "0123456789TOKEN",
         new_password: "secure-password",
@@ -258,7 +258,7 @@ describe("authController", () => {
     };
     const res = createRes();
 
-    await (authController.resetPassword as any)(req, res);
+    await (authController.resetPassword as unknown)(req, res);
 
     expect(authServiceMock.resetPassword).toHaveBeenCalledWith(req, res, {
       token: "0123456789TOKEN",
@@ -273,10 +273,10 @@ describe("authController", () => {
 
   it("verifyEmail: validates query, calls service, and returns ok", async () => {
     authServiceMock.verifyEmail.mockResolvedValueOnce(undefined);
-    const req: any = { query: { token: "0123456789" } };
+    const req: unknown = { query: { token: "0123456789" } };
     const res = createRes();
 
-    await (authController.verifyEmail as any)(req, res);
+    await (authController.verifyEmail as unknown)(req, res);
 
     expect(authServiceMock.verifyEmail).toHaveBeenCalledWith(
       req,
@@ -292,12 +292,12 @@ describe("authController", () => {
 
   it("changePassword: validates input, calls service, and returns ok", async () => {
     authServiceMock.changePassword.mockResolvedValueOnce(undefined);
-    const req: any = {
+    const req: unknown = {
       body: { current_password: "current", new_password: "secure-password" },
     };
     const res = createRes();
 
-    await (authController.changePassword as any)(req, res);
+    await (authController.changePassword as unknown)(req, res);
 
     expect(authServiceMock.changePassword).toHaveBeenCalledWith(req, res, {
       currentPassword: "current",
@@ -312,10 +312,10 @@ describe("authController", () => {
 
   it("sessions: returns sessions and current session id when present", async () => {
     authServiceMock.listSessions.mockResolvedValueOnce([{ id: 1 }]);
-    const req: any = { auth: { session: { id: "abc" } } };
+    const req: unknown = { auth: { session: { id: "abc" } } };
     const res = createRes();
 
-    await (authController.sessions as any)(req, res);
+    await (authController.sessions as unknown)(req, res);
 
     expect(authServiceMock.listSessions).toHaveBeenCalledWith(req);
     expect(res.json).toHaveBeenCalledWith({
@@ -327,10 +327,10 @@ describe("authController", () => {
 
   it("sessions: returns undefined current session id when missing", async () => {
     authServiceMock.listSessions.mockResolvedValueOnce([]);
-    const req: any = {};
+    const req: unknown = {};
     const res = createRes();
 
-    await (authController.sessions as any)(req, res);
+    await (authController.sessions as unknown)(req, res);
 
     expect(res.json).toHaveBeenCalledWith({
       success: true,
@@ -341,10 +341,10 @@ describe("authController", () => {
 
   it("revokeSession: converts param id to number, calls service, and returns ok", async () => {
     authServiceMock.revokeSession.mockResolvedValueOnce(undefined);
-    const req: any = { params: { id: "42" } };
+    const req: unknown = { params: { id: "42" } };
     const res = createRes();
 
-    await (authController.revokeSession as any)(req, res);
+    await (authController.revokeSession as unknown)(req, res);
 
     expect(authServiceMock.revokeSession).toHaveBeenCalledWith(req, "42");
     expect(res.json).toHaveBeenCalledWith({

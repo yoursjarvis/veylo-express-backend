@@ -78,7 +78,7 @@ vi.mock("../src/lib/redis", () => ({
 import { orgController } from "../src/app/http/controllers/org.controller";
 
 function createRes() {
-  const res: any = {};
+  const res: unknown = {};
   res.status = vi.fn().mockReturnValue(res);
   res.json = vi.fn().mockReturnValue(res);
   return res;
@@ -93,12 +93,12 @@ describe("orgController", () => {
     it("returns 401 Unauthorized if no active user session is found", async () => {
       mockGetSession.mockResolvedValueOnce(null);
 
-      const req: any = {
+      const req: unknown = {
         body: { name: "Org Name", slug: "slug1", workspaceName: "ws1" },
       };
       const res = createRes();
 
-      await (orgController.setupOrganization as any)(req, res);
+      await (orgController.setupOrganization as unknown)(req, res);
 
       expect(res.status).toHaveBeenCalledWith(401);
       expect(res.json).toHaveBeenCalledWith({ message: "Unauthorized" });
@@ -112,13 +112,13 @@ describe("orgController", () => {
       prismaMock.user.findUnique.mockResolvedValueOnce(null);
       prismaMock.session.findUnique.mockResolvedValueOnce(null);
 
-      const req: any = {
+      const req: unknown = {
         body: { name: "Org Name", slug: "slug1", workspaceName: "ws1" },
       };
       const res = createRes();
 
       await expect(
-        (orgController.setupOrganization as any)(req, res),
+        (orgController.setupOrganization as unknown)(req, res),
       ).rejects.toThrow(
         "Unauthorized: Session is stale or invalid in the database. Please log out and log in again.",
       );
@@ -136,13 +136,13 @@ describe("orgController", () => {
         role: { name: "owner" },
       });
 
-      const req: any = {
+      const req: unknown = {
         body: { name: "Org Name", slug: "slug1", workspaceName: "ws1" },
       };
       const res = createRes();
 
       await expect(
-        (orgController.setupOrganization as any)(req, res),
+        (orgController.setupOrganization as unknown)(req, res),
       ).rejects.toThrow("You have already created an organization.");
     });
 
@@ -159,13 +159,13 @@ describe("orgController", () => {
         slug: "slug1",
       });
 
-      const req: any = {
+      const req: unknown = {
         body: { name: "Org Name", slug: "slug1", workspaceName: "ws1" },
       };
       const res = createRes();
 
       await expect(
-        (orgController.setupOrganization as any)(req, res),
+        (orgController.setupOrganization as unknown)(req, res),
       ).rejects.toThrow("This URL slug is already taken.");
     });
 
@@ -192,12 +192,12 @@ describe("orgController", () => {
       prismaMock.workspace.create.mockResolvedValueOnce(createdWorkspace);
       prismaMock.session.update.mockResolvedValueOnce({ id: "s1" });
 
-      const req: any = {
+      const req: unknown = {
         body: { name: "New Org", slug: "new-org", workspaceName: "New Ws" },
       };
       const res = createRes();
 
-      await (orgController.setupOrganization as any)(req, res);
+      await (orgController.setupOrganization as unknown)(req, res);
 
       expect(prismaMock.organization.create).toHaveBeenCalledWith({
         data: { name: "New Org", slug: "new-org", logo: null, ownerId: "u1" },
@@ -242,7 +242,7 @@ describe("orgController", () => {
       mockMediaService.getUrl.mockResolvedValueOnce("http://s3/logo.png");
       prismaMock.organization.update.mockResolvedValueOnce({});
 
-      const req: any = {
+      const req: unknown = {
         body: { name: "New Org", slug: "new-org", workspaceName: "New Ws" },
         file: {
           originalname: "logo.png",
@@ -253,7 +253,7 @@ describe("orgController", () => {
       };
       const res = createRes();
 
-      await (orgController.setupOrganization as any)(req, res);
+      await (orgController.setupOrganization as unknown)(req, res);
 
       expect(mockMediaService.addMedia).toHaveBeenCalled();
       expect(prismaMock.organization.update).toHaveBeenCalledWith({

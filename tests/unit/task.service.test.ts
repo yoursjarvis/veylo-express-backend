@@ -81,21 +81,21 @@ describe("TaskService", () => {
       })).rejects.toThrow("Selected status does not belong to this project");
 
       // Case 2: Sprint mismatch
-      vi.mocked(taskRepository.findTaskStatusById).mockResolvedValueOnce({ id: "status-1" } as any);
+      vi.mocked(taskRepository.findTaskStatusById).mockResolvedValueOnce({ id: "status-1" } as unknown);
       vi.mocked(taskRepository.findSprintById).mockResolvedValueOnce(null);
       await expect(taskService.createTask("proj-1", "user-1", "org-1", {
         title: "T1", statusId: "status-1", type: "task", priority: "medium", sprintId: "sprint-1",
       })).rejects.toThrow("Selected sprint does not belong to this project");
 
       // Case 3: Epic mismatch
-      vi.mocked(taskRepository.findTaskStatusById).mockResolvedValueOnce({ id: "status-1" } as any);
+      vi.mocked(taskRepository.findTaskStatusById).mockResolvedValueOnce({ id: "status-1" } as unknown);
       vi.mocked(taskRepository.findEpicById).mockResolvedValueOnce(null);
       await expect(taskService.createTask("proj-1", "user-1", "org-1", {
         title: "T1", statusId: "status-1", type: "task", priority: "medium", epicId: "epic-1",
       })).rejects.toThrow("Selected epic does not belong to this project");
 
       // Case 4: Milestone mismatch
-      vi.mocked(taskRepository.findTaskStatusById).mockResolvedValueOnce({ id: "status-1" } as any);
+      vi.mocked(taskRepository.findTaskStatusById).mockResolvedValueOnce({ id: "status-1" } as unknown);
       vi.mocked(taskRepository.findMilestoneById).mockResolvedValueOnce(null);
       await expect(taskService.createTask("proj-1", "user-1", "org-1", {
         title: "T1", statusId: "status-1", type: "task", priority: "medium", milestoneId: "milestone-1",
@@ -103,9 +103,9 @@ describe("TaskService", () => {
     });
 
     it("should create a task successfully", async () => {
-      vi.mocked(taskRepository.findTaskStatusById).mockResolvedValueOnce({ id: "status-1" } as any);
-      vi.mocked(taskRepository.incrementTaskSequence).mockResolvedValueOnce({ projectKey: "PROJ", taskSequence: 1 } as any);
-      vi.mocked(taskRepository.createTask).mockResolvedValueOnce({ id: "task-1", title: "Task 1", organizationId: "org-1" } as any);
+      vi.mocked(taskRepository.findTaskStatusById).mockResolvedValueOnce({ id: "status-1" } as unknown);
+      vi.mocked(taskRepository.incrementTaskSequence).mockResolvedValueOnce({ projectKey: "PROJ", taskSequence: 1 } as unknown);
+      vi.mocked(taskRepository.createTask).mockResolvedValueOnce({ id: "task-1", title: "Task 1", organizationId: "org-1" } as unknown);
 
       const result = await taskService.createTask("proj-1", "user-1", "org-1", {
         title: "Task 1",
@@ -129,7 +129,7 @@ describe("TaskService", () => {
     });
 
     it("should fetch tasks with multiple search and filters options", async () => {
-      vi.mocked(taskRepository.findProjectById).mockResolvedValueOnce({ id: "proj-1", organizationId: "org-1", workspaceId: "ws-1" } as any);
+      vi.mocked(taskRepository.findProjectById).mockResolvedValueOnce({ id: "proj-1", organizationId: "org-1", workspaceId: "ws-1" } as unknown);
       vi.mocked(taskRepository.findMember).mockResolvedValueOnce(null); // not admin
       vi.mocked(taskRepository.findWorkspaceMember).mockResolvedValueOnce(null);
 
@@ -161,7 +161,7 @@ describe("TaskService", () => {
     });
 
     it("should apply empty, not_empty, contains, and not_contains filter operators", async () => {
-      vi.mocked(taskRepository.findProjectById).mockResolvedValueOnce({ id: "proj-1", organizationId: "org-1", workspaceId: "ws-1" } as any);
+      vi.mocked(taskRepository.findProjectById).mockResolvedValueOnce({ id: "proj-1", organizationId: "org-1", workspaceId: "ws-1" } as unknown);
       vi.mocked(taskRepository.findMember).mockResolvedValueOnce(null);
       vi.mocked(taskRepository.findWorkspaceMember).mockResolvedValueOnce(null);
 
@@ -184,7 +184,7 @@ describe("TaskService", () => {
     });
 
     it("should catch and suppress invalid JSON in filters", async () => {
-      vi.mocked(taskRepository.findProjectById).mockResolvedValueOnce({ id: "proj-1", organizationId: "org-1", workspaceId: "ws-1" } as any);
+      vi.mocked(taskRepository.findProjectById).mockResolvedValueOnce({ id: "proj-1", organizationId: "org-1", workspaceId: "ws-1" } as unknown);
       vi.mocked(taskRepository.findMember).mockResolvedValueOnce(null);
       vi.mocked(taskRepository.findWorkspaceMember).mockResolvedValueOnce(null);
 
@@ -204,8 +204,8 @@ describe("TaskService", () => {
 
     it("should throw ForbiddenException if task is private and unauthorized", async () => {
       const task = { id: "task-1", isPrivate: true, projectId: "proj-1", organizationId: "org-1" };
-      vi.mocked(taskRepository.findTaskDetails).mockResolvedValueOnce(task as any);
-      vi.mocked(taskRepository.findProjectById).mockResolvedValueOnce({ id: "proj-1", workspaceId: "ws-1" } as any);
+      vi.mocked(taskRepository.findTaskDetails).mockResolvedValueOnce(task as unknown);
+      vi.mocked(taskRepository.findProjectById).mockResolvedValueOnce({ id: "proj-1", workspaceId: "ws-1" } as unknown);
       vi.mocked(rbacService.authorize).mockResolvedValueOnce(false);
 
       await expect(taskService.getTask("task-1", "user-1")).rejects.toThrow("Forbidden: This task is private");
@@ -213,8 +213,8 @@ describe("TaskService", () => {
 
     it("should return task details with attachments", async () => {
       const task = { id: "task-1", isPrivate: false };
-      vi.mocked(taskRepository.findTaskDetails).mockResolvedValueOnce(task as any);
-      vi.mocked(mediaService.getMedia).mockResolvedValueOnce([{ id: "m-1" }] as any);
+      vi.mocked(taskRepository.findTaskDetails).mockResolvedValueOnce(task as unknown);
+      vi.mocked(mediaService.getMedia).mockResolvedValueOnce([{ id: "m-1" }] as unknown);
       vi.mocked(mediaService.generateUrl).mockReturnValueOnce("https://url.com");
 
       const result = await taskService.getTask("task-1");
@@ -250,13 +250,13 @@ describe("TaskService", () => {
         isPrivate: false,
         organizationId: "org-1",
       };
-      vi.mocked(taskRepository.findTaskWithRelations).mockResolvedValueOnce(task as any);
-      vi.mocked(taskRepository.findTaskStatusById).mockResolvedValue({ id: "status-done", name: "Done", category: "done" } as any);
-      vi.mocked(taskRepository.findSprintById).mockResolvedValue({ id: "sprint-2", name: "Sprint 2" } as any);
-      vi.mocked(taskRepository.findUserById).mockResolvedValue({ id: "user-4", name: "John" } as any);
-      vi.mocked(taskRepository.findEpicById).mockResolvedValue({ id: "epic-2", title: "Epic 2" } as any);
-      vi.mocked(taskRepository.findMilestoneById).mockResolvedValue({ id: "milestone-2", title: "Milestone 2" } as any);
-      vi.mocked(taskRepository.updateTask).mockResolvedValueOnce({ id: "task-1" } as any);
+      vi.mocked(taskRepository.findTaskWithRelations).mockResolvedValueOnce(task as unknown);
+      vi.mocked(taskRepository.findTaskStatusById).mockResolvedValue({ id: "status-done", name: "Done", category: "done" } as unknown);
+      vi.mocked(taskRepository.findSprintById).mockResolvedValue({ id: "sprint-2", name: "Sprint 2" } as unknown);
+      vi.mocked(taskRepository.findUserById).mockResolvedValue({ id: "user-4", name: "John" } as unknown);
+      vi.mocked(taskRepository.findEpicById).mockResolvedValue({ id: "epic-2", title: "Epic 2" } as unknown);
+      vi.mocked(taskRepository.findMilestoneById).mockResolvedValue({ id: "milestone-2", title: "Milestone 2" } as unknown);
+      vi.mocked(taskRepository.updateTask).mockResolvedValueOnce({ id: "task-1" } as unknown);
 
       const updateData = {
         statusId: "status-done",
@@ -284,8 +284,8 @@ describe("TaskService", () => {
   describe("delete, restore, forceDelete", () => {
     it("should delete, restore, and forceDelete tasks", async () => {
       const task = { id: "task-1", title: "T1", organizationId: "org-1" };
-      vi.mocked(taskRepository.findTaskById).mockResolvedValueOnce(task as any);
-      vi.mocked(taskRepository.findTaskByIdWithTrashed).mockResolvedValue(task as any);
+      vi.mocked(taskRepository.findTaskById).mockResolvedValueOnce(task as unknown);
+      vi.mocked(taskRepository.findTaskByIdWithTrashed).mockResolvedValue(task as unknown);
 
       await taskService.deleteTask("task-1", "user-1");
       expect(taskRepository.deleteTask).toHaveBeenCalledWith("task-1");
@@ -322,7 +322,7 @@ describe("TaskService", () => {
     };
 
     it("should throw BadRequestException if new status doesn't belong to project", async () => {
-      vi.mocked(taskRepository.findTaskWithRelations).mockResolvedValueOnce(baseTask as any);
+      vi.mocked(taskRepository.findTaskWithRelations).mockResolvedValueOnce(baseTask as unknown);
       vi.mocked(taskRepository.findTaskStatusById).mockResolvedValueOnce(null);
 
       await expect(
@@ -331,8 +331,8 @@ describe("TaskService", () => {
     });
 
     it("should set null startDate when startDate is explicitly null", async () => {
-      vi.mocked(taskRepository.findTaskWithRelations).mockResolvedValueOnce(baseTask as any);
-      vi.mocked(taskRepository.updateTask).mockResolvedValueOnce({ id: "task-1" } as any);
+      vi.mocked(taskRepository.findTaskWithRelations).mockResolvedValueOnce(baseTask as unknown);
+      vi.mocked(taskRepository.updateTask).mockResolvedValueOnce({ id: "task-1" } as unknown);
 
       await taskService.updateTask("task-1", "user-1", { startDate: null });
 
@@ -341,8 +341,8 @@ describe("TaskService", () => {
     });
 
     it("should set null dueDate when dueDate is explicitly null", async () => {
-      vi.mocked(taskRepository.findTaskWithRelations).mockResolvedValueOnce(baseTask as any);
-      vi.mocked(taskRepository.updateTask).mockResolvedValueOnce({ id: "task-1" } as any);
+      vi.mocked(taskRepository.findTaskWithRelations).mockResolvedValueOnce(baseTask as unknown);
+      vi.mocked(taskRepository.updateTask).mockResolvedValueOnce({ id: "task-1" } as unknown);
 
       await taskService.updateTask("task-1", "user-1", { dueDate: null });
 
@@ -352,8 +352,8 @@ describe("TaskService", () => {
 
     it("should mark task private and log activity", async () => {
       const taskWithPrivate = { ...baseTask, isPrivate: false };
-      vi.mocked(taskRepository.findTaskWithRelations).mockResolvedValueOnce(taskWithPrivate as any);
-      vi.mocked(taskRepository.updateTask).mockResolvedValueOnce({ id: "task-1" } as any);
+      vi.mocked(taskRepository.findTaskWithRelations).mockResolvedValueOnce(taskWithPrivate as unknown);
+      vi.mocked(taskRepository.updateTask).mockResolvedValueOnce({ id: "task-1" } as unknown);
 
       await taskService.updateTask("task-1", "user-1", { isPrivate: true });
 
@@ -364,13 +364,13 @@ describe("TaskService", () => {
       const taskWithDoneStatus = {
         ...baseTask, statusId: "status-1", status: { name: "Todo", category: "todo" }, priority: "medium",
       };
-      vi.mocked(taskRepository.findTaskWithRelations).mockResolvedValueOnce(taskWithDoneStatus as any);
+      vi.mocked(taskRepository.findTaskWithRelations).mockResolvedValueOnce(taskWithDoneStatus as unknown);
       vi.mocked(taskRepository.findTaskStatusById).mockResolvedValueOnce({
         id: "status-done", name: "Done", category: "done",
-      } as any);
+      } as unknown);
       vi.mocked(workflowService.validateTransition).mockResolvedValueOnce(undefined);
       vi.mocked(taskRepository.completeAllSubtasks).mockResolvedValueOnce(undefined);
-      vi.mocked(taskRepository.updateTask).mockResolvedValueOnce({ id: "task-1" } as any);
+      vi.mocked(taskRepository.updateTask).mockResolvedValueOnce({ id: "task-1" } as unknown);
       // Make automation.handleTaskStatusChanged throw (caught internally)
       vi.mocked(automationService.handleTaskStatusChanged).mockRejectedValueOnce(new Error("automation error"));
 
@@ -383,8 +383,8 @@ describe("TaskService", () => {
     it("should suppress automation error for priority change", async () => {
       vi.mocked(taskRepository.findTaskWithRelations).mockResolvedValueOnce({
         ...baseTask, priority: "medium",
-      } as any);
-      vi.mocked(taskRepository.updateTask).mockResolvedValueOnce({ id: "task-1" } as any);
+      } as unknown);
+      vi.mocked(taskRepository.updateTask).mockResolvedValueOnce({ id: "task-1" } as unknown);
       vi.mocked(automationService.handlePriorityChanged).mockRejectedValueOnce(new Error("priority error"));
 
       // Should not throw
@@ -396,7 +396,7 @@ describe("TaskService", () => {
     it("should throw BadRequestException when epic doesn't belong to project", async () => {
       vi.mocked(taskRepository.findTaskWithRelations).mockResolvedValueOnce({
         ...baseTask, epicId: null,
-      } as any);
+      } as unknown);
       vi.mocked(taskRepository.findEpicById).mockResolvedValueOnce(null);
 
       await expect(
@@ -407,7 +407,7 @@ describe("TaskService", () => {
     it("should throw BadRequestException when milestone doesn't belong to project", async () => {
       vi.mocked(taskRepository.findTaskWithRelations).mockResolvedValueOnce({
         ...baseTask, milestoneId: null,
-      } as any);
+      } as unknown);
       vi.mocked(taskRepository.findMilestoneById).mockResolvedValueOnce(null);
 
       await expect(
@@ -423,8 +423,8 @@ describe("TaskService", () => {
         milestoneId: "milestone-1",
         milestone: { title: "Milestone 1" },
       };
-      vi.mocked(taskRepository.findTaskWithRelations).mockResolvedValueOnce(taskWithEpicAndMilestone as any);
-      vi.mocked(taskRepository.updateTask).mockResolvedValueOnce({ id: "task-1" } as any);
+      vi.mocked(taskRepository.findTaskWithRelations).mockResolvedValueOnce(taskWithEpicAndMilestone as unknown);
+      vi.mocked(taskRepository.updateTask).mockResolvedValueOnce({ id: "task-1" } as unknown);
 
       await taskService.updateTask("task-1", "user-1", { epicId: null, milestoneId: null });
 
@@ -436,7 +436,7 @@ describe("TaskService", () => {
     it("should throw BadRequestException when sprint doesn't belong to project", async () => {
       vi.mocked(taskRepository.findTaskWithRelations).mockResolvedValueOnce({
         ...baseTask, sprintId: null,
-      } as any);
+      } as unknown);
       vi.mocked(taskRepository.findSprintById).mockResolvedValueOnce(null);
 
       await expect(
@@ -446,8 +446,8 @@ describe("TaskService", () => {
 
     it("should clear sprintId to null", async () => {
       const taskWithSprint = { ...baseTask, sprintId: "sprint-1", sprint: { name: "Sprint 1" } };
-      vi.mocked(taskRepository.findTaskWithRelations).mockResolvedValueOnce(taskWithSprint as any);
-      vi.mocked(taskRepository.updateTask).mockResolvedValueOnce({ id: "task-1" } as any);
+      vi.mocked(taskRepository.findTaskWithRelations).mockResolvedValueOnce(taskWithSprint as unknown);
+      vi.mocked(taskRepository.updateTask).mockResolvedValueOnce({ id: "task-1" } as unknown);
 
       await taskService.updateTask("task-1", "user-1", { sprintId: null });
 
@@ -457,8 +457,8 @@ describe("TaskService", () => {
 
     it("should change labels (add and remove)", async () => {
       const taskWithLabel = { ...baseTask, labelIds: ["label-old"] };
-      vi.mocked(taskRepository.findTaskWithRelations).mockResolvedValueOnce(taskWithLabel as any);
-      vi.mocked(taskRepository.updateTask).mockResolvedValueOnce({ id: "task-1" } as any);
+      vi.mocked(taskRepository.findTaskWithRelations).mockResolvedValueOnce(taskWithLabel as unknown);
+      vi.mocked(taskRepository.updateTask).mockResolvedValueOnce({ id: "task-1" } as unknown);
 
       await taskService.updateTask("task-1", "user-1", { labelIds: ["label-new"] });
 
@@ -467,8 +467,8 @@ describe("TaskService", () => {
 
     it("should log estimate change", async () => {
       const taskWithEstimate = { ...baseTask, estimate: 3 };
-      vi.mocked(taskRepository.findTaskWithRelations).mockResolvedValueOnce(taskWithEstimate as any);
-      vi.mocked(taskRepository.updateTask).mockResolvedValueOnce({ id: "task-1" } as any);
+      vi.mocked(taskRepository.findTaskWithRelations).mockResolvedValueOnce(taskWithEstimate as unknown);
+      vi.mocked(taskRepository.updateTask).mockResolvedValueOnce({ id: "task-1" } as unknown);
 
       await taskService.updateTask("task-1", "user-1", { estimate: 5 });
 
@@ -478,7 +478,7 @@ describe("TaskService", () => {
     it("should throw BadRequestException when assignee not found", async () => {
       vi.mocked(taskRepository.findTaskWithRelations).mockResolvedValueOnce({
         ...baseTask, assigneeId: null,
-      } as any);
+      } as unknown);
       vi.mocked(taskRepository.findUserById).mockResolvedValueOnce(null);
 
       await expect(
@@ -489,8 +489,8 @@ describe("TaskService", () => {
     it("should clear assigneeId to null", async () => {
       vi.mocked(taskRepository.findTaskWithRelations).mockResolvedValueOnce({
         ...baseTask, assigneeId: "user-existing", assignee: { name: "Alice" },
-      } as any);
-      vi.mocked(taskRepository.updateTask).mockResolvedValueOnce({ id: "task-1" } as any);
+      } as unknown);
+      vi.mocked(taskRepository.updateTask).mockResolvedValueOnce({ id: "task-1" } as unknown);
 
       await taskService.updateTask("task-1", "user-1", { assigneeId: null });
 
@@ -501,7 +501,7 @@ describe("TaskService", () => {
     it("should throw BadRequestException when reporter not found", async () => {
       vi.mocked(taskRepository.findTaskWithRelations).mockResolvedValueOnce({
         ...baseTask, reporterId: null,
-      } as any);
+      } as unknown);
       vi.mocked(taskRepository.findUserById).mockResolvedValueOnce(null);
 
       await expect(
@@ -512,8 +512,8 @@ describe("TaskService", () => {
     it("should clear reporterId to null", async () => {
       vi.mocked(taskRepository.findTaskWithRelations).mockResolvedValueOnce({
         ...baseTask, reporterId: "user-existing", reporter: { name: "Bob" },
-      } as any);
-      vi.mocked(taskRepository.updateTask).mockResolvedValueOnce({ id: "task-1" } as any);
+      } as unknown);
+      vi.mocked(taskRepository.updateTask).mockResolvedValueOnce({ id: "task-1" } as unknown);
 
       await taskService.updateTask("task-1", "user-1", { reporterId: null });
 

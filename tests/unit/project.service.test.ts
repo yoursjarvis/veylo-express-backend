@@ -103,7 +103,7 @@ describe("ProjectService", () => {
   // --- CREATE PROJECT ---
   describe("createProject", () => {
     it("throws BadRequestException if project key already exists", async () => {
-      prismaMock.project.findUnique.mockResolvedValueOnce({ id: "p-existing" } as any);
+      prismaMock.project.findUnique.mockResolvedValueOnce({ id: "p-existing" } as unknown);
 
       await expect(
         projectService.createProject("ws-1", "org-1", {
@@ -124,7 +124,7 @@ describe("ProjectService", () => {
       });
       projectRepositoryMock.findWorkspaceById.mockResolvedValueOnce({ organizationId: "org-1" });
       projectRepositoryMock.createProject.mockResolvedValueOnce({ id: "proj-1", organizationId: "org-1", ownerId: "user-1" });
-      prismaMock.projectDoc.create.mockResolvedValueOnce({ id: "doc-1" } as any);
+      prismaMock.projectDoc.create.mockResolvedValueOnce({ id: "doc-1" } as unknown);
 
       const result = await projectService.createProject("ws-1", "org-1", {
         title: "My Project", template: "scrum", projectKey: "PROJ",
@@ -139,8 +139,8 @@ describe("ProjectService", () => {
       projectRepositoryMock.findTemplateBySlug.mockResolvedValueOnce(null); // no DB template
       projectRepositoryMock.findWorkspaceById.mockResolvedValueOnce({ organizationId: "org-1" });
       projectRepositoryMock.createProject.mockResolvedValueOnce({ id: "proj-2", organizationId: "org-1", ownerId: null });
-      prismaMock.user.findFirst.mockResolvedValueOnce({ id: "user-1" } as any);
-      prismaMock.projectDoc.create.mockResolvedValueOnce({ id: "doc-1" } as any);
+      prismaMock.user.findFirst.mockResolvedValueOnce({ id: "user-1" } as unknown);
+      prismaMock.projectDoc.create.mockResolvedValueOnce({ id: "doc-1" } as unknown);
 
       const result = await projectService.createProject("ws-1", "org-1", {
         title: "Kanban Project", template: "kanban", projectKey: "KAN",

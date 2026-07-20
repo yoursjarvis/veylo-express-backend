@@ -7,7 +7,7 @@ const mockPrismaNotificationCreate = vi.fn();
 vi.mock("../../src/lib/prisma", () => ({
   default: {
     notification: {
-      create: (...args: any[]) => mockPrismaNotificationCreate(...args),
+      create: (...args: unknown[]) => mockPrismaNotificationCreate(...args),
     },
   },
 }));
@@ -23,7 +23,7 @@ const mockMailTo = vi.fn().mockReturnValue({
 });
 vi.mock("../../src/core/mail/mail.service", () => ({
   mailService: {
-    to: (...args: any[]) => mockMailTo(...args),
+    to: (...args: unknown[]) => mockMailTo(...args),
   },
   sendMailMessage: vi.fn().mockResolvedValue({ ok: true }),
 }));
@@ -32,7 +32,7 @@ vi.mock("../../src/core/mail/mail.service", () => ({
 const mockBroadcastToUser = vi.fn();
 vi.mock("../../src/core/notification/websocket.manager", () => ({
   webSocketManager: {
-    broadcastToUser: (...args: any[]) => mockBroadcastToUser(...args),
+    broadcastToUser: (...args: unknown[]) => mockBroadcastToUser(...args),
   },
 }));
 
@@ -64,7 +64,7 @@ class TestNotification extends Notification {
   toMail() {
     return {
       subject: "Test Mail Subject",
-      template: "welcome" as any,
+      template: "welcome" as unknown,
       data: { firstName: "TestUser" },
     };
   }

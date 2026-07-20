@@ -39,7 +39,7 @@ import { setMockUser } from "./helpers/auth";
 import { createUser } from "./helpers/factories";
 
 function createRes() {
-  const res: any = {};
+  const res: unknown = {};
   res.status = vi.fn().mockReturnValue(res);
   res.json = vi.fn().mockReturnValue(res);
   return res;
@@ -54,18 +54,18 @@ describe("auditLogController", () => {
   describe("getLogs", () => {
     it("throws ForbiddenException if not allowed", async () => {
       mockAuthorize.mockResolvedValueOnce(false);
-      const req: any = { params: { id: "ws-123" }, query: {} };
+      const req: unknown = { params: { id: "ws-123" }, query: {} };
       const res = createRes();
 
       await expect(
-        (auditLogController.getLogs as any)(req, res)
+        (auditLogController.getLogs as unknown)(req, res)
       ).rejects.toThrow("Forbidden: You do not have permission to view audit logs.");
     });
 
     it("fetches logs successfully if allowed", async () => {
       mockAuthorize.mockResolvedValueOnce(true);
       mockGetLogs.mockResolvedValueOnce({ data: [{ id: "l1" }] });
-      const req: any = {
+      const req: unknown = {
         params: { id: "ws-123" },
         query: {
           startDate: "2026-07-01",
@@ -74,7 +74,7 @@ describe("auditLogController", () => {
       };
       const res = createRes();
 
-      await (auditLogController.getLogs as any)(req, res);
+      await (auditLogController.getLogs as unknown)(req, res);
 
       expect(mockGetLogs).toHaveBeenCalledWith("ws-123", expect.objectContaining({
         startDate: "2026-07-01",
@@ -91,13 +91,13 @@ describe("auditLogController", () => {
     it("queues export job successfully", async () => {
       mockAuthorize.mockResolvedValueOnce(true);
       mockQueueExport.mockResolvedValueOnce({ success: true, jobId: "job-123" });
-      const req: any = {
+      const req: unknown = {
         params: { id: "ws-123" },
         body: { startDate: "2026-07-01" },
       };
       const res = createRes();
 
-      await (auditLogController.exportLogs as any)(req, res);
+      await (auditLogController.exportLogs as unknown)(req, res);
 
       expect(mockQueueExport).toHaveBeenCalledWith(
         "ws-123",
@@ -116,10 +116,10 @@ describe("auditLogController", () => {
     it("fetches organization logs successfully", async () => {
       mockAuthorize.mockResolvedValueOnce(true);
       mockGetLogs.mockResolvedValueOnce({ data: [{ id: "l2" }] });
-      const req: any = { params: {}, query: {} };
+      const req: unknown = { params: {}, query: {} };
       const res = createRes();
 
-      await (auditLogController.getOrgLogs as any)(req, res);
+      await (auditLogController.getOrgLogs as unknown)(req, res);
 
       expect(mockGetLogs).toHaveBeenCalledWith({ organizationId: "org-123" }, expect.any(Object));
       expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
@@ -130,10 +130,10 @@ describe("auditLogController", () => {
     it("queues organization export job successfully", async () => {
       mockAuthorize.mockResolvedValueOnce(true);
       mockQueueExport.mockResolvedValueOnce({ success: true, jobId: "job-456" });
-      const req: any = { params: {}, body: {} };
+      const req: unknown = { params: {}, body: {} };
       const res = createRes();
 
-      await (auditLogController.exportOrgLogs as any)(req, res);
+      await (auditLogController.exportOrgLogs as unknown)(req, res);
 
       expect(mockQueueExport).toHaveBeenCalledWith(
         undefined,

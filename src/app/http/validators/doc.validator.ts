@@ -6,7 +6,7 @@ export const createDocSchema = z.object({
   emoji: z.string().optional().nullable(),
   icon: z.string().optional().nullable(),
   coverImage: z.string().optional().nullable(),
-  content: z.any().optional(),
+  content: z.unknown().optional(),
   plainText: z.string().optional().nullable(),
 });
 
@@ -16,7 +16,7 @@ export const updateDocSchema = z.object({
   emoji: z.string().optional().nullable(),
   icon: z.string().optional().nullable(),
   coverImage: z.string().optional().nullable(),
-  content: z.any().optional(),
+  content: z.unknown().optional(),
   plainText: z.string().optional().nullable(),
   order: z.number().int().optional(),
   archived: z.boolean().optional(),

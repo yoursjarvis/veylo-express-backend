@@ -210,7 +210,7 @@ async function main() {
           title: "Welcome to Docs",
           slug: "welcome-to-docs",
           emoji: "👋",
-          content: WELCOME_CONTENT as any,
+          content: WELCOME_CONTENT as unknown as Record<string, unknown>,
           plainText: "Welcome to Veylo Docs! This is your project's collaborative document workspace.",
           order: 0,
           createdBy: creatorId,

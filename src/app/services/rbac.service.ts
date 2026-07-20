@@ -7,8 +7,8 @@ export const rbacService = {
     return rbacRepository.getPermissions();
   },
 
-  async getOrganizationRoles(organizationId: string) {
-    return rbacRepository.getRolesByOrganization(organizationId);
+  async getOrganizationRoles(organizationId: string, search?: string) {
+    return rbacRepository.getRolesByOrganization(organizationId, search);
   },
 
   async createRole(

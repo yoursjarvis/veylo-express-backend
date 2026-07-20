@@ -2,7 +2,7 @@
  * Test entity factories for generating mock data structures
  */
 
-export function createUser(overrides?: any) {
+export function createUser(overrides?: unknown) {
   const rand = Math.random().toString(36).substring(2, 7);
   return {
     id: `user-${rand}`,
@@ -16,7 +16,7 @@ export function createUser(overrides?: any) {
   };
 }
 
-export function createWorkspace(overrides?: any) {
+export function createWorkspace(overrides?: unknown) {
   const rand = Math.random().toString(36).substring(2, 7);
   return {
     id: `ws-${rand}`,
@@ -28,7 +28,7 @@ export function createWorkspace(overrides?: any) {
   };
 }
 
-export function createOrganization(overrides?: any) {
+export function createOrganization(overrides?: unknown) {
   const rand = Math.random().toString(36).substring(2, 7);
   return {
     id: `org-${rand}`,
@@ -40,7 +40,7 @@ export function createOrganization(overrides?: any) {
   };
 }
 
-export function createProject(overrides?: any) {
+export function createProject(overrides?: unknown) {
   const rand = Math.random().toString(36).substring(2, 7);
   return {
     id: `proj-${rand}`,

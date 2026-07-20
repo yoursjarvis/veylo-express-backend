@@ -11,7 +11,7 @@ import { ok } from "@/utils/http-response";
 export const labelController = {
   createLabel: asyncHandler(async (req: Request, res: Response) => {
     const projectId = req.params.projectId as string;
-    const { project } = await verifyProjectAccess(req, projectId);
+    const { project } = await verifyProjectAccess(req, projectId, "project-label:create");
     const { organizationId } = project;
 
     const validatedData = labelCreateSchema.parse(req.body);
@@ -27,7 +27,7 @@ export const labelController = {
 
   getLabels: asyncHandler(async (req: Request, res: Response) => {
     const projectId = req.params.projectId as string;
-    await verifyProjectAccess(req, projectId);
+    await verifyProjectAccess(req, projectId, "project-label:read");
 
     const labels = await labelService.getLabels(projectId);
 
@@ -42,7 +42,7 @@ export const labelController = {
       throw new NotFoundException("Label not found");
     }
 
-    await verifyProjectAccess(req, label.projectId);
+    await verifyProjectAccess(req, label.projectId, "project-label:update");
 
     const validatedData = labelCreateSchema.partial().parse(req.body);
 
@@ -59,7 +59,7 @@ export const labelController = {
       throw new NotFoundException("Label not found");
     }
 
-    await verifyProjectAccess(req, label.projectId);
+    await verifyProjectAccess(req, label.projectId, "project-label:delete");
 
     await labelService.deleteLabel(labelId);
 
@@ -74,7 +74,7 @@ export const labelController = {
       throw new NotFoundException("Label not found");
     }
 
-    await verifyProjectAccess(req, label.projectId);
+    await verifyProjectAccess(req, label.projectId, "project-label:restore");
 
     await labelService.restoreLabel(labelId);
 
@@ -89,7 +89,7 @@ export const labelController = {
       throw new NotFoundException("Label not found");
     }
 
-    await verifyProjectAccess(req, label.projectId);
+    await verifyProjectAccess(req, label.projectId, "project-label:force-delete");
 
     await labelService.forceDeleteLabel(labelId);
 

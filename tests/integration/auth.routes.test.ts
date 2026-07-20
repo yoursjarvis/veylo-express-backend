@@ -23,7 +23,7 @@ vi.mock("../../src/lib/prisma", async () => {
 });
 
 vi.mock("../../src/app/http/middlewares/rate-limit.middleware", () => ({
-  rateLimit: () => (req: any, res: any, next: any) => next(),
+  rateLimit: () => (req: unknown, res: unknown, next: unknown) => next(),
 }));
 
 const { mockAuthService } = vi.hoisted(() => ({
@@ -58,7 +58,7 @@ vi.mock("../../src/utils/config", async (importOriginal) => {
       if (key === "app.origins") return ["http://localhost"];
       if (key === "app.vaultEncryptionKey")
         return "dummy-vault-key-min-32-chars-long-here";
-      return original.config(key as any);
+      return original.config(key as unknown);
     }),
   };
 });

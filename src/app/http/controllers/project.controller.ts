@@ -157,7 +157,7 @@ export const projectController = {
 
   deleteProject: asyncHandler(async (req: Request, res: Response) => {
     const projectId = req.params.id as string;
-    await verifyProjectAdmin(req, projectId);
+    await verifyProjectAdmin(req, projectId, "project:delete");
 
     const deletedProject = await projectService.deleteProject(projectId);
 
@@ -186,7 +186,7 @@ export const projectController = {
 
   restoreProject: asyncHandler(async (req: Request, res: Response) => {
     const projectId = req.params.id as string;
-    await verifyProjectAdmin(req, projectId);
+    await verifyProjectAdmin(req, projectId, "project:restore");
 
     const restoredProject = await projectService.restoreProject(projectId);
 
@@ -215,7 +215,7 @@ export const projectController = {
 
   forceDeleteProject: asyncHandler(async (req: Request, res: Response) => {
     const projectId = req.params.id as string;
-    await verifyProjectAdmin(req, projectId);
+    await verifyProjectAdmin(req, projectId, "project:force-delete");
 
     const deletedProject = await projectService.forceDeleteProject(projectId);
 
@@ -245,7 +245,7 @@ export const projectController = {
   // PROJECT MEMBERS
   getProjectMembers: asyncHandler(async (req: Request, res: Response) => {
     const projectId = req.params.id as string;
-    await verifyProjectAccess(req, projectId);
+    await verifyProjectAccess(req, projectId, "project-member:read");
 
     const members = await projectService.getProjectMembers(projectId);
 
@@ -254,7 +254,7 @@ export const projectController = {
 
   addProjectMembers: asyncHandler(async (req: Request, res: Response) => {
     const projectId = req.params.id as string;
-    const { project, userId } = await verifyProjectAdmin(req, projectId);
+    const { project, userId } = await verifyProjectAdmin(req, projectId, "project-member:invite-member");
     const { userIds } = req.body as { userIds: string[] };
 
     const members = await projectService.addProjectMembers(
@@ -291,7 +291,7 @@ export const projectController = {
   removeProjectMember: asyncHandler(async (req: Request, res: Response) => {
     const projectId = req.params.id as string;
     const userId = req.params.userId as string;
-    const { project } = await verifyProjectAdmin(req, projectId);
+    const { project } = await verifyProjectAdmin(req, projectId, "project-member:remove-member");
 
     await projectService.removeProjectMember(projectId, userId);
 
@@ -327,7 +327,7 @@ export const projectController = {
   // VAULT MANAGEMENT
   getProjectVault: asyncHandler(async (req: Request, res: Response) => {
     const projectId = req.params.id as string;
-    await verifyProjectAccess(req, projectId);
+    await verifyProjectAccess(req, projectId, "project-vault:read");
 
     const vault = await projectService.getProjectVault(projectId);
 
@@ -336,7 +336,7 @@ export const projectController = {
 
   addVaultService: asyncHandler(async (req: Request, res: Response) => {
     const projectId = req.params.id as string;
-    await verifyProjectAccess(req, projectId);
+    await verifyProjectAccess(req, projectId, "project-vault:create");
 
     const { name } = vaultServiceSchema.parse(req.body);
 
@@ -347,7 +347,7 @@ export const projectController = {
 
   deleteVaultService: asyncHandler(async (req: Request, res: Response) => {
     const projectId = req.params.id as string;
-    await verifyProjectAccess(req, projectId);
+    await verifyProjectAccess(req, projectId, "project-vault:delete");
 
     const serviceId = req.params.serviceId as string;
 
@@ -358,7 +358,7 @@ export const projectController = {
 
   restoreVaultService: asyncHandler(async (req: Request, res: Response) => {
     const projectId = req.params.id as string;
-    await verifyProjectAccess(req, projectId);
+    await verifyProjectAccess(req, projectId, "project-vault:restore");
 
     const serviceId = req.params.serviceId as string;
 
@@ -369,7 +369,7 @@ export const projectController = {
 
   forceDeleteVaultService: asyncHandler(async (req: Request, res: Response) => {
     const projectId = req.params.id as string;
-    await verifyProjectAccess(req, projectId);
+    await verifyProjectAccess(req, projectId, "project-vault:force-delete");
 
     const serviceId = req.params.serviceId as string;
 
@@ -380,7 +380,7 @@ export const projectController = {
 
   addOrUpdateVaultItem: asyncHandler(async (req: Request, res: Response) => {
     const projectId = req.params.id as string;
-    await verifyProjectAccess(req, projectId);
+    await verifyProjectAccess(req, projectId, "project-vault:update");
 
     const serviceId = req.params.serviceId as string;
     const { key, value, note } = vaultItemSchema.parse(req.body);
@@ -396,7 +396,7 @@ export const projectController = {
 
   updateVaultItem: asyncHandler(async (req: Request, res: Response) => {
     const projectId = req.params.id as string;
-    await verifyProjectAccess(req, projectId);
+    await verifyProjectAccess(req, projectId, "project-vault:update");
 
     const itemId = req.params.itemId as string;
     const { value, note } = updateVaultItemSchema.parse(req.body);
@@ -411,7 +411,7 @@ export const projectController = {
 
   deleteVaultItem: asyncHandler(async (req: Request, res: Response) => {
     const projectId = req.params.id as string;
-    await verifyProjectAccess(req, projectId);
+    await verifyProjectAccess(req, projectId, "project-vault:delete");
 
     const itemId = req.params.itemId as string;
 
@@ -422,7 +422,7 @@ export const projectController = {
 
   restoreVaultItem: asyncHandler(async (req: Request, res: Response) => {
     const projectId = req.params.id as string;
-    await verifyProjectAccess(req, projectId);
+    await verifyProjectAccess(req, projectId, "project-vault:restore");
 
     const itemId = req.params.itemId as string;
 
@@ -433,7 +433,7 @@ export const projectController = {
 
   forceDeleteVaultItem: asyncHandler(async (req: Request, res: Response) => {
     const projectId = req.params.id as string;
-    await verifyProjectAccess(req, projectId);
+    await verifyProjectAccess(req, projectId, "project-vault:force-delete");
 
     const itemId = req.params.itemId as string;
 
@@ -445,7 +445,7 @@ export const projectController = {
   // FILE UPLOAD AND MANAGEMENT
   uploadProjectFile: asyncHandler(async (req: Request, res: Response) => {
     const projectId = req.params.id as string;
-    await verifyProjectAccess(req, projectId);
+    await verifyProjectAccess(req, projectId, "project-doc:create");
 
     if (!req.file) {
       throw new BadRequestException("No file uploaded");
@@ -461,7 +461,7 @@ export const projectController = {
 
   getProjectFiles: asyncHandler(async (req: Request, res: Response) => {
     const projectId = req.params.id as string;
-    await verifyProjectAccess(req, projectId);
+    await verifyProjectAccess(req, projectId, "project-doc:view");
 
     const files = await projectService.getProjectFiles(projectId);
 
@@ -471,7 +471,7 @@ export const projectController = {
   deleteProjectFile: asyncHandler(async (req: Request, res: Response) => {
     const projectId = req.params.id as string;
     const fileId = req.params.fileId as string;
-    await verifyProjectAccess(req, projectId);
+    await verifyProjectAccess(req, projectId, "project-doc:delete");
 
     await projectService.deleteProjectFile(projectId, fileId);
 
@@ -480,7 +480,7 @@ export const projectController = {
 
   getAutomationRules: asyncHandler(async (req: Request, res: Response) => {
     const projectId = req.params.id as string;
-    await verifyProjectAccess(req, projectId);
+    await verifyProjectAccess(req, projectId, "project-automation:read");
 
     const rules = await projectService.getAutomationRules(projectId);
 
@@ -489,7 +489,7 @@ export const projectController = {
 
   createAutomationRule: asyncHandler(async (req: Request, res: Response) => {
     const projectId = req.params.id as string;
-    await verifyProjectAdmin(req, projectId);
+    await verifyProjectAdmin(req, projectId, "project-automation:create");
 
     const rule = await projectService.createAutomationRule(projectId, req.body);
 
@@ -498,7 +498,7 @@ export const projectController = {
 
   updateAutomationRule: asyncHandler(async (req: Request, res: Response) => {
     const projectId = req.params.id as string;
-    await verifyProjectAdmin(req, projectId);
+    await verifyProjectAdmin(req, projectId, "project-automation:update");
     const ruleId = req.params.ruleId as string;
 
     const rule = await projectService.updateAutomationRule(ruleId, req.body);
@@ -508,7 +508,7 @@ export const projectController = {
 
   deleteAutomationRule: asyncHandler(async (req: Request, res: Response) => {
     const projectId = req.params.id as string;
-    await verifyProjectAdmin(req, projectId);
+    await verifyProjectAdmin(req, projectId, "project-automation:delete");
     const ruleId = req.params.ruleId as string;
 
     await projectService.deleteAutomationRule(ruleId);
@@ -518,7 +518,7 @@ export const projectController = {
 
   restoreAutomationRule: asyncHandler(async (req: Request, res: Response) => {
     const projectId = req.params.id as string;
-    await verifyProjectAdmin(req, projectId);
+    await verifyProjectAdmin(req, projectId, "project-automation:restore");
     const ruleId = req.params.ruleId as string;
 
     await projectService.restoreAutomationRule(ruleId);
@@ -529,7 +529,7 @@ export const projectController = {
   forceDeleteAutomationRule: asyncHandler(
     async (req: Request, res: Response) => {
       const projectId = req.params.id as string;
-      await verifyProjectAdmin(req, projectId);
+      await verifyProjectAdmin(req, projectId, "project-automation:force-delete");
       const ruleId = req.params.ruleId as string;
 
       await projectService.forceDeleteAutomationRule(ruleId);

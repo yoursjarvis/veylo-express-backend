@@ -83,7 +83,7 @@ describe("AuditLogService", () => {
           "user-agent": "Mozilla/5.0",
         },
         ip: "127.0.0.1",
-      } as any,
+      } as unknown,
     };
 
     await auditLogService.log(mockData);
@@ -121,7 +121,7 @@ describe("AuditLogService", () => {
       req: {
         headers: {},
         ip: "192.168.1.1",
-      } as any,
+      } as unknown,
     };
 
     await auditLogService.log(mockData);
@@ -145,7 +145,7 @@ describe("AuditLogService", () => {
       description: "User logged out",
       req: {
         headers: {},
-      } as any,
+      } as unknown,
     };
 
     await auditLogService.log(mockData);
@@ -325,12 +325,12 @@ describe("AuditLogService", () => {
     ];
 
     it("fetches logs, builds CSV, saves to storage, and sends notifications", async () => {
-      prismaMock.auditLog.findMany.mockResolvedValueOnce(mockLogs as any);
+      prismaMock.auditLog.findMany.mockResolvedValueOnce(mockLogs as unknown);
       storageMock.put.mockResolvedValueOnce(undefined);
       storageMock.url.mockReturnValueOnce("https://cdn.example.com/export.csv");
       prismaMock.user.findUnique.mockResolvedValueOnce({
         email: "alice@example.com", name: "Alice",
-      } as any);
+      } as unknown);
       mailServiceMock.queue.mockResolvedValueOnce(undefined);
       notificationServiceMock.createInAppNotification.mockResolvedValueOnce(undefined);
 
@@ -355,12 +355,12 @@ describe("AuditLogService", () => {
         userAgent: null, // null userAgent
       }];
 
-      prismaMock.auditLog.findMany.mockResolvedValueOnce(logsWithNulls as any);
+      prismaMock.auditLog.findMany.mockResolvedValueOnce(logsWithNulls as unknown);
       storageMock.put.mockResolvedValueOnce(undefined);
       storageMock.url.mockReturnValueOnce("https://cdn.example.com/export.csv");
       prismaMock.user.findUnique.mockResolvedValueOnce({
         email: "bob@example.com", name: "Bob",
-      } as any);
+      } as unknown);
       mailServiceMock.queue.mockResolvedValueOnce(undefined);
       notificationServiceMock.createInAppNotification.mockResolvedValueOnce(undefined);
 
@@ -384,7 +384,7 @@ describe("AuditLogService", () => {
       prismaMock.auditLog.findMany.mockResolvedValueOnce([]);
       storageMock.put.mockResolvedValueOnce(undefined);
       storageMock.url.mockReturnValueOnce("https://cdn.example.com/export.csv");
-      prismaMock.user.findUnique.mockResolvedValueOnce({ email: "alice@example.com", name: "Alice" } as any);
+      prismaMock.user.findUnique.mockResolvedValueOnce({ email: "alice@example.com", name: "Alice" } as unknown);
       mailServiceMock.queue.mockRejectedValueOnce(new Error("SMTP error"));
       notificationServiceMock.createInAppNotification.mockResolvedValueOnce(undefined);
 
@@ -400,7 +400,7 @@ describe("AuditLogService", () => {
       prismaMock.auditLog.findMany.mockResolvedValueOnce([]);
       storageMock.put.mockResolvedValueOnce(undefined);
       storageMock.url.mockReturnValueOnce("https://cdn.example.com/export.csv");
-      prismaMock.user.findUnique.mockResolvedValueOnce({ email: "alice@example.com", name: "Alice" } as any);
+      prismaMock.user.findUnique.mockResolvedValueOnce({ email: "alice@example.com", name: "Alice" } as unknown);
       mailServiceMock.queue.mockResolvedValueOnce(undefined);
       notificationServiceMock.createInAppNotification.mockResolvedValueOnce(undefined);
 
