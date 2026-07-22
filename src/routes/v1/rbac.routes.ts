@@ -24,6 +24,7 @@ rbacRoutes.get(
   rbacController.getOrganizationRoles,
 );
 rbacRoutes.post("/roles", requirePermission("role:create", extractContext), rbacController.createRole);
+rbacRoutes.put("/roles/hierarchy", rbacController.updateRoleHierarchy);
 rbacRoutes.put("/roles/:roleId", rbacController.updateRolePermissions);
 rbacRoutes.delete("/roles/:roleId", rbacController.deleteRole);
 

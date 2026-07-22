@@ -25,3 +25,8 @@ export const assignRoleSchema = z.object({
   ]),
   scopeId: z.string().uuid(),
 });
+
+export const updateRoleHierarchySchema = z.object({
+  roleIds: z.array(z.string().uuid()),
+  organizationId: z.string().uuid(),
+});

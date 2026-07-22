@@ -31,6 +31,14 @@ projectRoutes.get(
   requireAuth,
   projectController.getOrgProjects,
 );
+
+import { workspaceController } from "@/app/http/controllers/workspace.controller";
+projectRoutes.get(
+  "/organizations/:organizationId/workspaces",
+  requireAuth,
+  workspaceController.getOrgWorkspaces,
+);
+
 projectRoutes.get("/project-templates", projectController.getProjectTemplates);
 projectRoutes.get(
   "/project-templates/:slug",

@@ -814,6 +814,7 @@ model Role {
   id                String    @id @default(uuid(7)) @db.Uuid
   organizationId    String?   @map("organization_id") @db.Uuid
   name              String
+  level             Int       @default(0)
   isSystemDefault   Boolean   @default(false) @map("is_system_default")
   bypassPermissions Boolean   @default(false) @map("bypass_permissions")
   deletedAt         DateTime? @map("deleted_at") @db.Timestamptz(6)

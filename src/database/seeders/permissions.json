@@ -618,6 +618,24 @@
     "description": "Assign roles to organization/workspace/project users"
   },
   {
+    "module": "Roles",
+    "resource": "role",
+    "action": "update-hierarchy",
+    "description": "Update the hierarchical level of roles"
+  },
+  {
+    "module": "Roles",
+    "resource": "role",
+    "action": "attach-permission",
+    "description": "Attach a permission to a role"
+  },
+  {
+    "module": "Roles",
+    "resource": "role",
+    "action": "detach-permission",
+    "description": "Detach a permission from a role"
+  },
+  {
     "module": "Audit Logs",
     "resource": "audit-log",
     "action": "read",

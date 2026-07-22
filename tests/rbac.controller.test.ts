@@ -151,6 +151,35 @@ describe("rbacController", () => {
     });
   });
 
+  describe("updateRoleHierarchy", () => {
+    it("updates role hierarchy and records audit log", async () => {
+      mockRbacService.authorize.mockResolvedValueOnce(true);
+      mockRbacService.updateRoleHierarchy = vi.fn().mockResolvedValueOnce(undefined);
+      prismaMock.workspace.findFirst.mockResolvedValueOnce({ id: "ws-first" });
+
+      const req: unknown = {
+        body: {
+          roleIds: ["550e8400-e29b-41d4-a716-446655440001", "550e8400-e29b-41d4-a716-446655440002"],
+          organizationId: "550e8400-e29b-41d4-a716-446655440000",
+        },
+      };
+      const res = createRes();
+
+      await (rbacController.updateRoleHierarchy as unknown)(req, res);
+
+      expect(mockRbacService.updateRoleHierarchy).toHaveBeenCalledWith(
+        ["550e8400-e29b-41d4-a716-446655440001", "550e8400-e29b-41d4-a716-446655440002"],
+        "550e8400-e29b-41d4-a716-446655440000",
+        "user-123"
+      );
+      expect(mockAuditLogService.log).toHaveBeenCalledWith(expect.objectContaining({
+        action: "UPDATE_ROLE_HIERARCHY",
+        workspaceId: "ws-first",
+      }));
+      expect(res.status).toHaveBeenCalledWith(200);
+    });
+  });
+
   describe("updateRolePermissions", () => {
     it("updates role permissions and records audit log", async () => {
       mockRbacRepository.getRoleById.mockResolvedValueOnce({

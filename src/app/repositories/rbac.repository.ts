@@ -106,6 +106,9 @@ export const DEFAULT_ROLES = [
       "role:update",
       "role:delete",
       "role:assign",
+      "role:attach-permission",
+      "role:detach-permission",
+      "role:update-hierarchy",
       "project-doc:view",
       "project-doc:create",
       "project-doc:edit",
@@ -220,6 +223,9 @@ export const DEFAULT_ROLES = [
       "role:update",
       "role:delete",
       "role:assign",
+      "role:attach-permission",
+      "role:detach-permission",
+      "role:update-hierarchy",
       "project-doc:view",
       "project-doc:create",
       "project-doc:edit",
@@ -624,6 +630,36 @@ export const rbacRepository = {
   async getRoleById(roleId: string) {
     return prisma.role.findUnique({
       where: { id: roleId },
+    });
+  },
+
+  async getUserMaxLevel(userId: string, orgId: string): Promise<number> {
+    const assignments = await prisma.userRoleAssignment.findMany({
+      where: {
+        userId,
+        organizationId: orgId,
+      },
+      include: {
+        role: true,
+      }
+    });
+
+    if (assignments.length === 0) return 0;
+    return Math.max(...assignments.map((a) => a.role.level));
+  },
+
+  async updateRoleHierarchy(roleIds: string[], orgId: string) {
+    return prisma.$transaction(async (tx) => {
+      // Loop over roleIds backwards so the last item gets level 1, next to last gets 2, etc.
+      // Wait, let's just make the first item the highest level (level = length - index).
+      // Or first item = lowest level. Drag and drop lists usually have highest at top (index 0).
+      // If index 0 is highest, level = roleIds.length - index
+      for (let i = 0; i < roleIds.length; i++) {
+        await tx.role.update({
+          where: { id: roleIds[i] },
+          data: { level: roleIds.length - i },
+        });
+      }
     });
   },
 
