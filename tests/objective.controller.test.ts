@@ -43,7 +43,7 @@ import { setMockUser } from "./helpers/auth";
 import { createUser } from "./helpers/factories";
 
 function createRes() {
-  const res: any = {};
+  const res: unknown = {};
   res.status = vi.fn().mockReturnValue(res);
   res.json = vi.fn().mockReturnValue(res);
   return res;
@@ -58,11 +58,11 @@ describe("objectiveController", () => {
   describe("getObjectives", () => {
     it("throws NotFoundException if workspace not found", async () => {
       prismaMock.workspace.findUnique.mockResolvedValueOnce(null);
-      const req: any = { params: { workspaceId: "ws-1" } };
+      const req: unknown = { params: { workspaceId: "ws-1" } };
       const res = createRes();
 
       await expect(
-        (objectiveController.getObjectives as any)(req, res)
+        (objectiveController.getObjectives as unknown)(req, res)
       ).rejects.toThrow("Workspace not found");
     });
 
@@ -70,11 +70,11 @@ describe("objectiveController", () => {
       prismaMock.workspace.findUnique.mockResolvedValueOnce({ id: "ws-1", organizationId: "org-1" });
       mockRbacService.authorize.mockResolvedValueOnce(false);
 
-      const req: any = { params: { workspaceId: "ws-1" } };
+      const req: unknown = { params: { workspaceId: "ws-1" } };
       const res = createRes();
 
       await expect(
-        (objectiveController.getObjectives as any)(req, res)
+        (objectiveController.getObjectives as unknown)(req, res)
       ).rejects.toThrow("Forbidden: You do not have permission to view objectives.");
     });
 
@@ -83,10 +83,10 @@ describe("objectiveController", () => {
       mockRbacService.authorize.mockResolvedValueOnce(true);
       mockObjectiveService.getObjectives.mockResolvedValueOnce([{ id: "o1" }]);
 
-      const req: any = { params: { workspaceId: "ws-1" }, query: {} };
+      const req: unknown = { params: { workspaceId: "ws-1" }, query: {} };
       const res = createRes();
 
-      await (objectiveController.getObjectives as any)(req, res);
+      await (objectiveController.getObjectives as unknown)(req, res);
 
       expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
         success: true,
@@ -105,7 +105,7 @@ describe("objectiveController", () => {
       mockRbacService.authorize.mockResolvedValueOnce(true);
       mockObjectiveService.createObjective.mockResolvedValueOnce({ id: "o1" });
 
-      const req: any = {
+      const req: unknown = {
         body: {
           title: "Test",
           projectId: "550e8400-e29b-41d4-a716-446655440001",
@@ -115,7 +115,7 @@ describe("objectiveController", () => {
       };
       const res = createRes();
 
-      await (objectiveController.createObjective as any)(req, res);
+      await (objectiveController.createObjective as unknown)(req, res);
 
       expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
         success: true,
@@ -134,10 +134,10 @@ describe("objectiveController", () => {
       mockRbacService.authorize.mockResolvedValueOnce(true);
       mockObjectiveService.deleteObjective.mockResolvedValueOnce(undefined);
 
-      const req: any = { params: { id: "o1" } };
+      const req: unknown = { params: { id: "o1" } };
       const res = createRes();
 
-      await (objectiveController.deleteObjective as any)(req, res);
+      await (objectiveController.deleteObjective as unknown)(req, res);
 
       expect(mockObjectiveService.deleteObjective).toHaveBeenCalledWith("o1");
       expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ success: true }));
@@ -152,10 +152,10 @@ describe("objectiveController", () => {
       mockRbacService.authorize.mockResolvedValueOnce(true);
       mockObjectiveService.restoreObjective.mockResolvedValueOnce(undefined);
 
-      const req: any = { params: { id: "o1" } };
+      const req: unknown = { params: { id: "o1" } };
       const res = createRes();
 
-      await (objectiveController.restoreObjective as any)(req, res);
+      await (objectiveController.restoreObjective as unknown)(req, res);
 
       expect(mockObjectiveService.restoreObjective).toHaveBeenCalledWith("o1");
       expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ success: true }));
@@ -170,10 +170,10 @@ describe("objectiveController", () => {
       mockRbacService.authorize.mockResolvedValueOnce(true);
       mockObjectiveService.forceDeleteObjective.mockResolvedValueOnce(undefined);
 
-      const req: any = { params: { id: "o1" } };
+      const req: unknown = { params: { id: "o1" } };
       const res = createRes();
 
-      await (objectiveController.forceDeleteObjective as any)(req, res);
+      await (objectiveController.forceDeleteObjective as unknown)(req, res);
 
       expect(mockObjectiveService.forceDeleteObjective).toHaveBeenCalledWith("o1");
       expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ success: true }));
@@ -188,13 +188,13 @@ describe("objectiveController", () => {
       mockRbacService.authorize.mockResolvedValueOnce(true);
       mockObjectiveService.updateObjective.mockResolvedValueOnce({ id: "o1", title: "New Title" });
 
-      const req: any = {
+      const req: unknown = {
         params: { id: "o1" },
         body: { title: "New Title" },
       };
       const res = createRes();
 
-      await (objectiveController.updateObjective as any)(req, res);
+      await (objectiveController.updateObjective as unknown)(req, res);
 
       expect(mockObjectiveService.updateObjective).toHaveBeenCalledWith("o1", "org-123", { title: "New Title" });
       expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ success: true }));

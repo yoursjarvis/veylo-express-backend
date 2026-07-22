@@ -29,7 +29,7 @@ import { workLogController } from "../src/app/http/controllers/worklog.controlle
 import { prismaMock } from "./helpers/db";
 
 function createRes() {
-  const res: any = {};
+  const res: unknown = {};
   res.status = vi.fn().mockReturnValue(res);
   res.json = vi.fn().mockReturnValue(res);
   return res;
@@ -43,26 +43,26 @@ describe("workLogController", () => {
   describe("createWorkLog", () => {
     it("throws NotFoundException if task not found", async () => {
       prismaMock.task.findUnique.mockResolvedValueOnce(null);
-      const req: any = { params: { taskId: "t1" }, body: {} };
+      const req: unknown = { params: { taskId: "t1" }, body: {} };
       const res = createRes();
 
       await expect(
-        (workLogController.createWorkLog as any)(req, res)
+        (workLogController.createWorkLog as unknown)(req, res)
       ).rejects.toThrow("Task not found");
     });
 
     it("creates worklog successfully", async () => {
       prismaMock.task.findUnique.mockResolvedValueOnce({ id: "t1", projectId: "p1" });
       mockWorkLogService.createWorkLog.mockResolvedValueOnce({ id: "wl-1" });
-      const req: any = {
+      const req: unknown = {
         params: { taskId: "t1" },
         body: { hoursLogged: 5 },
       };
       const res = createRes();
 
-      await (workLogController.createWorkLog as any)(req, res);
+      await (workLogController.createWorkLog as unknown)(req, res);
 
-      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1");
+      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1", "timesheet:create");
       expect(mockWorkLogService.createWorkLog).toHaveBeenCalledWith("t1", "user-123", {
         hoursLogged: 5,
       });
@@ -77,23 +77,24 @@ describe("workLogController", () => {
     it("gets task worklogs", async () => {
       prismaMock.task.findUnique.mockResolvedValueOnce({ id: "t1", projectId: "p1" });
       mockWorkLogService.getTaskWorkLogs.mockResolvedValueOnce([{ id: "wl-1" }]);
-      const req: any = { params: { taskId: "t1" } };
+      const req: unknown = { params: { taskId: "t1" } };
       const res = createRes();
 
-      await (workLogController.getTaskWorkLogs as any)(req, res);
+      await (workLogController.getTaskWorkLogs as unknown)(req, res);
 
+      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1", "timesheet:read");
       expect(mockWorkLogService.getTaskWorkLogs).toHaveBeenCalledWith("t1");
       expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ success: true }));
     });
 
     it("gets project worklogs", async () => {
       mockWorkLogService.getProjectWorkLogs.mockResolvedValueOnce([{ id: "wl-1" }]);
-      const req: any = { params: { projectId: "p1" } };
+      const req: unknown = { params: { projectId: "p1" } };
       const res = createRes();
 
-      await (workLogController.getProjectWorkLogs as any)(req, res);
+      await (workLogController.getProjectWorkLogs as unknown)(req, res);
 
-      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1");
+      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1", "timesheet:read");
       expect(mockWorkLogService.getProjectWorkLogs).toHaveBeenCalledWith("p1");
       expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ success: true }));
     });
@@ -102,10 +103,10 @@ describe("workLogController", () => {
   describe("updateWorkLog & deleteWorkLog", () => {
     it("updates worklog", async () => {
       mockWorkLogService.updateWorkLog.mockResolvedValueOnce({ id: "wl-1" });
-      const req: any = { params: { id: "wl-1" }, body: { hoursLogged: 6 } };
+      const req: unknown = { params: { id: "wl-1" }, body: { hoursLogged: 6 } };
       const res = createRes();
 
-      await (workLogController.updateWorkLog as any)(req, res);
+      await (workLogController.updateWorkLog as unknown)(req, res);
 
       expect(mockResolveSession).toHaveBeenCalledWith(req);
       expect(mockWorkLogService.updateWorkLog).toHaveBeenCalledWith("wl-1", "user-123", {
@@ -115,10 +116,10 @@ describe("workLogController", () => {
     });
 
     it("deletes worklog", async () => {
-      const req: any = { params: { id: "wl-1" } };
+      const req: unknown = { params: { id: "wl-1" } };
       const res = createRes();
 
-      await (workLogController.deleteWorkLog as any)(req, res);
+      await (workLogController.deleteWorkLog as unknown)(req, res);
 
       expect(mockWorkLogService.deleteWorkLog).toHaveBeenCalledWith("wl-1", "user-123");
       expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ success: true }));

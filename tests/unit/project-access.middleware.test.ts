@@ -51,7 +51,7 @@ describe("project-access middleware utilities", () => {
   describe("resolveSession", () => {
     it("UT-PA-01: throws UnauthorizedException when no user is present in session", async () => {
       getSessionMock.mockResolvedValueOnce(null);
-      const req: any = {};
+      const req: unknown = {};
 
       await expect(resolveSession(req)).rejects.toThrow(UnauthorizedException);
     });
@@ -61,7 +61,7 @@ describe("project-access middleware utilities", () => {
         user: { id: "user-1" },
         session: { activeOrganizationId: null },
       });
-      const req: any = {};
+      const req: unknown = {};
 
       await expect(resolveSession(req)).rejects.toThrow(BadRequestException);
     });
@@ -71,7 +71,7 @@ describe("project-access middleware utilities", () => {
         user: { id: "user-1" },
         session: { activeOrganizationId: "org-1" },
       });
-      const req: any = {};
+      const req: unknown = {};
 
       const result = await resolveSession(req);
       expect(result).toEqual({ activeOrgId: "org-1", userId: "user-1" });
@@ -85,7 +85,7 @@ describe("project-access middleware utilities", () => {
         session: { activeOrganizationId: "org-1" },
       });
 
-      const req: any = {};
+      const req: unknown = {};
       const ctx = await verifyWorkspaceAdmin(req, "ws-1");
 
       expect(ctx).toEqual({ activeOrgId: "org-1", userId: "user-1" });
@@ -105,7 +105,7 @@ describe("project-access middleware utilities", () => {
         session: { activeOrganizationId: "org-1" },
       });
 
-      const req: any = {};
+      const req: unknown = {};
       const ctx = await verifyWorkspaceAdmin(req, "ws-1");
 
       expect(ctx).toEqual({ activeOrgId: "org-1", userId: "user-1" });
@@ -126,7 +126,7 @@ describe("project-access middleware utilities", () => {
       });
       vi.mocked(rbacService.authorize).mockResolvedValueOnce(false);
 
-      const req: any = {};
+      const req: unknown = {};
       await expect(verifyWorkspaceAdmin(req, "ws-1")).rejects.toThrow(
         ForbiddenException,
       );
@@ -141,7 +141,7 @@ describe("project-access middleware utilities", () => {
       });
       prismaMock.project.findUnique.mockResolvedValueOnce(null);
 
-      const req: any = {};
+      const req: unknown = {};
       await expect(verifyProjectAccess(req, "proj-1")).rejects.toThrow(
         NotFoundException,
       );
@@ -155,7 +155,7 @@ describe("project-access middleware utilities", () => {
       const project = { id: "proj-1", workspaceId: "ws-1" };
       prismaMock.project.findUnique.mockResolvedValueOnce(project);
 
-      const req: any = {};
+      const req: unknown = {};
       const ctx = await verifyProjectAccess(req, "proj-1");
 
       expect(ctx).toEqual({ activeOrgId: "org-1", userId: "user-1", project });
@@ -178,7 +178,7 @@ describe("project-access middleware utilities", () => {
       const project = { id: "proj-1", workspaceId: "ws-1" };
       prismaMock.project.findUnique.mockResolvedValueOnce(project);
 
-      const req: any = {};
+      const req: unknown = {};
       const ctx = await verifyProjectAccess(req, "proj-1");
 
       expect(ctx).toEqual({ activeOrgId: "org-1", userId: "user-1", project });
@@ -201,7 +201,7 @@ describe("project-access middleware utilities", () => {
       const project = { id: "proj-1", workspaceId: "ws-1" };
       prismaMock.project.findUnique.mockResolvedValueOnce(project);
 
-      const req: any = {};
+      const req: unknown = {};
       const ctx = await verifyProjectAccess(req, "proj-1");
 
       expect(ctx).toEqual({ activeOrgId: "org-1", userId: "user-1", project });
@@ -225,7 +225,7 @@ describe("project-access middleware utilities", () => {
       prismaMock.project.findUnique.mockResolvedValueOnce(project);
       vi.mocked(rbacService.authorize).mockResolvedValueOnce(false);
 
-      const req: any = {};
+      const req: unknown = {};
       await expect(verifyProjectAccess(req, "proj-1")).rejects.toThrow(
         ForbiddenException,
       );
@@ -235,7 +235,7 @@ describe("project-access middleware utilities", () => {
   describe("verifyProjectAdmin", () => {
     it("UT-PA-09: throws NotFoundException if project is missing", async () => {
       prismaMock.project.findUnique.mockResolvedValueOnce(null);
-      const req: any = {};
+      const req: unknown = {};
       await expect(verifyProjectAdmin(req, "proj-missing")).rejects.toThrow(
         NotFoundException,
       );
@@ -249,7 +249,7 @@ describe("project-access middleware utilities", () => {
       const project = { id: "proj-1", workspaceId: "ws-1" };
       prismaMock.project.findUnique.mockResolvedValueOnce(project);
 
-      const req: any = {};
+      const req: unknown = {};
       const ctx = await verifyProjectAdmin(req, "proj-1");
 
       expect(ctx).toEqual({ activeOrgId: "org-1", userId: "admin-1", project });

@@ -5,6 +5,7 @@ import {
   createRoleSchema,
   updateRoleSchema,
   assignRoleSchema,
+  updateRoleHierarchySchema,
 } from "@/app/http/validators/rbac.validator";
 import { rbacRepository } from "@/app/repositories/rbac.repository";
 import { auditLogService } from "@/app/services/audit-log.service";
@@ -100,7 +101,8 @@ export const rbacController = {
         });
     }
 
-    const roles = await rbacService.getOrganizationRoles(orgId as string);
+    const search = req.query.search as string | undefined;
+    const roles = await rbacService.getOrganizationRoles(orgId as string, search);
     return res.status(200).json({ data: roles });
   }),
 
@@ -157,6 +159,58 @@ export const rbacController = {
     return res
       .status(201)
       .json({ message: "Role created successfully", data: role });
+  }),
+
+  updateRoleHierarchy: asyncHandler(async (req: Request, res: Response) => {
+    const { auth } = await import("@/lib/auth/auth");
+    const { betterAuthHeaders } = await import("@/lib/auth/node-headers");
+    const session = await auth.api.getSession({
+      headers: betterAuthHeaders(req),
+    });
+    if (!session?.user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const validatedData = updateRoleHierarchySchema.parse(req.body);
+    const isAllowed = await rbacService.authorize(
+      session.user.id,
+      "role:update-hierarchy",
+      {
+        organizationId: validatedData.organizationId,
+      },
+    );
+
+    if (!isAllowed) {
+      return res.status(403).json({
+        message: "Forbidden: You do not have permission to update role hierarchy.",
+      });
+    }
+
+    await rbacService.updateRoleHierarchy(
+      validatedData.roleIds,
+      validatedData.organizationId,
+      session.user.id
+    );
+
+    // Organization-level action: find first workspace to satisfy required workspaceId in AuditLog
+    const { workspaceId } = await resolveScopeContext(
+      "ORGANIZATION",
+      validatedData.organizationId,
+    );
+
+    if (workspaceId) {
+      await auditLogService.log({
+        workspaceId,
+        organizationId: validatedData.organizationId,
+        userId: session.user.id,
+        action: "UPDATE_ROLE_HIERARCHY",
+        entityType: "ROLE_HIERARCHY",
+        description: `User "${session.user.name}" updated the role hierarchy.`,
+        req,
+      });
+    }
+
+    return res.status(200).json({ message: "Role hierarchy updated successfully" });
   }),
 
   updateRolePermissions: asyncHandler(async (req: Request, res: Response) => {

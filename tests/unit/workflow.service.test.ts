@@ -25,8 +25,8 @@ describe("WorkflowService", () => {
   });
 
   it("should allow transition if a valid transition is found", async () => {
-    vi.mocked(workflowRepository.getTransitionsByProject).mockResolvedValueOnce([{ id: "t-1" } as any]);
-    vi.mocked(workflowRepository.findTransition).mockResolvedValueOnce({ id: "t-1" } as any);
+    vi.mocked(workflowRepository.getTransitionsByProject).mockResolvedValueOnce([{ id: "t-1" } as unknown]);
+    vi.mocked(workflowRepository.findTransition).mockResolvedValueOnce({ id: "t-1" } as unknown);
 
     const allowed = await workflowService.validateTransition("proj-1", "status-1", "status-2", "user-1");
     expect(allowed).toBe(true);
@@ -34,7 +34,7 @@ describe("WorkflowService", () => {
   });
 
   it("should throw BadRequestException if transition is not allowed", async () => {
-    vi.mocked(workflowRepository.getTransitionsByProject).mockResolvedValueOnce([{ id: "t-1" } as any]);
+    vi.mocked(workflowRepository.getTransitionsByProject).mockResolvedValueOnce([{ id: "t-1" } as unknown]);
     vi.mocked(workflowRepository.findTransition).mockResolvedValueOnce(null);
 
     await expect(
@@ -49,7 +49,7 @@ describe("WorkflowService", () => {
       fromStatusId: "status-1",
       toStatusId: "status-2",
     };
-    vi.mocked(workflowRepository.createTransition).mockResolvedValueOnce({ id: "t-1", ...data } as any);
+    vi.mocked(workflowRepository.createTransition).mockResolvedValueOnce({ id: "t-1", ...data } as unknown);
 
     const result = await workflowService.createTransition(data);
     expect(result.id).toBe("t-1");
@@ -57,7 +57,7 @@ describe("WorkflowService", () => {
   });
 
   it("should get project workflow", async () => {
-    vi.mocked(workflowRepository.getTransitionsByProject).mockResolvedValueOnce([{ id: "t-1" } as any]);
+    vi.mocked(workflowRepository.getTransitionsByProject).mockResolvedValueOnce([{ id: "t-1" } as unknown]);
     const result = await workflowService.getProjectWorkflow("proj-1");
     expect(result).toHaveLength(1);
   });

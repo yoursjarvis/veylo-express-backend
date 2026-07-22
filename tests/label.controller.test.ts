@@ -36,7 +36,7 @@ vi.mock("@/lib/prisma", () => ({
 import { labelController } from "../src/app/http/controllers/label.controller";
 
 function createRes() {
-  const res: any = {};
+  const res: unknown = {};
   res.status = vi.fn().mockReturnValue(res);
   res.json = vi.fn().mockReturnValue(res);
   return res;
@@ -59,15 +59,15 @@ describe("labelController", () => {
       };
       prismaMock.label.create.mockResolvedValueOnce(label);
 
-      const req: any = {
+      const req: unknown = {
         params: { projectId: "p1" },
         body: { name: "Bug", color: "#FF0000" },
       };
       const res = createRes();
 
-      await (labelController.createLabel as any)(req, res);
+      await (labelController.createLabel as unknown)(req, res);
 
-      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1");
+      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1", "project-label:create");
       expect(prismaMock.label.create).toHaveBeenCalledWith({
         data: {
           name: "Bug",
@@ -86,14 +86,14 @@ describe("labelController", () => {
     it("throws BadRequestException if label already exists", async () => {
       prismaMock.label.findUnique.mockResolvedValueOnce({ id: "l1" });
 
-      const req: any = {
+      const req: unknown = {
         params: { projectId: "p1" },
         body: { name: "Bug", color: "#FF0000" },
       };
       const res = createRes();
 
       await expect(
-        (labelController.createLabel as any)(req, res),
+        (labelController.createLabel as unknown)(req, res),
       ).rejects.toThrow("Label with this name already exists in the project");
     });
   });
@@ -103,12 +103,12 @@ describe("labelController", () => {
       const labels = [{ id: "l1", name: "Bug" }];
       prismaMock.label.findMany.mockResolvedValueOnce(labels);
 
-      const req: any = { params: { projectId: "p1" } };
+      const req: unknown = { params: { projectId: "p1" } };
       const res = createRes();
 
-      await (labelController.getLabels as any)(req, res);
+      await (labelController.getLabels as unknown)(req, res);
 
-      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1");
+      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1", "project-label:read");
       expect(res.json).toHaveBeenCalledWith({
         success: true,
         message: "Labels fetched successfully",
@@ -125,15 +125,15 @@ describe("labelController", () => {
       const updatedLabel = { id: "l1", name: "NewBug" };
       prismaMock.label.update.mockResolvedValueOnce(updatedLabel);
 
-      const req: any = {
+      const req: unknown = {
         params: { id: "l1" },
         body: { name: "NewBug" },
       };
       const res = createRes();
 
-      await (labelController.updateLabel as any)(req, res);
+      await (labelController.updateLabel as unknown)(req, res);
 
-      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1");
+      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1", "project-label:update");
       expect(prismaMock.label.update).toHaveBeenCalledWith({
         where: { id: "l1" },
         data: { name: "NewBug" },
@@ -148,11 +148,11 @@ describe("labelController", () => {
     it("throws NotFoundException if label not found", async () => {
       prismaMock.label.findUnique.mockResolvedValueOnce(null);
 
-      const req: any = { params: { id: "l1" }, body: { name: "Bug" } };
+      const req: unknown = { params: { id: "l1" }, body: { name: "Bug" } };
       const res = createRes();
 
       await expect(
-        (labelController.updateLabel as any)(req, res),
+        (labelController.updateLabel as unknown)(req, res),
       ).rejects.toThrow("Label not found");
     });
 
@@ -161,11 +161,11 @@ describe("labelController", () => {
       prismaMock.label.findUnique.mockResolvedValueOnce(label);
       prismaMock.label.findFirst.mockResolvedValueOnce({ id: "l2" });
 
-      const req: any = { params: { id: "l1" }, body: { name: "Bug" } };
+      const req: unknown = { params: { id: "l1" }, body: { name: "Bug" } };
       const res = createRes();
 
       await expect(
-        (labelController.updateLabel as any)(req, res),
+        (labelController.updateLabel as unknown)(req, res),
       ).rejects.toThrow("Label with this name already exists in the project");
     });
   });
@@ -175,12 +175,12 @@ describe("labelController", () => {
       const label = { id: "l1", projectId: "p1" };
       prismaMock.label.findUnique.mockResolvedValueOnce(label);
 
-      const req: any = { params: { id: "l1" } };
+      const req: unknown = { params: { id: "l1" } };
       const res = createRes();
 
-      await (labelController.deleteLabel as any)(req, res);
+      await (labelController.deleteLabel as unknown)(req, res);
 
-      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1");
+      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1", "project-label:delete");
       expect(prismaMock.label.delete).toHaveBeenCalledWith({
         where: { id: "l1" },
       });
@@ -194,11 +194,11 @@ describe("labelController", () => {
     it("throws NotFoundException if label not found", async () => {
       prismaMock.label.findUnique.mockResolvedValueOnce(null);
 
-      const req: any = { params: { id: "l1" } };
+      const req: unknown = { params: { id: "l1" } };
       const res = createRes();
 
       await expect(
-        (labelController.deleteLabel as any)(req, res),
+        (labelController.deleteLabel as unknown)(req, res),
       ).rejects.toThrow("Label not found");
     });
   });
@@ -208,12 +208,12 @@ describe("labelController", () => {
       const label = { id: "l1", projectId: "p1" };
       prismaMock.label.findUniqueWithTrashed.mockResolvedValue(label);
 
-      const req: any = { params: { id: "l1" } };
+      const req: unknown = { params: { id: "l1" } };
       const res = createRes();
 
-      await (labelController.restoreLabel as any)(req, res);
+      await (labelController.restoreLabel as unknown)(req, res);
 
-      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1");
+      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1", "project-label:restore");
       expect(prismaMock.label.restore).toHaveBeenCalledWith({
         where: { id: "l1" },
       });
@@ -227,11 +227,11 @@ describe("labelController", () => {
     it("throws NotFoundException if label not found", async () => {
       prismaMock.label.findUniqueWithTrashed.mockResolvedValueOnce(null);
 
-      const req: any = { params: { id: "l1" } };
+      const req: unknown = { params: { id: "l1" } };
       const res = createRes();
 
       await expect(
-        (labelController.restoreLabel as any)(req, res),
+        (labelController.restoreLabel as unknown)(req, res),
       ).rejects.toThrow("Label not found");
     });
   });
@@ -241,12 +241,12 @@ describe("labelController", () => {
       const label = { id: "l1", projectId: "p1" };
       prismaMock.label.findUniqueWithTrashed.mockResolvedValue(label);
 
-      const req: any = { params: { id: "l1" } };
+      const req: unknown = { params: { id: "l1" } };
       const res = createRes();
 
-      await (labelController.forceDeleteLabel as any)(req, res);
+      await (labelController.forceDeleteLabel as unknown)(req, res);
 
-      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1");
+      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1", "project-label:force-delete");
       expect(prismaMock.label.forceDelete).toHaveBeenCalledWith({
         where: { id: "l1" },
       });
@@ -260,11 +260,11 @@ describe("labelController", () => {
     it("throws NotFoundException if label not found", async () => {
       prismaMock.label.findUniqueWithTrashed.mockResolvedValueOnce(null);
 
-      const req: any = { params: { id: "l1" } };
+      const req: unknown = { params: { id: "l1" } };
       const res = createRes();
 
       await expect(
-        (labelController.forceDeleteLabel as any)(req, res),
+        (labelController.forceDeleteLabel as unknown)(req, res),
       ).rejects.toThrow("Label not found");
     });
   });

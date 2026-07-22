@@ -54,7 +54,7 @@ import { setMockUser } from "./helpers/auth";
 import { createUser } from "./helpers/factories";
 
 function createRes() {
-  const res: any = {};
+  const res: unknown = {};
   res.status = vi.fn().mockReturnValue(res);
   res.json = vi.fn().mockReturnValue(res);
   return res;
@@ -69,10 +69,10 @@ describe("rbacController", () => {
   describe("getPermissions", () => {
     it("fetches list of permissions successfully", async () => {
       mockRbacService.getPermissions.mockResolvedValueOnce(["role:read", "role:create"]);
-      const req: any = {};
+      const req: unknown = {};
       const res = createRes();
 
-      await (rbacController.getPermissions as any)(req, res);
+      await (rbacController.getPermissions as unknown)(req, res);
 
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith({ data: ["role:read", "role:create"] });
@@ -82,10 +82,10 @@ describe("rbacController", () => {
   describe("getMyPermissions", () => {
     it("returns context permissions successfully", async () => {
       mockRbacService.getPermissionsForContext.mockResolvedValueOnce(["*"]);
-      const req: any = { query: { workspaceId: "ws-1" } };
+      const req: unknown = { query: { workspaceId: "ws-1" } };
       const res = createRes();
 
-      await (rbacController.getMyPermissions as any)(req, res);
+      await (rbacController.getMyPermissions as unknown)(req, res);
 
       expect(mockRbacService.getPermissionsForContext).toHaveBeenCalledWith("user-123", {
         workspaceId: "ws-1",
@@ -97,10 +97,10 @@ describe("rbacController", () => {
   describe("getOrganizationRoles", () => {
     it("returns Forbidden if not authorized", async () => {
       mockRbacService.authorize.mockResolvedValueOnce(false);
-      const req: any = { params: { orgId: "org-1" } };
+      const req: unknown = { params: { orgId: "org-1" }, query: {} };
       const res = createRes();
 
-      await (rbacController.getOrganizationRoles as any)(req, res);
+      await (rbacController.getOrganizationRoles as unknown)(req, res);
 
       expect(res.status).toHaveBeenCalledWith(403);
     });
@@ -108,10 +108,10 @@ describe("rbacController", () => {
     it("returns roles if authorized", async () => {
       mockRbacService.authorize.mockResolvedValueOnce(true);
       mockRbacService.getOrganizationRoles.mockResolvedValueOnce([{ id: "r1", name: "Admin" }]);
-      const req: any = { params: { orgId: "org-1" } };
+      const req: unknown = { params: { orgId: "org-1" }, query: {} };
       const res = createRes();
 
-      await (rbacController.getOrganizationRoles as any)(req, res);
+      await (rbacController.getOrganizationRoles as unknown)(req, res);
 
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith({ data: [{ id: "r1", name: "Admin" }] });
@@ -124,7 +124,7 @@ describe("rbacController", () => {
       mockRbacService.createRole.mockResolvedValueOnce({ id: "r1", name: "Designer" });
       prismaMock.workspace.findFirst.mockResolvedValueOnce({ id: "ws-first" });
 
-      const req: any = {
+      const req: unknown = {
         body: {
           name: "Designer",
           organizationId: "550e8400-e29b-41d4-a716-446655440001",
@@ -134,7 +134,7 @@ describe("rbacController", () => {
       };
       const res = createRes();
 
-      await (rbacController.createRole as any)(req, res);
+      await (rbacController.createRole as unknown)(req, res);
 
       expect(mockRbacService.createRole).toHaveBeenCalledWith({
         name: "Designer",
@@ -151,6 +151,35 @@ describe("rbacController", () => {
     });
   });
 
+  describe("updateRoleHierarchy", () => {
+    it("updates role hierarchy and records audit log", async () => {
+      mockRbacService.authorize.mockResolvedValueOnce(true);
+      mockRbacService.updateRoleHierarchy = vi.fn().mockResolvedValueOnce(undefined);
+      prismaMock.workspace.findFirst.mockResolvedValueOnce({ id: "ws-first" });
+
+      const req: unknown = {
+        body: {
+          roleIds: ["550e8400-e29b-41d4-a716-446655440001", "550e8400-e29b-41d4-a716-446655440002"],
+          organizationId: "550e8400-e29b-41d4-a716-446655440000",
+        },
+      };
+      const res = createRes();
+
+      await (rbacController.updateRoleHierarchy as unknown)(req, res);
+
+      expect(mockRbacService.updateRoleHierarchy).toHaveBeenCalledWith(
+        ["550e8400-e29b-41d4-a716-446655440001", "550e8400-e29b-41d4-a716-446655440002"],
+        "550e8400-e29b-41d4-a716-446655440000",
+        "user-123"
+      );
+      expect(mockAuditLogService.log).toHaveBeenCalledWith(expect.objectContaining({
+        action: "UPDATE_ROLE_HIERARCHY",
+        workspaceId: "ws-first",
+      }));
+      expect(res.status).toHaveBeenCalledWith(200);
+    });
+  });
+
   describe("updateRolePermissions", () => {
     it("updates role permissions and records audit log", async () => {
       mockRbacRepository.getRoleById.mockResolvedValueOnce({
@@ -161,7 +190,7 @@ describe("rbacController", () => {
       mockRbacService.updateRole.mockResolvedValueOnce({ id: "r1", name: "Designer" });
       prismaMock.workspace.findFirst.mockResolvedValueOnce({ id: "ws-first" });
 
-      const req: any = {
+      const req: unknown = {
         params: { roleId: "r1" },
         body: {
           name: "NewName",
@@ -170,7 +199,7 @@ describe("rbacController", () => {
       };
       const res = createRes();
 
-      await (rbacController.updateRolePermissions as any)(req, res);
+      await (rbacController.updateRolePermissions as unknown)(req, res);
 
       expect(mockRbacService.updateRole).toHaveBeenCalledWith(
         "r1",
@@ -192,10 +221,10 @@ describe("rbacController", () => {
       mockRbacService.authorize.mockResolvedValueOnce(true);
       prismaMock.workspace.findFirst.mockResolvedValueOnce({ id: "ws-first" });
 
-      const req: any = { params: { roleId: "r1" } };
+      const req: unknown = { params: { roleId: "r1" } };
       const res = createRes();
 
-      await (rbacController.deleteRole as any)(req, res);
+      await (rbacController.deleteRole as unknown)(req, res);
 
       expect(mockRbacService.deleteRole).toHaveBeenCalledWith("r1");
       expect(res.status).toHaveBeenCalledWith(200);
@@ -210,7 +239,7 @@ describe("rbacController", () => {
       prismaMock.user.findUnique.mockResolvedValueOnce({ name: "Alice" });
       prismaMock.role.findMany.mockResolvedValueOnce([{ name: "Admin" }]);
 
-      const req: any = {
+      const req: unknown = {
         body: {
           userId: "550e8400-e29b-41d4-a716-446655440009",
           roleIds: ["550e8400-e29b-41d4-a716-446655440002"],
@@ -220,7 +249,7 @@ describe("rbacController", () => {
       };
       const res = createRes();
 
-      await (rbacController.assignRole as any)(req, res);
+      await (rbacController.assignRole as unknown)(req, res);
 
       expect(mockRbacService.assignRole).toHaveBeenCalledWith({
         userId: "550e8400-e29b-41d4-a716-446655440009",
@@ -239,7 +268,7 @@ describe("rbacController", () => {
       prismaMock.user.findUnique.mockResolvedValueOnce({ name: "Alice" });
       prismaMock.role.findMany.mockResolvedValueOnce([{ name: "Admin" }]);
 
-      const req: any = {
+      const req: unknown = {
         body: {
           userId: "550e8400-e29b-41d4-a716-446655440009",
           roleIds: ["550e8400-e29b-41d4-a716-446655440002"],
@@ -249,7 +278,7 @@ describe("rbacController", () => {
       };
       const res = createRes();
 
-      await (rbacController.removeRoleAssignment as any)(req, res);
+      await (rbacController.removeRoleAssignment as unknown)(req, res);
 
       expect(mockRbacService.removeRole).toHaveBeenCalledWith({
         userId: "550e8400-e29b-41d4-a716-446655440009",
@@ -266,14 +295,14 @@ describe("rbacController", () => {
       mockRbacService.authorize.mockResolvedValueOnce(true);
       mockRbacService.getUserAssignments.mockResolvedValueOnce([{ id: "assign-1" }]);
 
-      const req: any = {
+      const req: unknown = {
         query: {
           userId: "550e8400-e29b-41d4-a716-446655440009",
         },
       };
       const res = createRes();
 
-      await (rbacController.getUserAssignments as any)(req, res);
+      await (rbacController.getUserAssignments as unknown)(req, res);
 
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith({ data: [{ id: "assign-1" }] });

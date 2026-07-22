@@ -87,7 +87,7 @@ vi.mock("../src/lib/prisma", () => ({
 import { authService } from "../src/app/services/auth.service";
 
 function createRes() {
-  const res: any = {};
+  const res: unknown = {};
   res.setHeader = vi.fn();
   return res;
 }
@@ -119,7 +119,7 @@ describe("authService.login", () => {
     );
     authRepositoryMock.markLoginSuccess.mockResolvedValueOnce(undefined);
 
-    const req: any = {
+    const req: unknown = {
       headers: {
         "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/124.0",
       },
@@ -177,7 +177,7 @@ describe("authService.login", () => {
     });
     authRepositoryMock.markLoginFailure.mockResolvedValueOnce(undefined);
 
-    const req: any = { headers: {}, ip: "127.0.0.1" };
+    const req: unknown = { headers: {}, ip: "127.0.0.1" };
     const res = createRes();
 
     await expect(
@@ -206,7 +206,7 @@ describe("authService.login", () => {
       message: "Email not verified",
     });
 
-    const req: any = { headers: {}, ip: "127.0.0.1" };
+    const req: unknown = { headers: {}, ip: "127.0.0.1" };
     const res = createRes();
 
     await expect(
@@ -240,7 +240,7 @@ describe("authService.otherMethods", () => {
       response: { token: "session-token", user: { id: "user-1" } },
     });
 
-    const req: any = { headers: {}, ip: "127.0.0.1" };
+    const req: unknown = { headers: {}, ip: "127.0.0.1" };
     const res = createRes();
 
     const result = await authService.signUp(req, res, {
@@ -257,7 +257,7 @@ describe("authService.otherMethods", () => {
 
   it("logout and logoutAll: signs out the user", async () => {
     authApiMock.signOut.mockResolvedValueOnce({ headers: new Headers(), response: { success: true } });
-    const req: any = { headers: {} };
+    const req: unknown = { headers: {} };
     const res = createRes();
 
     const resultLogout = await authService.logout(req, res);
@@ -278,7 +278,7 @@ describe("authService.otherMethods", () => {
     });
     prismaMockLocal.account.findFirst.mockResolvedValueOnce({ id: "acc-1" });
 
-    const req: any = { headers: {} };
+    const req: unknown = { headers: {} };
     const res = createRes();
 
     const result = await authService.me(req, res);
@@ -288,7 +288,7 @@ describe("authService.otherMethods", () => {
 
   it("requestPasswordReset & resetPassword", async () => {
     authApiMock.requestPasswordReset.mockResolvedValueOnce(undefined);
-    const req: any = { headers: {} };
+    const req: unknown = { headers: {} };
 
     await authService.requestPasswordReset(req, { email: "test@example.com", redirectTo: "url" });
     expect(authApiMock.requestPasswordReset).toHaveBeenCalled();
@@ -305,7 +305,7 @@ describe("authService.otherMethods", () => {
     authApiMock.verifyEmail.mockResolvedValueOnce({ headers: new Headers(), response: { status: true } });
     prismaMockLocal.user.findUnique.mockResolvedValueOnce({ id: "user-1", email: "test@example.com", firstName: "Jane" });
 
-    const req: any = { headers: {} };
+    const req: unknown = { headers: {} };
     const res = createRes();
 
     const result = await authService.verifyEmail(req, res, "token");
@@ -318,7 +318,7 @@ describe("authService.otherMethods", () => {
     authApiMock.changePassword.mockResolvedValueOnce({ headers: new Headers(), response: { success: true } });
     prismaMockLocal.user.update.mockResolvedValueOnce({ id: "user-1" });
 
-    const req: any = { headers: {} };
+    const req: unknown = { headers: {} };
     const res = createRes();
 
     const result = await authService.changePassword(req, res, { currentPassword: "old", newPassword: "new" });
@@ -329,7 +329,7 @@ describe("authService.otherMethods", () => {
 
   it("listSessions & revokeSession", async () => {
     authApiMock.listSessions.mockResolvedValueOnce([{ id: "sess-1" }]);
-    const req: any = { headers: {} };
+    const req: unknown = { headers: {} };
     expect(await authService.listSessions(req)).toEqual([{ id: "sess-1" }]);
 
     authApiMock.getSession.mockResolvedValueOnce({ response: { user: { id: "user-1" } } });
@@ -344,7 +344,7 @@ describe("authService.otherMethods", () => {
 
   it("updateUser", async () => {
     authApiMock.updateUser.mockResolvedValueOnce({ headers: new Headers(), response: { success: true } });
-    const req: any = { headers: {} };
+    const req: unknown = { headers: {} };
     const res = createRes();
 
     const result = await authService.updateUser(req, res, { firstName: "Jane" });
@@ -357,7 +357,7 @@ describe("authService.otherMethods", () => {
     prismaMockLocal.verification.deleteMany.mockResolvedValueOnce({ count: 1 });
     prismaMockLocal.verification.create.mockResolvedValueOnce({ id: "ver-1" });
 
-    const req: any = { headers: {} };
+    const req: unknown = { headers: {} };
     await authService.sendTwoFactorOtp(req);
     expect(prismaMockLocal.verification.create).toHaveBeenCalled();
 
@@ -387,7 +387,7 @@ describe("authService.edgeCases", () => {
     // auto-login fails
     authApiMock.signInEmail.mockRejectedValueOnce(new Error("auto-login error"));
 
-    const req: any = { headers: {}, ip: "127.0.0.1" };
+    const req: unknown = { headers: {}, ip: "127.0.0.1" };
     const res = createRes();
 
     // Should not throw, should fall through to return the signup result
@@ -410,7 +410,7 @@ describe("authService.edgeCases", () => {
       response: { user: { id: "user-1", emailVerified: false } },
     });
 
-    const req: any = { headers: {}, ip: "127.0.0.1" };
+    const req: unknown = { headers: {}, ip: "127.0.0.1" };
     const res = createRes();
 
     const result = await authService.signUp(req, res, {
@@ -425,7 +425,7 @@ describe("authService.edgeCases", () => {
   });
 
   it("login: throws UnauthorizedException for inactive or deleted user", async () => {
-    const req: any = { headers: {}, ip: "127.0.0.1" };
+    const req: unknown = { headers: {}, ip: "127.0.0.1" };
     const res = createRes();
 
     // Inactive user
@@ -460,7 +460,7 @@ describe("authService.edgeCases", () => {
     // Unexpected error (not an APIError)
     authApiMock.signInEmail.mockRejectedValueOnce(new Error("Unexpected DB failure"));
 
-    const req: any = { headers: {}, ip: "127.0.0.1" };
+    const req: unknown = { headers: {}, ip: "127.0.0.1" };
     const res = createRes();
 
     await expect(
@@ -471,13 +471,13 @@ describe("authService.edgeCases", () => {
 
   it("sendTwoFactorOtp: throws UnauthorizedException when no session", async () => {
     authApiMock.getSession.mockResolvedValueOnce(null);
-    const req: any = { headers: {} };
+    const req: unknown = { headers: {} };
     await expect(authService.sendTwoFactorOtp(req)).rejects.toThrow();
   });
 
   it("enableTwoFactorSocial: throws when no session", async () => {
     authApiMock.getSession.mockResolvedValueOnce(null);
-    const req: any = { headers: {} };
+    const req: unknown = { headers: {} };
     const res = createRes();
     await expect(
       authService.enableTwoFactorSocial(req, res, { otp: "123456" })
@@ -488,7 +488,7 @@ describe("authService.edgeCases", () => {
     authApiMock.getSession.mockResolvedValueOnce({ user: { id: "user-1", email: "test@example.com" } });
     prismaMockLocal.verification.findFirst.mockResolvedValueOnce(null); // no matching OTP
 
-    const req: any = { headers: {} };
+    const req: unknown = { headers: {} };
     const res = createRes();
 
     await expect(
@@ -498,7 +498,7 @@ describe("authService.edgeCases", () => {
 
   it("revokeSession: throws UnauthorizedException if no userId in session", async () => {
     authApiMock.getSession.mockResolvedValueOnce({ response: { user: null } });
-    const req: any = { headers: {} };
+    const req: unknown = { headers: {} };
     await expect(authService.revokeSession(req, "sess-1")).rejects.toThrow();
   });
 
@@ -508,7 +508,7 @@ describe("authService.edgeCases", () => {
       response: { session: { id: "sess-1" } }, // no user
     });
 
-    const req: any = { headers: {} };
+    const req: unknown = { headers: {} };
     const res = createRes();
 
     const result = await authService.me(req, res);

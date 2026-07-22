@@ -36,8 +36,8 @@ import { healthController } from "@/app/http/controllers/health.controller";
 import { prismaMock } from "../../tests/helpers/db";
 
 function createMockReqRes() {
-  const req: any = {};
-  const res: any = {};
+  const req: unknown = {};
+  const res: unknown = {};
   res.status = vi.fn().mockReturnValue(res);
   res.json = vi.fn().mockReturnValue(res);
   return { req, res };

@@ -14,7 +14,7 @@ import { ok } from "@/utils/http-response";
 export const sprintController = {
   createSprint: asyncHandler(async (req: Request, res: Response) => {
     const projectId = req.params.projectId as string;
-    const { project } = await verifyProjectAccess(req, projectId);
+    const { project } = await verifyProjectAccess(req, projectId, "sprint:create");
     const { organizationId } = project;
 
     const validatedData = sprintCreateSchema.parse(req.body);
@@ -30,7 +30,7 @@ export const sprintController = {
 
   getSprints: asyncHandler(async (req: Request, res: Response) => {
     const projectId = req.params.projectId as string;
-    await verifyProjectAccess(req, projectId);
+    await verifyProjectAccess(req, projectId, "sprint:read");
 
     const sprints = await sprintService.getSprints(projectId);
 
@@ -45,7 +45,7 @@ export const sprintController = {
       throw new NotFoundException("Sprint not found");
     }
 
-    await verifyProjectAccess(req, sprint.projectId);
+    await verifyProjectAccess(req, sprint.projectId, "sprint:read");
 
     return ok(res, "Sprint details fetched successfully", sprint);
   }),
@@ -58,7 +58,7 @@ export const sprintController = {
       throw new NotFoundException("Sprint not found");
     }
 
-    const { userId } = await verifyProjectAccess(req, existingSprint.projectId);
+    const { userId } = await verifyProjectAccess(req, existingSprint.projectId, "sprint:update");
     const validatedData = sprintUpdateSchema.parse(req.body);
 
     const updatedSprint = await sprintService.updateSprint(
@@ -78,7 +78,7 @@ export const sprintController = {
       throw new NotFoundException("Sprint not found");
     }
 
-    await verifyProjectAccess(req, sprint.projectId);
+    await verifyProjectAccess(req, sprint.projectId, "sprint:delete");
 
     await sprintService.deleteSprint(sprintId);
 
@@ -93,7 +93,7 @@ export const sprintController = {
       throw new NotFoundException("Sprint not found");
     }
 
-    await verifyProjectAccess(req, sprint.projectId);
+    await verifyProjectAccess(req, sprint.projectId, "sprint:restore");
 
     await sprintService.restoreSprint(sprintId);
 
@@ -108,7 +108,7 @@ export const sprintController = {
       throw new NotFoundException("Sprint not found");
     }
 
-    await verifyProjectAccess(req, sprint.projectId);
+    await verifyProjectAccess(req, sprint.projectId, "sprint:force-delete");
 
     await sprintService.forceDeleteSprint(sprintId);
 

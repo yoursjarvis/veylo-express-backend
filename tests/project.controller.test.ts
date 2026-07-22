@@ -97,7 +97,7 @@ vi.mock("../src/utils/crypto", () => ({
 import { projectController } from "../src/app/http/controllers/project.controller";
 
 function createRes() {
-  const res: any = {};
+  const res: unknown = {};
   res.status = vi.fn().mockReturnValue(res);
   res.json = vi.fn().mockReturnValue(res);
   return res;
@@ -121,10 +121,10 @@ describe("projectController", () => {
       ];
       prismaMock.projectTemplate.findMany.mockResolvedValueOnce(templates);
 
-      const req: any = {};
+      const req: unknown = {};
       const res = createRes();
 
-      await (projectController.getProjectTemplates as any)(req, res);
+      await (projectController.getProjectTemplates as unknown)(req, res);
 
       expect(prismaMock.projectTemplate.findMany).toHaveBeenCalled();
       expect(res.json).toHaveBeenCalledWith({
@@ -146,10 +146,10 @@ describe("projectController", () => {
       };
       prismaMock.projectTemplate.findUnique.mockResolvedValueOnce(template);
 
-      const req: any = { params: { slug: "software-scrum" } };
+      const req: unknown = { params: { slug: "software-scrum" } };
       const res = createRes();
 
-      await (projectController.getProjectTemplateBySlug as any)(req, res);
+      await (projectController.getProjectTemplateBySlug as unknown)(req, res);
 
       expect(prismaMock.projectTemplate.findUnique).toHaveBeenCalledWith({
         where: { slug: "software-scrum" },
@@ -164,11 +164,11 @@ describe("projectController", () => {
     it("throws NotFoundException when template is not found", async () => {
       prismaMock.projectTemplate.findUnique.mockResolvedValueOnce(null);
 
-      const req: any = { params: { slug: "non-existent" } };
+      const req: unknown = { params: { slug: "non-existent" } };
       const res = createRes();
 
       await expect(
-        (projectController.getProjectTemplateBySlug as any)(req, res),
+        (projectController.getProjectTemplateBySlug as unknown)(req, res),
       ).rejects.toThrow("Project template not found");
     });
   });
@@ -198,7 +198,7 @@ describe("projectController", () => {
       };
       prismaMock.project.create.mockResolvedValueOnce(createdProject);
 
-      const req: any = {
+      const req: unknown = {
         params: { workspaceId: "ws-123" },
         body: {
           title: "New Project",
@@ -208,7 +208,7 @@ describe("projectController", () => {
       };
       const res = createRes();
 
-      await (projectController.createProject as any)(req, res);
+      await (projectController.createProject as unknown)(req, res);
 
       expect(prismaMock.projectTemplate.findUnique).toHaveBeenCalledWith({
         where: { slug: "software-scrum" },
@@ -275,7 +275,7 @@ describe("projectController", () => {
       };
       prismaMock.project.create.mockResolvedValueOnce(createdProject);
 
-      const req: any = {
+      const req: unknown = {
         params: { workspaceId: "ws-123" },
         body: {
           title: "New Project",
@@ -285,7 +285,7 @@ describe("projectController", () => {
       };
       const res = createRes();
 
-      await (projectController.createProject as any)(req, res);
+      await (projectController.createProject as unknown)(req, res);
 
       expect(prismaMock.project.create).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -328,10 +328,10 @@ describe("projectController", () => {
       });
       prismaMock.project.findMany.mockResolvedValueOnce(mockProjects);
 
-      const req: any = { params: { workspaceId: "ws-123" } };
+      const req: unknown = { params: { workspaceId: "ws-123" } };
       const res = createRes();
 
-      await (projectController.getProjects as any)(req, res);
+      await (projectController.getProjects as unknown)(req, res);
 
       expect(prismaMock.project.findMany).toHaveBeenCalledWith({
         where: {
@@ -356,10 +356,10 @@ describe("projectController", () => {
       mockResolveSession.mockResolvedValueOnce({ userId: "user-123" });
       prismaMock.project.findMany.mockResolvedValueOnce(mockProjects);
 
-      const req: any = { params: { workspaceId: "ws-123" } };
+      const req: unknown = { params: { workspaceId: "ws-123" } };
       const res = createRes();
 
-      await (projectController.getProjects as any)(req, res);
+      await (projectController.getProjects as unknown)(req, res);
 
       expect(prismaMock.project.findMany).toHaveBeenCalledWith({
         where: {
@@ -386,10 +386,10 @@ describe("projectController", () => {
       };
       prismaMock.project.findUnique.mockResolvedValueOnce(projectDetails);
 
-      const req: any = { params: { id: "proj-123" } };
+      const req: unknown = { params: { id: "proj-123" } };
       const res = createRes();
 
-      await (projectController.getProject as any)(req, res);
+      await (projectController.getProject as unknown)(req, res);
 
       expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "proj-123");
       expect(prismaMock.project.findUnique).toHaveBeenCalledWith({
@@ -409,13 +409,13 @@ describe("projectController", () => {
       const updatedProject = { id: "proj-123", title: "Updated Project" };
       prismaMock.project.update.mockResolvedValueOnce(updatedProject);
 
-      const req: any = {
+      const req: unknown = {
         params: { id: "proj-123" },
         body: { title: "Updated Project" },
       };
       const res = createRes();
 
-      await (projectController.updateProject as any)(req, res);
+      await (projectController.updateProject as unknown)(req, res);
 
       expect(mockVerifyProjectAdmin).toHaveBeenCalledWith(req, "proj-123");
       expect(prismaMock.project.update).toHaveBeenCalledWith({
@@ -434,12 +434,12 @@ describe("projectController", () => {
     it("verifies admin access and deletes project", async () => {
       prismaMock.project.delete.mockResolvedValueOnce({ id: "proj-123" });
 
-      const req: any = { params: { id: "proj-123" } };
+      const req: unknown = { params: { id: "proj-123" } };
       const res = createRes();
 
-      await (projectController.deleteProject as any)(req, res);
+      await (projectController.deleteProject as unknown)(req, res);
 
-      expect(mockVerifyProjectAdmin).toHaveBeenCalledWith(req, "proj-123");
+      expect(mockVerifyProjectAdmin).toHaveBeenCalledWith(req, "proj-123", "project:delete");
       expect(prismaMock.project.delete).toHaveBeenCalledWith({
         where: { id: "proj-123" },
       });
@@ -456,12 +456,12 @@ describe("projectController", () => {
       const members = [{ id: "m1", userId: "u1", user: { name: "User" } }];
       prismaMock.projectMember.findMany.mockResolvedValueOnce(members);
 
-      const req: any = { params: { id: "proj-123" } };
+      const req: unknown = { params: { id: "proj-123" } };
       const res = createRes();
 
-      await (projectController.getProjectMembers as any)(req, res);
+      await (projectController.getProjectMembers as unknown)(req, res);
 
-      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "proj-123");
+      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "proj-123", "project-member:read");
       expect(prismaMock.projectMember.findMany).toHaveBeenCalledWith({
         where: { projectId: "proj-123" },
         include: expect.any(Object),
@@ -476,25 +476,25 @@ describe("projectController", () => {
 
   describe("addProjectMembers", () => {
     it("throws BadRequestException if userIds is empty or not array", async () => {
-      const req: any = { params: { id: "proj-123" }, body: { userIds: [] } };
+      const req: unknown = { params: { id: "proj-123" }, body: { userIds: [] } };
       const res = createRes();
 
       await expect(
-        (projectController.addProjectMembers as any)(req, res),
+        (projectController.addProjectMembers as unknown)(req, res),
       ).rejects.toThrow("User IDs are required");
     });
 
     it("throws BadRequestException if user is not in workspace", async () => {
       prismaMock.workspaceMember.findMany.mockResolvedValueOnce([]); // only 0 members match
 
-      const req: any = {
+      const req: unknown = {
         params: { id: "proj-123" },
         body: { userIds: ["user-123"] },
       };
       const res = createRes();
 
       await expect(
-        (projectController.addProjectMembers as any)(req, res),
+        (projectController.addProjectMembers as unknown)(req, res),
       ).rejects.toThrow("One or more users are not members of this workspace");
     });
 
@@ -505,13 +505,13 @@ describe("projectController", () => {
       ]);
       prismaMock.projectMember.upsert.mockResolvedValueOnce({ id: "pm-1" });
 
-      const req: any = {
+      const req: unknown = {
         params: { id: "proj-123" },
         body: { userIds: ["user-123"] },
       };
       const res = createRes();
 
-      await (projectController.addProjectMembers as any)(req, res);
+      await (projectController.addProjectMembers as unknown)(req, res);
 
       expect(prismaMock.projectMember.upsert).toHaveBeenCalledWith({
         where: {
@@ -534,12 +534,12 @@ describe("projectController", () => {
       prismaMock.projectMember.delete.mockResolvedValueOnce({ id: "pm-1" });
       prismaMock.user.findUnique.mockResolvedValueOnce({ name: "John Doe" });
 
-      const req: any = { params: { id: "proj-123", userId: "user-123" } };
+      const req: unknown = { params: { id: "proj-123", userId: "user-123" } };
       const res = createRes();
 
-      await (projectController.removeProjectMember as any)(req, res);
+      await (projectController.removeProjectMember as unknown)(req, res);
 
-      expect(mockVerifyProjectAdmin).toHaveBeenCalledWith(req, "proj-123");
+      expect(mockVerifyProjectAdmin).toHaveBeenCalledWith(req, "proj-123", "project-member:remove-member");
       expect(prismaMock.projectMember.delete).toHaveBeenCalledWith({
         where: {
           projectId_userId_organizationId: { projectId: "proj-123", userId: "user-123", organizationId: "org-123" },
@@ -581,10 +581,10 @@ describe("projectController", () => {
       };
       prismaMock.vault.findUnique.mockResolvedValueOnce(mockVault);
 
-      const req: any = { params: { id: "proj-123" } };
+      const req: unknown = { params: { id: "proj-123" } };
       const res = createRes();
 
-      await (projectController.getProjectVault as any)(req, res);
+      await (projectController.getProjectVault as unknown)(req, res);
 
       expect(res.json).toHaveBeenCalledWith({
         success: true,
@@ -611,10 +611,10 @@ describe("projectController", () => {
       const createdVault = { id: "v-123", projectId: "proj-123", services: [] };
       prismaMock.vault.create.mockResolvedValueOnce(createdVault);
 
-      const req: any = { params: { id: "proj-123" } };
+      const req: unknown = { params: { id: "proj-123" } };
       const res = createRes();
 
-      await (projectController.getProjectVault as any)(req, res);
+      await (projectController.getProjectVault as unknown)(req, res);
 
       expect(prismaMock.vault.create).toHaveBeenCalledWith({
         data: { projectId: "proj-123", organizationId: "org-123" },
@@ -629,7 +629,7 @@ describe("projectController", () => {
 
     it("returns '[Decryption Failed]' fallback when decryption throws", async () => {
       const { decrypt } = await import("../src/utils/crypto");
-      (decrypt as any).mockImplementation(() => {
+      (decrypt as unknown).mockImplementation(() => {
         throw new Error("Tampered data");
       });
 
@@ -653,13 +653,13 @@ describe("projectController", () => {
       };
       prismaMock.vault.findUnique.mockResolvedValueOnce(mockVault);
 
-      const req: any = { params: { id: "proj-123" } };
+      const req: unknown = { params: { id: "proj-123" } };
       const res = createRes();
 
-      await (projectController.getProjectVault as any)(req, res);
+      await (projectController.getProjectVault as unknown)(req, res);
 
       // Restore mock decryption
-      (decrypt as any).mockImplementation((val: string) =>
+      (decrypt as unknown).mockImplementation((val: string) =>
         val.replace("encrypted_", ""),
       );
 
@@ -686,14 +686,14 @@ describe("projectController", () => {
     it("throws NotFoundException if vault does not exist", async () => {
       prismaMock.vault.findUnique.mockResolvedValueOnce(null);
 
-      const req: any = {
+      const req: unknown = {
         params: { id: "proj-123" },
         body: { name: "service-1" },
       };
       const res = createRes();
 
       await expect(
-        (projectController.addVaultService as any)(req, res),
+        (projectController.addVaultService as unknown)(req, res),
       ).rejects.toThrow("Vault not found for this project");
     });
 
@@ -704,14 +704,14 @@ describe("projectController", () => {
         name: "service-1",
       });
 
-      const req: any = {
+      const req: unknown = {
         params: { id: "proj-123" },
         body: { name: "service-1" },
       };
       const res = createRes();
 
       await expect(
-        (projectController.addVaultService as any)(req, res),
+        (projectController.addVaultService as unknown)(req, res),
       ).rejects.toThrow("Service already exists");
     });
 
@@ -722,13 +722,13 @@ describe("projectController", () => {
       const newService = { id: "s-new", name: "service-1" };
       prismaMock.vaultService.create.mockResolvedValueOnce(newService);
 
-      const req: any = {
+      const req: unknown = {
         params: { id: "proj-123" },
         body: { name: "service-1" },
       };
       const res = createRes();
 
-      await (projectController.addVaultService as any)(req, res);
+      await (projectController.addVaultService as unknown)(req, res);
 
       expect(prismaMock.vaultService.create).toHaveBeenCalledWith({
         data: { vaultId: "v-123", name: "service-1", organizationId: "org-123" },
@@ -745,10 +745,10 @@ describe("projectController", () => {
     it("deletes service successfully", async () => {
       prismaMock.vaultService.delete.mockResolvedValueOnce({ id: "s-123" });
 
-      const req: any = { params: { id: "proj-123", serviceId: "s-123" } };
+      const req: unknown = { params: { id: "proj-123", serviceId: "s-123" } };
       const res = createRes();
 
-      await (projectController.deleteVaultService as any)(req, res);
+      await (projectController.deleteVaultService as unknown)(req, res);
 
       expect(prismaMock.vaultService.delete).toHaveBeenCalledWith({
         where: { id: "s-123" },
@@ -774,13 +774,13 @@ describe("projectController", () => {
       };
       prismaMock.vaultItem.upsert.mockResolvedValueOnce(upsertedItem);
 
-      const req: any = {
+      const req: unknown = {
         params: { id: "proj-123", serviceId: "s-123" },
         body: { key: "apiKey", value: "plainSecret", note: "plainNote" },
       };
       const res = createRes();
 
-      await (projectController.addOrUpdateVaultItem as any)(req, res);
+      await (projectController.addOrUpdateVaultItem as unknown)(req, res);
 
       expect(prismaMock.vaultItem.upsert).toHaveBeenCalledWith({
         where: { serviceId_key_organizationId: { serviceId: "s-123", key: "apiKey", organizationId: "org-123" } },
@@ -815,13 +815,13 @@ describe("projectController", () => {
       };
       prismaMock.vaultItem.update.mockResolvedValueOnce(updatedItem);
 
-      const req: any = {
+      const req: unknown = {
         params: { id: "proj-123", itemId: "i-123" },
         body: { value: "plainSecret" },
       };
       const res = createRes();
 
-      await (projectController.updateVaultItem as any)(req, res);
+      await (projectController.updateVaultItem as unknown)(req, res);
 
       expect(prismaMock.vaultItem.update).toHaveBeenCalledWith({
         where: { id: "i-123" },
@@ -838,13 +838,13 @@ describe("projectController", () => {
       };
       prismaMock.vaultItem.update.mockResolvedValueOnce(updatedItem1);
 
-      const req1: any = {
+      const req1: unknown = {
         params: { id: "proj-123", itemId: "i-123" },
         body: { note: "newNote" },
       };
       const res1 = createRes();
 
-      await (projectController.updateVaultItem as any)(req1, res1);
+      await (projectController.updateVaultItem as unknown)(req1, res1);
 
       expect(prismaMock.vaultItem.update).toHaveBeenCalledWith({
         where: { id: "i-123" },
@@ -859,13 +859,13 @@ describe("projectController", () => {
       };
       prismaMock.vaultItem.update.mockResolvedValueOnce(updatedItem2);
 
-      const req2: any = {
+      const req2: unknown = {
         params: { id: "proj-123", itemId: "i-123" },
         body: { note: null },
       };
       const res2 = createRes();
 
-      await (projectController.updateVaultItem as any)(req2, res2);
+      await (projectController.updateVaultItem as unknown)(req2, res2);
 
       expect(prismaMock.vaultItem.update).toHaveBeenCalledWith({
         where: { id: "i-123" },
@@ -878,10 +878,10 @@ describe("projectController", () => {
     it("deletes vault item successfully", async () => {
       prismaMock.vaultItem.delete.mockResolvedValueOnce({ id: "i-123" });
 
-      const req: any = { params: { id: "proj-123", itemId: "i-123" } };
+      const req: unknown = { params: { id: "proj-123", itemId: "i-123" } };
       const res = createRes();
 
-      await (projectController.deleteVaultItem as any)(req, res);
+      await (projectController.deleteVaultItem as unknown)(req, res);
 
       expect(prismaMock.vaultItem.delete).toHaveBeenCalledWith({
         where: { id: "i-123" },
@@ -891,16 +891,16 @@ describe("projectController", () => {
 
   describe("uploadProjectFile", () => {
     it("throws BadRequestException if no file uploaded", async () => {
-      const req: any = { params: { id: "proj-123" } }; // no req.file
+      const req: unknown = { params: { id: "proj-123" } }; // no req.file
       const res = createRes();
 
       await expect(
-        (projectController.uploadProjectFile as any)(req, res),
+        (projectController.uploadProjectFile as unknown)(req, res),
       ).rejects.toThrow("No file uploaded");
     });
 
     it("throws BadRequestException if extension is disallowed", async () => {
-      const req: any = {
+      const req: unknown = {
         params: { id: "proj-123" },
         file: {
           originalname: "malicious.exe",
@@ -912,7 +912,7 @@ describe("projectController", () => {
       const res = createRes();
 
       await expect(
-        (projectController.uploadProjectFile as any)(req, res),
+        (projectController.uploadProjectFile as unknown)(req, res),
       ).rejects.toThrow("File type not allowed or is potentially malicious");
     });
 
@@ -928,7 +928,7 @@ describe("projectController", () => {
       mockMediaService.addMedia.mockResolvedValueOnce(mockMedia);
       mockMediaService.generateUrl.mockReturnValueOnce("http://s3/doc.pdf");
 
-      const req: any = {
+      const req: unknown = {
         params: { id: "proj-123" },
         file: {
           originalname: "doc.pdf",
@@ -939,7 +939,7 @@ describe("projectController", () => {
       };
       const res = createRes();
 
-      await (projectController.uploadProjectFile as any)(req, res);
+      await (projectController.uploadProjectFile as unknown)(req, res);
 
       expect(mockMediaService.addMedia).toHaveBeenCalledWith(
         "Project",
@@ -980,10 +980,10 @@ describe("projectController", () => {
       mockMediaService.getMedia.mockResolvedValueOnce(mockFiles);
       mockMediaService.generateUrl.mockReturnValueOnce("http://s3/f1.pdf");
 
-      const req: any = { params: { id: "proj-123" } };
+      const req: unknown = { params: { id: "proj-123" } };
       const res = createRes();
 
-      await (projectController.getProjectFiles as any)(req, res);
+      await (projectController.getProjectFiles as unknown)(req, res);
 
       expect(mockMediaService.getMedia).toHaveBeenCalledWith(
         "Project",
@@ -1002,11 +1002,11 @@ describe("projectController", () => {
     it("throws NotFoundException if file is not part of project", async () => {
       prismaMock.media.findFirst.mockResolvedValueOnce(null);
 
-      const req: any = { params: { id: "proj-123", fileId: "m-missing" } };
+      const req: unknown = { params: { id: "proj-123", fileId: "m-missing" } };
       const res = createRes();
 
       await expect(
-        (projectController.deleteProjectFile as any)(req, res),
+        (projectController.deleteProjectFile as unknown)(req, res),
       ).rejects.toThrow("File not found in this project");
     });
 
@@ -1014,10 +1014,10 @@ describe("projectController", () => {
       prismaMock.media.findFirst.mockResolvedValueOnce({ id: "m-1" });
       mockMediaService.deleteMedia.mockResolvedValueOnce(undefined);
 
-      const req: any = { params: { id: "proj-123", fileId: "m-1" } };
+      const req: unknown = { params: { id: "proj-123", fileId: "m-1" } };
       const res = createRes();
 
-      await (projectController.deleteProjectFile as any)(req, res);
+      await (projectController.deleteProjectFile as unknown)(req, res);
 
       expect(prismaMock.media.findFirst).toHaveBeenCalledWith({
         where: { id: "m-1", modelType: "Project", modelId: "proj-123" },

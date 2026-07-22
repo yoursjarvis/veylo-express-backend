@@ -32,7 +32,7 @@ vi.mock("@/lib/prisma", () => ({
 import { epicController } from "../src/app/http/controllers/epic.controller";
 
 function createRes() {
-  const res: any = {};
+  const res: unknown = {};
   res.status = vi.fn().mockReturnValue(res);
   res.json = vi.fn().mockReturnValue(res);
   return res;
@@ -53,7 +53,7 @@ describe("epicController", () => {
       };
       prismaMock.epic.create.mockResolvedValueOnce(epic);
 
-      const req: any = {
+      const req: unknown = {
         params: { projectId: "p1" },
         body: {
           title: "Epic 1",
@@ -64,9 +64,9 @@ describe("epicController", () => {
       };
       const res = createRes();
 
-      await (epicController.createEpic as any)(req, res);
+      await (epicController.createEpic as unknown)(req, res);
 
-      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1");
+      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1", "project-epic:create");
       expect(prismaMock.epic.create).toHaveBeenCalledWith({
         data: {
           title: "Epic 1",
@@ -92,12 +92,12 @@ describe("epicController", () => {
       const epics = [{ id: "e1", title: "Epic 1" }];
       prismaMock.epic.findMany.mockResolvedValueOnce(epics);
 
-      const req: any = { params: { projectId: "p1" } };
+      const req: unknown = { params: { projectId: "p1" } };
       const res = createRes();
 
-      await (epicController.getEpics as any)(req, res);
+      await (epicController.getEpics as unknown)(req, res);
 
-      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1");
+      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1", "project-epic:read");
       expect(res.json).toHaveBeenCalledWith({
         success: true,
         message: "Epics fetched successfully",
@@ -111,12 +111,12 @@ describe("epicController", () => {
       const epic = { id: "e1", title: "Epic 1", projectId: "p1" };
       prismaMock.epic.findUnique.mockResolvedValueOnce(epic);
 
-      const req: any = { params: { id: "e1" } };
+      const req: unknown = { params: { id: "e1" } };
       const res = createRes();
 
-      await (epicController.getEpic as any)(req, res);
+      await (epicController.getEpic as unknown)(req, res);
 
-      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1");
+      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1", "project-epic:read");
       expect(res.json).toHaveBeenCalledWith({
         success: true,
         message: "Epic details fetched successfully",
@@ -127,10 +127,10 @@ describe("epicController", () => {
     it("throws NotFoundException if epic not found", async () => {
       prismaMock.epic.findUnique.mockResolvedValueOnce(null);
 
-      const req: any = { params: { id: "e1" } };
+      const req: unknown = { params: { id: "e1" } };
       const res = createRes();
 
-      await expect((epicController.getEpic as any)(req, res)).rejects.toThrow(
+      await expect((epicController.getEpic as unknown)(req, res)).rejects.toThrow(
         "Epic not found",
       );
     });
@@ -143,15 +143,15 @@ describe("epicController", () => {
       const updatedEpic = { id: "e1", title: "Updated" };
       prismaMock.epic.update.mockResolvedValueOnce(updatedEpic);
 
-      const req: any = {
+      const req: unknown = {
         params: { id: "e1" },
         body: { title: "Updated", status: "in_progress" },
       };
       const res = createRes();
 
-      await (epicController.updateEpic as any)(req, res);
+      await (epicController.updateEpic as unknown)(req, res);
 
-      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1");
+      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1", "project-epic:update");
       expect(prismaMock.epic.update).toHaveBeenCalledWith({
         where: { id: "e1" },
         data: { title: "Updated", status: "in_progress" },
@@ -166,11 +166,11 @@ describe("epicController", () => {
     it("throws NotFoundException if epic not found", async () => {
       prismaMock.epic.findUnique.mockResolvedValueOnce(null);
 
-      const req: any = { params: { id: "e1" }, body: { title: "Updated" } };
+      const req: unknown = { params: { id: "e1" }, body: { title: "Updated" } };
       const res = createRes();
 
       await expect(
-        (epicController.updateEpic as any)(req, res),
+        (epicController.updateEpic as unknown)(req, res),
       ).rejects.toThrow("Epic not found");
     });
   });
@@ -180,12 +180,12 @@ describe("epicController", () => {
       const epic = { id: "e1", projectId: "p1" };
       prismaMock.epic.findUnique.mockResolvedValueOnce(epic);
 
-      const req: any = { params: { id: "e1" } };
+      const req: unknown = { params: { id: "e1" } };
       const res = createRes();
 
-      await (epicController.deleteEpic as any)(req, res);
+      await (epicController.deleteEpic as unknown)(req, res);
 
-      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1");
+      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1", "project-epic:delete");
       expect(prismaMock.epic.delete).toHaveBeenCalledWith({
         where: { id: "e1" },
       });
@@ -199,11 +199,11 @@ describe("epicController", () => {
     it("throws NotFoundException if epic not found", async () => {
       prismaMock.epic.findUnique.mockResolvedValueOnce(null);
 
-      const req: any = { params: { id: "e1" } };
+      const req: unknown = { params: { id: "e1" } };
       const res = createRes();
 
       await expect(
-        (epicController.deleteEpic as any)(req, res),
+        (epicController.deleteEpic as unknown)(req, res),
       ).rejects.toThrow("Epic not found");
     });
   });

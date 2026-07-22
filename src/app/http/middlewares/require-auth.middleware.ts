@@ -4,6 +4,7 @@ import { authRepository } from "@/app/repositories/auth.repository";
 import { auth } from "@/lib/auth/auth";
 import { betterAuthHeaders } from "@/lib/auth/node-headers";
 import { forwardSetCookie } from "@/lib/auth/set-cookie";
+import { redis } from "@/lib/redis";
 import { UnauthorizedException } from "@/utils/app-error";
 
 export async function requireAuth(
@@ -32,6 +33,16 @@ export async function requireAuth(
         Express.Request["auth"]
       >["session"],
     };
+
+    // Attach permissions version header for frontend cache invalidation
+    try {
+      const version = await redis.get(
+        `user:permissions_version:${req.auth.user.id}`,
+      );
+      res.setHeader("x-permissions-version", version || "0");
+    } catch (e) {
+      // Ignore redis errors here so auth still works
+    }
 
     const token = result.response.session.token;
     if (token) {

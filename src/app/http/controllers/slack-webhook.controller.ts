@@ -11,7 +11,7 @@ import { ok } from "@/utils/http-response";
 export const slackWebhookController = {
   getWebhooks: asyncHandler(async (req: Request, res: Response) => {
     const projectId = req.params.projectId as string;
-    await verifyProjectAccess(req, projectId);
+    await verifyProjectAccess(req, projectId, "project-webhook:read");
 
     const webhooks = await slackWebhookService.getWebhooks(projectId);
 
@@ -20,7 +20,7 @@ export const slackWebhookController = {
 
   createWebhook: asyncHandler(async (req: Request, res: Response) => {
     const projectId = req.params.projectId as string;
-    await verifyProjectAccess(req, projectId);
+    await verifyProjectAccess(req, projectId, "project-webhook:create");
 
     const validatedData = webhookSchema.parse(req.body);
 
@@ -40,7 +40,7 @@ export const slackWebhookController = {
       throw new NotFoundException("Slack webhook not found");
     }
 
-    await verifyProjectAccess(req, webhook.projectId);
+    await verifyProjectAccess(req, webhook.projectId, "project-webhook:delete");
 
     await slackWebhookService.deleteWebhook(webhookId);
 

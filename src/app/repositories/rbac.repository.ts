@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma";
 
 export const DEFAULT_ROLES = [
@@ -105,6 +106,9 @@ export const DEFAULT_ROLES = [
       "role:update",
       "role:delete",
       "role:assign",
+      "role:attach-permission",
+      "role:detach-permission",
+      "role:update-hierarchy",
       "project-doc:view",
       "project-doc:create",
       "project-doc:edit",
@@ -219,6 +223,9 @@ export const DEFAULT_ROLES = [
       "role:update",
       "role:delete",
       "role:assign",
+      "role:attach-permission",
+      "role:detach-permission",
+      "role:update-hierarchy",
       "project-doc:view",
       "project-doc:create",
       "project-doc:edit",
@@ -516,18 +523,50 @@ export const rbacRepository = {
     });
   },
 
-  async getRolesByOrganization(organizationId: string) {
+  async getRolesByOrganization(organizationId: string, search?: string) {
+    const whereClause: any = {
+      OR: [
+        { organizationId },
+        { organizationId: null }, // System default roles
+      ],
+    };
+
+    if (search) {
+      whereClause.AND = [
+        {
+          name: {
+            contains: search,
+            mode: "insensitive",
+          },
+        },
+      ];
+    }
+
     return prisma.role.findMany({
-      where: {
-        OR: [
-          { organizationId },
-          { organizationId: null }, // System default roles
-        ],
-      },
+      where: whereClause,
       include: {
         permissions: {
           include: {
             permission: true,
+          },
+        },
+        assignments: {
+          where: { organizationId },
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                image: true,
+              },
+            },
+          },
+        },
+        _count: {
+          select: {
+            assignments: {
+              where: { organizationId },
+            },
           },
         },
       },
@@ -591,6 +630,36 @@ export const rbacRepository = {
   async getRoleById(roleId: string) {
     return prisma.role.findUnique({
       where: { id: roleId },
+    });
+  },
+
+  async getUserMaxLevel(userId: string, orgId: string): Promise<number> {
+    const assignments = await prisma.userRoleAssignment.findMany({
+      where: {
+        userId,
+        organizationId: orgId,
+      },
+      include: {
+        role: true,
+      }
+    });
+
+    if (assignments.length === 0) return 0;
+    return Math.max(...assignments.map((a) => a.role.level));
+  },
+
+  async updateRoleHierarchy(roleIds: string[], orgId: string) {
+    return prisma.$transaction(async (tx) => {
+      // Loop over roleIds backwards so the last item gets level 1, next to last gets 2, etc.
+      // Wait, let's just make the first item the highest level (level = length - index).
+      // Or first item = lowest level. Drag and drop lists usually have highest at top (index 0).
+      // If index 0 is highest, level = roleIds.length - index
+      for (let i = 0; i < roleIds.length; i++) {
+        await tx.role.update({
+          where: { id: roleIds[i] },
+          data: { level: roleIds.length - i },
+        });
+      }
     });
   },
 
@@ -675,7 +744,7 @@ export const rbacRepository = {
       }
 
       if (data.scopeType === "ORGANIZATION") {
-        await syncMemberRolesToBetterAuth(data.userId, data.scopeId, tx);
+        await syncMemberRolesToBetterAuth(data.userId, data.scopeId, tx as unknown as Parameters<typeof syncMemberRolesToBetterAuth>[2]);
       }
 
       return tx.userRoleAssignment.findMany({
@@ -817,12 +886,12 @@ export const rbacRepository = {
 async function syncMemberRolesToBetterAuth(
   userId: string,
   orgId: string,
-  tx?: any,
+  tx?: Prisma.TransactionClient,
 ) {
   const db = tx || prisma;
 
   // Find all active ORGANIZATION scope role assignments for this user and org
-  const assignments = await db.userRoleAssignment.findMany({
+  const assignments = await (db.userRoleAssignment.findMany as unknown as Function)({
     where: {
       userId,
       scopeType: "ORGANIZATION",
@@ -837,11 +906,11 @@ async function syncMemberRolesToBetterAuth(
   });
 
   const roleNames = assignments
-    .map((a: any) => a.role.name.toLowerCase())
+    .map((a: { role: { name: string } }) => a.role.name.toLowerCase())
     .join(",");
 
   // Update the Better Auth member record
-  await db.member.updateMany({
+  await (db.member.updateMany as unknown as Function)({
     where: {
       userId,
       organizationId: orgId,

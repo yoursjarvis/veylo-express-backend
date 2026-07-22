@@ -27,7 +27,7 @@ export const docService = {
       emoji?: string | null;
       icon?: string | null;
       coverImage?: string | null;
-      content?: any;
+      content?: Record<string, unknown>;
       plainText?: string | null;
     },
     userId: string
@@ -129,7 +129,7 @@ export const docService = {
       emoji?: string | null;
       icon?: string | null;
       coverImage?: string | null;
-      content?: any;
+      content?: Record<string, unknown>;
       plainText?: string | null;
       order?: number;
       archived?: boolean;
@@ -151,7 +151,7 @@ export const docService = {
       }
     }
 
-    const updateData: any = { ...data, updatedBy: userId };
+    const updateData: Record<string, unknown> = { ...data, updatedBy: userId };
 
     if (data.title && data.title !== doc.title) {
       let baseSlug = slugify(data.title) || "untitled";
@@ -167,7 +167,7 @@ export const docService = {
       updateData.slug = slug;
     }
 
-    const updatedDoc = await docRepository.updateDoc(id, updateData);
+    const updatedDoc = await docRepository.updateDoc(id, updateData as Parameters<typeof docRepository.updateDoc>[1]); // fallback because type gets huge
 
     // Auto versioning: Save version if content changed and last version is > 5 minutes old
     if (data.content) {
@@ -279,7 +279,7 @@ export const docService = {
           emoji: original.emoji,
           icon: original.icon,
           coverImage: original.coverImage,
-          content: (original.content as any) ?? undefined,
+          content: (original.content as Record<string, unknown>) ?? undefined,
           plainText: original.plainText,
           order: original.order,
           createdBy: userId,
@@ -359,7 +359,7 @@ export const docService = {
     }
 
     const updated = await docRepository.updateDoc(docId, {
-      content: version.content,
+      content: version.content as Record<string, unknown>,
       updatedBy: userId
     });
 
@@ -369,7 +369,7 @@ export const docService = {
     await docRepository.createVersion({
       docId,
       organizationId: doc.organizationId,
-      content: version.content,
+      content: version.content as Record<string, unknown>,
       createdBy: userId,
       version: nextVer
     });
@@ -507,7 +507,7 @@ export const docService = {
     await this.checkPermission(userId, doc.projectId, "project-doc:view");
 
     const breadcrumbs = [];
-    let current: any = doc;
+    let current: typeof doc = doc;
     while (current) {
       breadcrumbs.unshift({
         id: current.id,
@@ -516,11 +516,11 @@ export const docService = {
         emoji: current.emoji
       });
       if (current.parentId) {
-        current = await prisma.projectDoc.findUnique({
+        current = await (prisma.projectDoc.findUnique as unknown as Function)({
           where: { id: current.parentId }
         });
       } else {
-        current = null;
+        current = null as never;
       }
     }
     return breadcrumbs;

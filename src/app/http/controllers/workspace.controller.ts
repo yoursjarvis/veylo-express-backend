@@ -29,6 +29,24 @@ export const workspaceController = {
     return ok(res, "Workspaces fetched", workspaces);
   }),
 
+  getOrgWorkspaces: asyncHandler(async (req: Request, res: Response) => {
+    const session = await auth.api.getSession({
+      headers: betterAuthHeaders(req),
+    });
+
+    if (!session?.user) {
+      throw new UnauthorizedException();
+    }
+
+    const organizationId = req.params.organizationId;
+    const workspaces = await workspaceService.getWorkspaces(
+      organizationId,
+      session.user.id,
+    );
+
+    return ok(res, "Workspaces fetched", workspaces);
+  }),
+
   createWorkspace: asyncHandler(async (req: Request, res: Response) => {
     const session = await auth.api.getSession({
       headers: betterAuthHeaders(req),

@@ -239,9 +239,9 @@ describe("DocService Extended", () => {
         title: "Parent",
         emoji: "📁",
         children: [{ id: "child-1", deleted: false }],
-      } as any);
+      } as unknown);
       prismaMock.projectDoc.findFirst.mockResolvedValueOnce(null); // Parent Copy slug check
-      prismaMock.projectDoc.create.mockResolvedValueOnce({ id: "d1-copy" } as any);
+      prismaMock.projectDoc.create.mockResolvedValueOnce({ id: "d1-copy" } as unknown);
 
       // Child mock
       prismaMock.projectDoc.findUnique.mockResolvedValueOnce({
@@ -250,9 +250,9 @@ describe("DocService Extended", () => {
         organizationId: "org-1",
         title: "Child",
         children: [],
-      } as any);
+      } as unknown);
       prismaMock.projectDoc.findFirst.mockResolvedValueOnce(null); // Child slug check
-      prismaMock.projectDoc.create.mockResolvedValueOnce({ id: "child-1-copy" } as any);
+      prismaMock.projectDoc.create.mockResolvedValueOnce({ id: "child-1-copy" } as unknown);
 
       docRepositoryMock.findDocById.mockResolvedValueOnce({ id: "d1-copy", organizationId: "org-1", title: "Parent Copy" });
 
@@ -327,7 +327,7 @@ describe("DocService Extended", () => {
     it("updates and deletes comment permissions/owner constraints", async () => {
       docRepositoryMock.getCommentById.mockResolvedValue({
         id: "c1", userId: "author-user", docId: "d1", doc: { projectId: "p1", organizationId: "org-1" }
-      } as any);
+      } as unknown);
       vi.spyOn(rbacService, "authorize").mockResolvedValue(true);
 
       // Updating content for someone else's comment throws Forbidden
@@ -376,7 +376,7 @@ describe("DocService Extended", () => {
     it("gets breadcrumbs", async () => {
       docRepositoryMock.findDocById.mockResolvedValue({ id: "d2", parentId: "d1", title: "Child", slug: "child" });
       vi.spyOn(rbacService, "authorize").mockResolvedValueOnce(true);
-      prismaMock.projectDoc.findUnique.mockResolvedValueOnce({ id: "d1", parentId: null, title: "Parent", slug: "parent" } as any);
+      prismaMock.projectDoc.findUnique.mockResolvedValueOnce({ id: "d1", parentId: null, title: "Parent", slug: "parent" } as unknown);
 
       const breadcrumbs = await docService.getBreadcrumbs("d2", "u1");
       expect(breadcrumbs).toHaveLength(2);
@@ -387,7 +387,7 @@ describe("DocService Extended", () => {
     it("toggles reaction on comment", async () => {
       docRepositoryMock.getCommentById.mockResolvedValue({
         id: "c1", doc: { projectId: "p1", organizationId: "org-1" }
-      } as any);
+      } as unknown);
       vi.spyOn(rbacService, "authorize").mockResolvedValueOnce(true);
 
       await docService.toggleReaction("c1", "❤️", "u1");

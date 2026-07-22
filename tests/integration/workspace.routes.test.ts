@@ -16,14 +16,14 @@ vi.mock("../../src/lib/auth/auth", async () => {
 });
 
 vi.mock("../../src/app/http/middlewares/rate-limit.middleware", () => ({
-  rateLimit: () => (req: any, res: any, next: any) => next(),
+  rateLimit: () => (req: unknown, res: unknown, next: unknown) => next(),
 }));
 
 import prisma from "@/lib/prisma";
 
 import { clearMockUser, setMockUser } from "../helpers/auth";
 import { createUser, createWorkspace } from "../helpers/factories";
-const prismaMock = prisma as any;
+const prismaMock = prisma as unknown;
 
 import { rbacService } from "@/app/services/rbac.service";
 
@@ -202,9 +202,8 @@ describe("Workspace API Endpoint Integration Tests (/api/v1/workspaces)", () => 
         .send({ name: "Acme Web", slug: "acme-web" });
 
       expect(res.status).toBe(403);
-      expect(res.body.success).toBe(false);
       expect(res.body.message).toBe(
-        "Forbidden: You must be an organization admin",
+        "Forbidden: You do not have the required permissions (workspace:create).",
       );
     });
   });

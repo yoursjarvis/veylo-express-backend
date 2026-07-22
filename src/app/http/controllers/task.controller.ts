@@ -18,7 +18,7 @@ import { ok } from "@/utils/http-response";
 export const taskController = {
   createTask: asyncHandler(async (req: Request, res: Response) => {
     const projectId = req.params.projectId as string;
-    const { userId, project } = await verifyProjectAccess(req, projectId);
+    const { userId, project } = await verifyProjectAccess(req, projectId, "task:create");
     const { organizationId } = project;
 
     const validatedData = taskCreateSchema.parse(req.body);
@@ -35,7 +35,7 @@ export const taskController = {
 
   getTasks: asyncHandler(async (req: Request, res: Response) => {
     const projectId = req.params.projectId as string;
-    const { userId } = await verifyProjectAccess(req, projectId);
+    const { userId } = await verifyProjectAccess(req, projectId, "task:read");
 
     const tasks = await taskService.getTasks(projectId, req.query, userId);
 
@@ -48,7 +48,7 @@ export const taskController = {
     const task = await taskService.getTask(taskId, userId);
 
     // Verify project access
-    await verifyProjectAccess(req, task.projectId);
+    await verifyProjectAccess(req, task.projectId, "task:read");
 
     return ok(res, "Task details fetched successfully", task);
   }),
@@ -58,7 +58,7 @@ export const taskController = {
     const { userId } = await resolveSession(req);
     const task = await taskService.getTask(taskId, userId);
 
-    await verifyProjectAccess(req, task.projectId);
+    await verifyProjectAccess(req, task.projectId, "task:update");
     const validatedData = taskUpdateSchema.parse(req.body);
 
     const updatedTask = await taskService.updateTask(
@@ -75,7 +75,7 @@ export const taskController = {
     const { userId } = await resolveSession(req);
     const task = await taskService.getTask(taskId, userId);
 
-    await verifyProjectAccess(req, task.projectId);
+    await verifyProjectAccess(req, task.projectId, "task:delete");
 
     await taskService.deleteTask(taskId, userId);
 
@@ -91,7 +91,7 @@ export const taskController = {
     }
 
     const task = await taskService.getTask(taskId, userId);
-    await verifyProjectAccess(req, task.projectId);
+    await verifyProjectAccess(req, task.projectId, "task:update");
 
     const media = await mediaService.addMedia(
       "Task",
@@ -125,7 +125,7 @@ export const taskController = {
     const { userId } = await resolveSession(req);
 
     const task = await taskService.getTask(taskId, userId);
-    await verifyProjectAccess(req, task.projectId);
+    await verifyProjectAccess(req, task.projectId, "task:update");
 
     await mediaService.deleteMedia(attachmentId);
 
@@ -141,7 +141,7 @@ export const taskController = {
       throw new NotFoundException("Task not found");
     }
 
-    await verifyProjectAccess(req, task.projectId);
+    await verifyProjectAccess(req, task.projectId, "task:restore");
 
     await taskService.restoreTask(taskId, userId);
 
@@ -157,7 +157,7 @@ export const taskController = {
       throw new NotFoundException("Task not found");
     }
 
-    await verifyProjectAccess(req, task.projectId);
+    await verifyProjectAccess(req, task.projectId, "task:force-delete");
 
     await taskService.forceDeleteTask(taskId, userId);
 

@@ -36,7 +36,7 @@ vi.mock("@/lib/prisma", () => ({
 import { dependencyController } from "../src/app/http/controllers/dependency.controller";
 
 function createRes() {
-  const res: any = {};
+  const res: unknown = {};
   res.status = vi.fn().mockReturnValue(res);
   res.json = vi.fn().mockReturnValue(res);
   return res;
@@ -69,15 +69,15 @@ describe("dependencyController", () => {
           },
         ]);
 
-      const req: any = { params: { taskId: "t1" } };
+      const req: unknown = { params: { taskId: "t1" } };
       const res = createRes();
 
-      await (dependencyController.getDependencies as any)(req, res);
+      await (dependencyController.getDependencies as unknown)(req, res);
 
       expect(prismaMock.task.findUnique).toHaveBeenCalledWith({
         where: { id: "t1" },
       });
-      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "proj-1");
+      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "proj-1", "task:read");
       expect(res.json).toHaveBeenCalledWith({
         success: true,
         message: "Task dependencies fetched successfully",
@@ -91,18 +91,18 @@ describe("dependencyController", () => {
     it("throws NotFoundException if task not found", async () => {
       prismaMock.task.findUnique.mockResolvedValueOnce(null);
 
-      const req: any = { params: { taskId: "t1" } };
+      const req: unknown = { params: { taskId: "t1" } };
       const res = createRes();
 
       await expect(
-        (dependencyController.getDependencies as any)(req, res),
+        (dependencyController.getDependencies as unknown)(req, res),
       ).rejects.toThrow("Task not found");
     });
   });
 
   describe("createDependency", () => {
     it("throws BadRequestException if depending on self", async () => {
-      const req: any = {
+      const req: unknown = {
         params: { taskId: "550e8400-e29b-41d4-a716-446655440000" },
         body: {
           dependencyTaskId: "550e8400-e29b-41d4-a716-446655440000",
@@ -112,13 +112,13 @@ describe("dependencyController", () => {
       const res = createRes();
 
       await expect(
-        (dependencyController.createDependency as any)(req, res),
+        (dependencyController.createDependency as unknown)(req, res),
       ).rejects.toThrow("A task cannot depend on itself");
     });
 
     it("throws NotFoundException if tasks not found", async () => {
       prismaMock.task.findUnique.mockResolvedValueOnce(null);
-      const req: any = {
+      const req: unknown = {
         params: { taskId: "550e8400-e29b-41d4-a716-446655440000" },
         body: {
           dependencyTaskId: "550e8400-e29b-41d4-a716-446655440001",
@@ -128,7 +128,7 @@ describe("dependencyController", () => {
       const res = createRes();
 
       await expect(
-        (dependencyController.createDependency as any)(req, res),
+        (dependencyController.createDependency as unknown)(req, res),
       ).rejects.toThrow("One or both tasks not found");
     });
 
@@ -146,7 +146,7 @@ describe("dependencyController", () => {
       prismaMock.taskDependency.findFirst.mockResolvedValue(null);
       prismaMock.taskDependency.create.mockResolvedValueOnce({ id: "d1" });
 
-      const req: any = {
+      const req: unknown = {
         params: { taskId: "t1" },
         body: {
           dependencyTaskId: "550e8400-e29b-41d4-a716-446655440001",
@@ -155,8 +155,9 @@ describe("dependencyController", () => {
       };
       const res = createRes();
 
-      await (dependencyController.createDependency as any)(req, res);
+      await (dependencyController.createDependency as unknown)(req, res);
 
+      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "proj-1", "task:update");
       expect(prismaMock.taskDependency.create).toHaveBeenCalledWith({
         data: {
           blockingTaskId: "t1",
@@ -182,7 +183,7 @@ describe("dependencyController", () => {
         id: "d-circ",
       });
 
-      const req: any = {
+      const req: unknown = {
         params: { taskId: "t1" },
         body: {
           dependencyTaskId: "550e8400-e29b-41d4-a716-446655440001",
@@ -192,7 +193,7 @@ describe("dependencyController", () => {
       const res = createRes();
 
       await expect(
-        (dependencyController.createDependency as any)(req, res),
+        (dependencyController.createDependency as unknown)(req, res),
       ).rejects.toThrow("Circular dependency detected!");
     });
 
@@ -210,7 +211,7 @@ describe("dependencyController", () => {
         .mockResolvedValueOnce(null)
         .mockResolvedValueOnce({ id: "d-existing" });
 
-      const req: any = {
+      const req: unknown = {
         params: { taskId: "t1" },
         body: {
           dependencyTaskId: "550e8400-e29b-41d4-a716-446655440001",
@@ -220,7 +221,7 @@ describe("dependencyController", () => {
       const res = createRes();
 
       await expect(
-        (dependencyController.createDependency as any)(req, res),
+        (dependencyController.createDependency as unknown)(req, res),
       ).rejects.toThrow("This dependency already exists");
     });
   });
@@ -237,11 +238,12 @@ describe("dependencyController", () => {
         mockDependency,
       );
 
-      const req: any = { params: { id: "d1" } };
+      const req: unknown = { params: { id: "d1" } };
       const res = createRes();
 
-      await (dependencyController.deleteDependency as any)(req, res);
+      await (dependencyController.deleteDependency as unknown)(req, res);
 
+      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "proj-1", "task:update");
       expect(prismaMock.taskDependency.delete).toHaveBeenCalledWith({
         where: { id: "d1" },
       });
@@ -256,11 +258,11 @@ describe("dependencyController", () => {
     it("throws NotFoundException if dependency not found", async () => {
       prismaMock.taskDependency.findUnique.mockResolvedValueOnce(null);
 
-      const req: any = { params: { id: "d1" } };
+      const req: unknown = { params: { id: "d1" } };
       const res = createRes();
 
       await expect(
-        (dependencyController.deleteDependency as any)(req, res),
+        (dependencyController.deleteDependency as unknown)(req, res),
       ).rejects.toThrow("Dependency not found");
     });
   });

@@ -16,7 +16,7 @@ describe("RbacRepository", () => {
       },
     };
 
-    await rbacRepository.seedOrgDefaultRoles(mockTx as any, "org-1");
+    await rbacRepository.seedOrgDefaultRoles(mockTx as unknown, "org-1");
     expect(mockTx.role.upsert).toHaveBeenCalled();
     expect(mockTx.permission.findMany).toHaveBeenCalled();
     expect(mockTx.rolePermission.upsert).toHaveBeenCalled();

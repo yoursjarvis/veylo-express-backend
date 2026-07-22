@@ -64,18 +64,19 @@ export async function resolveSession(
 export async function verifyWorkspaceAdmin(
   req: Request,
   workspaceId: string,
+  requiredPermission: string = "workspace:update"
 ): Promise<WorkspaceAdminContext> {
   const { activeOrgId, userId } = await resolveSession(req);
   const { rbacService } = await import("@/app/services/rbac.service");
 
-  const isAllowed = await rbacService.authorize(userId, "workspace:update", {
+  const isAllowed = await rbacService.authorize(userId, requiredPermission, {
     organizationId: activeOrgId,
     workspaceId,
   });
 
   if (!isAllowed) {
     throw new ForbiddenException(
-      "Forbidden: You must be an organization or workspace admin",
+      `Forbidden: You lack the required permission (${requiredPermission})`,
     );
   }
 
@@ -85,6 +86,7 @@ export async function verifyWorkspaceAdmin(
 export async function verifyProjectAccess(
   req: Request,
   projectId: string,
+  requiredPermission: string = "project:read"
 ): Promise<ProjectAccessContext> {
   const { activeOrgId, userId } = await resolveSession(req);
 
@@ -97,7 +99,7 @@ export async function verifyProjectAccess(
   }
 
   const { rbacService } = await import("@/app/services/rbac.service");
-  const isAllowed = await rbacService.authorize(userId, "project:read", {
+  const isAllowed = await rbacService.authorize(userId, requiredPermission, {
     organizationId: activeOrgId,
     workspaceId: project.workspaceId,
     projectId,
@@ -105,7 +107,7 @@ export async function verifyProjectAccess(
 
   if (!isAllowed) {
     throw new ForbiddenException(
-      "Forbidden: You must be a project member or workspace/org admin",
+      `Forbidden: You lack the required permission (${requiredPermission})`,
     );
   }
 
@@ -115,6 +117,7 @@ export async function verifyProjectAccess(
 export async function verifyProjectAdmin(
   req: Request,
   projectId: string,
+  requiredPermission: string = "project:update"
 ): Promise<ProjectAccessContext> {
   const project = await prisma.project.findUnique({
     where: { id: projectId },
@@ -127,7 +130,7 @@ export async function verifyProjectAdmin(
   const { activeOrgId, userId } = await resolveSession(req);
   const { rbacService } = await import("@/app/services/rbac.service");
 
-  const isAllowed = await rbacService.authorize(userId, "project:update", {
+  const isAllowed = await rbacService.authorize(userId, requiredPermission, {
     organizationId: activeOrgId,
     workspaceId: project.workspaceId,
     projectId,
@@ -135,7 +138,7 @@ export async function verifyProjectAdmin(
 
   if (!isAllowed) {
     throw new ForbiddenException(
-      "Forbidden: You must be a project admin or workspace/org admin",
+      `Forbidden: You lack the required permission (${requiredPermission})`,
     );
   }
 

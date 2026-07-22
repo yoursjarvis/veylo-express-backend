@@ -1,7 +1,7 @@
 import { vi } from "vitest";
 
 // Mutable session data that holds the currently authenticated user
-let mockSessionValue: any = {
+let mockSessionValue: unknown = {
   user: {
     id: "user-123",
     email: "user@example.com",
@@ -43,7 +43,7 @@ export const getSessionMock = vi
 /**
  * Configure the mocked user session for subsequent requests.
  */
-export function setMockUser(user: any, sessionExtra?: any) {
+export function setMockUser(user: unknown, sessionExtra?: unknown) {
   mockSessionValue = {
     user,
     session: {

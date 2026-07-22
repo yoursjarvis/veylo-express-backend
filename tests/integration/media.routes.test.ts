@@ -16,7 +16,7 @@ vi.mock("../../src/lib/auth/auth", async () => {
 });
 
 vi.mock("../../src/app/http/middlewares/rate-limit.middleware", () => ({
-  rateLimit: () => (req: any, res: any, next: any) => next(),
+  rateLimit: () => (req: unknown, res: unknown, next: unknown) => next(),
 }));
 
 const { mockMediaService } = vi.hoisted(() => ({
@@ -36,7 +36,7 @@ import { rbacService } from "@/app/services/rbac.service";
 import prisma from "@/lib/prisma";
 
 import { setMockUser } from "../helpers/auth";
-const prismaMock = prisma as any;
+const prismaMock = prisma as unknown;
 import { createUser, createProject } from "../helpers/factories";
 
 describe("Media API Endpoint Integration Tests (/api/v1/media)", () => {

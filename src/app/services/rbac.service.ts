@@ -1,14 +1,18 @@
 import { rbacRepository } from "@/app/repositories/rbac.repository";
 import prisma from "@/lib/prisma";
 import { BadRequestException } from "@/utils/app-error";
+import {
+  invalidateRolePermissionsCache,
+  invalidateUserPermissionsCache,
+} from "@/utils/permissions-cache";
 
 export const rbacService = {
   async getPermissions() {
     return rbacRepository.getPermissions();
   },
 
-  async getOrganizationRoles(organizationId: string) {
-    return rbacRepository.getRolesByOrganization(organizationId);
+  async getOrganizationRoles(organizationId: string, search?: string) {
+    return rbacRepository.getRolesByOrganization(organizationId, search);
   },
 
   async createRole(
@@ -87,18 +91,41 @@ export const rbacService = {
       }
     }
 
-    if (name) {
-      const existingRole = await rbacRepository.getRoleById(roleId);
-      if (existingRole && existingRole.name.toLowerCase() === "owner") {
-        throw new BadRequestException("The owner role cannot be renamed.");
+    const existingRole = await rbacRepository.getRoleById(roleId);
+    if (!existingRole) throw new BadRequestException("Role not found.");
+
+    if (name && existingRole.name.toLowerCase() === "owner") {
+      throw new BadRequestException("The owner role cannot be renamed.");
+    }
+
+    if (permissionIds !== undefined && userId && existingRole.organizationId) {
+      const isOwner = await rbacRepository.isOrganizationOwner(
+        userId,
+        existingRole.organizationId,
+      );
+      if (!isOwner) {
+        const userMaxLevel = await rbacRepository.getUserMaxLevel(
+          userId,
+          existingRole.organizationId,
+        );
+        if (userMaxLevel <= existingRole.level) {
+          throw new BadRequestException(
+            "You cannot modify permissions of a role that is equal to or higher than your highest role level.",
+          );
+        }
       }
     }
 
-    return rbacRepository.updateRole(roleId, {
+    const updatedRole = await rbacRepository.updateRole(roleId, {
       name,
       permissionIds,
       bypassPermissions,
     });
+
+    // Invalidate cache for users with this role since its permissions/properties changed
+    await invalidateRolePermissionsCache(roleId);
+
+    return updatedRole;
   },
 
   async deleteRole(roleId: string) {
@@ -109,7 +136,38 @@ export const rbacService = {
     if (role.isSystemDefault) {
       throw new BadRequestException("System default roles cannot be deleted.");
     }
+
+    // Find all users who have this role and invalidate their cache BEFORE deleting the role
+    await invalidateRolePermissionsCache(roleId);
+
     return rbacRepository.deleteRole(roleId);
+  },
+
+  async updateRoleHierarchy(roleIds: string[], organizationId: string, userId: string) {
+    const isOwner = await rbacRepository.isOrganizationOwner(userId, organizationId);
+    const userMaxLevel = isOwner ? Infinity : await rbacRepository.getUserMaxLevel(userId, organizationId);
+
+    const roles = await prisma.role.findMany({
+      where: { id: { in: roleIds }, organizationId }
+    });
+
+    for (const role of roles) {
+      if (role.level >= userMaxLevel) {
+        throw new BadRequestException("You cannot reorder roles that are equal to or higher than your highest role level.");
+      }
+    }
+
+    // Actually, in reordering, if they provide ALL roles, we might reject because they include higher roles.
+    // Wait, the frontend will pass only the roles they can reorder? Or all roles?
+    // If the frontend passes all roles, we should only update the ones below their level.
+    // For now, if they try to touch ANY role >= userMaxLevel, we block. We'll ensure the UI only allows them to sort a sub-list.
+    // Or we just skip the roles they can't touch.
+    // Let's keep the throw for security.
+
+    await rbacRepository.updateRoleHierarchy(roleIds, organizationId);
+    
+    // Invalidate cache for all affected users... Actually, level changes don't affect cached permissions (which are just strings).
+    // So no cache invalidation is needed for hierarchy.
   },
 
   async assignRole(data: {
@@ -119,7 +177,9 @@ export const rbacService = {
       "SYSTEM" | "ORGANIZATION" | "WORKSPACE" | "DEPARTMENT" | "PROJECT";
     scopeId: string;
   }) {
-    return rbacRepository.assignRolesToUser(data);
+    const result = await rbacRepository.assignRolesToUser(data);
+    await invalidateUserPermissionsCache(data.userId);
+    return result;
   },
 
   async removeRole(data: {
@@ -129,7 +189,9 @@ export const rbacService = {
       "SYSTEM" | "ORGANIZATION" | "WORKSPACE" | "DEPARTMENT" | "PROJECT";
     scopeId: string;
   }) {
-    return rbacRepository.removeRolesFromUser(data);
+    const result = await rbacRepository.removeRolesFromUser(data);
+    await invalidateUserPermissionsCache(data.userId);
+    return result;
   },
 
   async getUserAssignments(

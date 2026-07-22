@@ -14,7 +14,7 @@ import { ok } from "@/utils/http-response";
 export const epicController = {
   createEpic: asyncHandler(async (req: Request, res: Response) => {
     const projectId = req.params.projectId as string;
-    const { project } = await verifyProjectAccess(req, projectId);
+    const { project } = await verifyProjectAccess(req, projectId, "project-epic:create");
     const { organizationId } = project;
 
     const validatedData = epicCreateSchema.parse(req.body);
@@ -30,7 +30,7 @@ export const epicController = {
 
   getEpics: asyncHandler(async (req: Request, res: Response) => {
     const projectId = req.params.projectId as string;
-    await verifyProjectAccess(req, projectId);
+    await verifyProjectAccess(req, projectId, "project-epic:read");
 
     const epics = await epicService.getEpics(projectId);
 
@@ -45,7 +45,7 @@ export const epicController = {
       throw new NotFoundException("Epic not found");
     }
 
-    await verifyProjectAccess(req, epic.projectId);
+    await verifyProjectAccess(req, epic.projectId, "project-epic:read");
 
     return ok(res, "Epic details fetched successfully", epic);
   }),
@@ -58,7 +58,7 @@ export const epicController = {
       throw new NotFoundException("Epic not found");
     }
 
-    await verifyProjectAccess(req, existingEpic.projectId);
+    await verifyProjectAccess(req, existingEpic.projectId, "project-epic:update");
     const validatedData = epicUpdateSchema.parse(req.body);
 
     const updatedEpic = await epicService.updateEpic(epicId, validatedData);
@@ -74,7 +74,7 @@ export const epicController = {
       throw new NotFoundException("Epic not found");
     }
 
-    await verifyProjectAccess(req, epic.projectId);
+    await verifyProjectAccess(req, epic.projectId, "project-epic:delete");
 
     await epicService.deleteEpic(epicId);
 
@@ -89,7 +89,7 @@ export const epicController = {
       throw new NotFoundException("Epic not found");
     }
 
-    await verifyProjectAccess(req, epic.projectId);
+    await verifyProjectAccess(req, epic.projectId, "project-epic:restore");
 
     await epicService.restoreEpic(epicId);
 
@@ -104,7 +104,7 @@ export const epicController = {
       throw new NotFoundException("Epic not found");
     }
 
-    await verifyProjectAccess(req, epic.projectId);
+    await verifyProjectAccess(req, epic.projectId, "project-epic:force-delete");
 
     await epicService.forceDeleteEpic(epicId);
 

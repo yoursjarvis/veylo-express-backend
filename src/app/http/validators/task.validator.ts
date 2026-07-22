@@ -21,7 +21,7 @@ export const taskCreateSchema = z.object({
   reporterId: z.uuid().optional().nullable(),
   parentTaskId: z.uuid().optional().nullable(),
   position: z.number().optional(),
-  customFields: z.record(z.string(), z.any()).optional().default({}),
+  customFields: z.record(z.string(), z.unknown()).optional().default({}),
   labelIds: z.array(z.uuid()).optional(),
   isPrivate: z.boolean().optional().default(false),
 });
@@ -43,7 +43,9 @@ export const taskUpdateSchema = z.object({
   assigneeId: z.uuid().optional().nullable(),
   reporterId: z.uuid().optional().nullable(),
   position: z.number().optional(),
-  customFields: z.record(z.string(), z.any()).optional(),
+  customFields: z.record(z.string(), z.unknown()).optional(),
   labelIds: z.array(z.uuid()).optional(),
   isPrivate: z.boolean().optional(),
 });
+
+export type TaskUpdateRequest = z.infer<typeof taskUpdateSchema>;

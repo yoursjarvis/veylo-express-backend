@@ -39,21 +39,21 @@ describe("NotificationService", () => {
   });
 
   it("should get notifications, mark read, and mark all read", async () => {
-    vi.mocked(notificationRepository.getNotifications).mockResolvedValueOnce([{ id: "n-1" } as any]);
+    vi.mocked(notificationRepository.getNotifications).mockResolvedValueOnce([{ id: "n-1" } as unknown]);
     expect(await notificationService.getUserNotifications("user-1")).toHaveLength(1);
 
-    vi.mocked(notificationRepository.findById).mockResolvedValueOnce({ id: "n-1", recipientId: "user-1" } as any);
-    vi.mocked(notificationRepository.markAsRead).mockResolvedValueOnce({ id: "n-1", isRead: true } as any);
+    vi.mocked(notificationRepository.findById).mockResolvedValueOnce({ id: "n-1", recipientId: "user-1" } as unknown);
+    vi.mocked(notificationRepository.markAsRead).mockResolvedValueOnce({ id: "n-1", isRead: true } as unknown);
     expect(await notificationService.markNotificationAsRead("user-1", "n-1")).toEqual({ id: "n-1", isRead: true });
 
     // NotFoundException cases
     vi.mocked(notificationRepository.findById).mockResolvedValueOnce(null);
     await expect(notificationService.markNotificationAsRead("user-1", "n-1")).rejects.toThrow("Notification not found");
 
-    vi.mocked(notificationRepository.findById).mockResolvedValueOnce({ id: "n-1", recipientId: "user-other" } as any);
+    vi.mocked(notificationRepository.findById).mockResolvedValueOnce({ id: "n-1", recipientId: "user-other" } as unknown);
     await expect(notificationService.markNotificationAsRead("user-1", "n-1")).rejects.toThrow("Notification not found");
 
-    vi.mocked(notificationRepository.markAllAsRead).mockResolvedValueOnce({ count: 5 } as any);
+    vi.mocked(notificationRepository.markAllAsRead).mockResolvedValueOnce({ count: 5 } as unknown);
     expect(await notificationService.markAllUserNotificationsAsRead("user-1")).toEqual({ count: 5 });
   });
 
@@ -69,7 +69,7 @@ describe("NotificationService", () => {
     // Case 1: Preferences set to false for type
     vi.mocked(notificationRepository.getUserPreferences).mockResolvedValueOnce({
       notificationPreferences: JSON.stringify({ types: { mention: false } }),
-    } as any);
+    } as unknown);
     await notificationService.createInAppNotification({
       recipientId: "user-1",
       senderId: "user-2",
@@ -83,7 +83,7 @@ describe("NotificationService", () => {
     // Case 2: Preferences parsed successfully, sending in_app and email
     vi.mocked(notificationRepository.getUserPreferences).mockResolvedValueOnce({
       notificationPreferences: JSON.stringify({ channels: { in_app: true, email: true } }),
-    } as any);
+    } as unknown);
     prismaMock.user.findUnique.mockResolvedValueOnce({ email: "john@example.com", name: "John" });
 
     await notificationService.createInAppNotification({
@@ -113,7 +113,7 @@ describe("NotificationService", () => {
       assignee: { name: "Doe" },
       description: "Hello @Doe",
     };
-    vi.mocked(notificationRepository.findTaskForNotification).mockResolvedValueOnce(task as any);
+    vi.mocked(notificationRepository.findTaskForNotification).mockResolvedValueOnce(task as unknown);
     vi.mocked(notificationRepository.findActiveSlackWebhooks).mockResolvedValueOnce([]);
 
     await notificationService.handleTaskCreated("task-1", "user-1");
@@ -141,7 +141,7 @@ describe("NotificationService", () => {
       organizationId: "org-1",
       description: "Hello @Alice",
     };
-    vi.mocked(notificationRepository.findTaskForNotification).mockResolvedValueOnce(task as any);
+    vi.mocked(notificationRepository.findTaskForNotification).mockResolvedValueOnce(task as unknown);
     vi.mocked(notificationRepository.findUserName).mockResolvedValueOnce({ name: "Bob" });
     vi.mocked(notificationRepository.findActiveSlackWebhooks).mockResolvedValueOnce([]);
 
@@ -158,10 +158,10 @@ describe("NotificationService", () => {
       parentId: "parent-1",
       parent: { userId: "user-3" },
     };
-    vi.mocked(notificationRepository.findCommentForNotification).mockResolvedValueOnce(comment as any);
+    vi.mocked(notificationRepository.findCommentForNotification).mockResolvedValueOnce(comment as unknown);
     vi.mocked(notificationRepository.findProjectMembers).mockResolvedValueOnce([
       { user: { id: "user-3", name: "Alice" } },
-    ] as any);
+    ] as unknown);
     vi.mocked(notificationRepository.findActiveSlackWebhooks).mockResolvedValueOnce([]);
 
     await notificationService.handleCommentAdded("comment-1", "user-1");
@@ -170,7 +170,7 @@ describe("NotificationService", () => {
 
   it("should handle project added notifications", async () => {
     const project = { id: "proj-1", title: "Project 1", organizationId: "org-1" };
-    vi.mocked(notificationRepository.findProjectForNotification).mockResolvedValueOnce(project as any);
+    vi.mocked(notificationRepository.findProjectForNotification).mockResolvedValueOnce(project as unknown);
     vi.mocked(notificationRepository.findUserName).mockResolvedValueOnce({ name: "Bob" });
 
     await notificationService.handleAddedToProject("proj-1", "user-1", ["user-2"]);
@@ -189,7 +189,7 @@ describe("NotificationService", () => {
         task: { id: "task-1", organizationId: "org-1" },
       },
     };
-    vi.mocked(notificationRepository.findReactionForNotification).mockResolvedValueOnce(reaction as any);
+    vi.mocked(notificationRepository.findReactionForNotification).mockResolvedValueOnce(reaction as unknown);
 
     await notificationService.handleCommentReaction("reaction-1");
     expect(notificationRepository.findReactionForNotification).toHaveBeenCalledWith("reaction-1");
@@ -203,7 +203,7 @@ describe("NotificationService", () => {
       user: { name: "Alice" },
       comment: { userId: "user-1", content: "Nice!", task: { id: "task-1", organizationId: "org-1" } },
     };
-    vi.mocked(notificationRepository.findReactionForNotification).mockResolvedValueOnce(reaction as any);
+    vi.mocked(notificationRepository.findReactionForNotification).mockResolvedValueOnce(reaction as unknown);
     await notificationService.handleCommentReaction("reaction-1");
     expect(notificationRepository.createNotification).not.toHaveBeenCalled();
   });
@@ -239,10 +239,10 @@ describe("NotificationService", () => {
     const task = {
       id: "task-1", title: "T1", projectId: "proj-1", organizationId: "org-1",
     };
-    vi.mocked(notificationRepository.findTaskForNotification).mockResolvedValueOnce(task as any);
+    vi.mocked(notificationRepository.findTaskForNotification).mockResolvedValueOnce(task as unknown);
     vi.mocked(notificationRepository.findProjectMembers).mockResolvedValueOnce([
       { user: { id: "user-2", name: "Alice" } },
-    ] as any);
+    ] as unknown);
     vi.mocked(notificationRepository.findUserName).mockResolvedValueOnce({ name: "Bob" });
     vi.mocked(notificationRepository.getUserPreferences).mockResolvedValue(null);
 
@@ -269,8 +269,8 @@ describe("NotificationService", () => {
   it("should handle email channel disabled in preferences", async () => {
     vi.mocked(notificationRepository.getUserPreferences).mockResolvedValueOnce({
       notificationPreferences: JSON.stringify({ channels: { in_app: true, email: false } }),
-    } as any);
-    vi.mocked(notificationRepository.createNotification).mockResolvedValueOnce({} as any);
+    } as unknown);
+    vi.mocked(notificationRepository.createNotification).mockResolvedValueOnce({} as unknown);
 
     await notificationService.createInAppNotification({
       recipientId: "user-1",
@@ -287,7 +287,7 @@ describe("NotificationService", () => {
   it("should handle invalid JSON in preferences gracefully", async () => {
     vi.mocked(notificationRepository.getUserPreferences).mockResolvedValueOnce({
       notificationPreferences: "not-valid-json",
-    } as any);
+    } as unknown);
 
     // Should not throw - error is caught and defaults used
     await notificationService.createInAppNotification({
@@ -315,7 +315,7 @@ describe("NotificationService", () => {
 
   it("handleAddedToProject: skips self (adder in addedUserIds list)", async () => {
     const project = { id: "proj-1", title: "Project 1", organizationId: "org-1" };
-    vi.mocked(notificationRepository.findProjectForNotification).mockResolvedValueOnce(project as any);
+    vi.mocked(notificationRepository.findProjectForNotification).mockResolvedValueOnce(project as unknown);
     vi.mocked(notificationRepository.findUserName).mockResolvedValueOnce({ name: "Bob" });
     vi.mocked(notificationRepository.getUserPreferences).mockResolvedValue(null);
 
@@ -335,14 +335,14 @@ describe("NotificationService", () => {
       description: "@Alice check this",
       creatorId: "user-1",
     };
-    vi.mocked(notificationRepository.findTaskForNotification).mockResolvedValueOnce(task as any);
+    vi.mocked(notificationRepository.findTaskForNotification).mockResolvedValueOnce(task as unknown);
     vi.mocked(notificationRepository.getUserPreferences).mockResolvedValue(null);
     vi.mocked(notificationRepository.findActiveSlackWebhooks).mockResolvedValueOnce([]);
     // For description mentions
-    vi.mocked(notificationRepository.findTaskForNotification).mockResolvedValueOnce(task as any);
+    vi.mocked(notificationRepository.findTaskForNotification).mockResolvedValueOnce(task as unknown);
     vi.mocked(notificationRepository.findProjectMembers).mockResolvedValueOnce([
       { user: { id: "user-2", name: "Alice" } },
-    ] as any);
+    ] as unknown);
     vi.mocked(notificationRepository.findUserName).mockResolvedValueOnce({ name: "Bob" });
 
     await notificationService.handleTaskCreated("task-1", "user-1");
@@ -366,15 +366,15 @@ describe("NotificationService", () => {
       description: "new description @NewUser",
     };
     vi.mocked(notificationRepository.findTaskForNotification)
-      .mockResolvedValueOnce(task as any)
-      .mockResolvedValueOnce(task as any); // for description mentions
+      .mockResolvedValueOnce(task as unknown)
+      .mockResolvedValueOnce(task as unknown); // for description mentions
     vi.mocked(notificationRepository.findUserName)
       .mockResolvedValueOnce({ name: "Updater" })
       .mockResolvedValueOnce({ name: "Updater" }); // for mentions author
     vi.mocked(notificationRepository.getUserPreferences).mockResolvedValue(null);
     vi.mocked(notificationRepository.findProjectMembers).mockResolvedValueOnce([
       { user: { id: "user-new", name: "NewUser" } },
-    ] as any);
+    ] as unknown);
     vi.mocked(notificationRepository.findActiveSlackWebhooks).mockResolvedValueOnce([]);
 
     await notificationService.handleTaskUpdated("task-1", "user-updater", oldTask);
@@ -398,7 +398,7 @@ describe("NotificationService", () => {
       organizationId: "org-1",
       description: "same",
     };
-    vi.mocked(notificationRepository.findTaskForNotification).mockResolvedValueOnce(task as any);
+    vi.mocked(notificationRepository.findTaskForNotification).mockResolvedValueOnce(task as unknown);
     vi.mocked(notificationRepository.findUserName).mockResolvedValueOnce({ name: "Updater" });
     vi.mocked(notificationRepository.getUserPreferences).mockResolvedValue(null);
     vi.mocked(notificationRepository.findActiveSlackWebhooks).mockResolvedValueOnce([]);
@@ -431,7 +431,7 @@ describe("NotificationService", () => {
       organizationId: "org-1",
       description: "same desc",
     };
-    vi.mocked(notificationRepository.findTaskForNotification).mockResolvedValueOnce(task as any);
+    vi.mocked(notificationRepository.findTaskForNotification).mockResolvedValueOnce(task as unknown);
     vi.mocked(notificationRepository.findUserName).mockResolvedValueOnce({ name: "Updater" });
     vi.mocked(notificationRepository.getUserPreferences).mockResolvedValue(null);
     vi.mocked(notificationRepository.findActiveSlackWebhooks).mockResolvedValueOnce([
@@ -475,8 +475,8 @@ describe("NotificationService", () => {
     // preferencesRecord exists but notificationPreferences is null → uses default channels
     vi.mocked(notificationRepository.getUserPreferences).mockResolvedValueOnce({
       notificationPreferences: null, // explicitly null
-    } as any);
-    vi.mocked(notificationRepository.createNotification).mockResolvedValueOnce({} as any);
+    } as unknown);
+    vi.mocked(notificationRepository.createNotification).mockResolvedValueOnce({} as unknown);
     vi.mocked(notificationRepository.findActiveSlackWebhooks).mockResolvedValueOnce([]);
 
     await notificationService.createInAppNotification({
@@ -506,7 +506,7 @@ describe("NotificationService", () => {
       },
       mentions: [],
     };
-    vi.mocked(notificationRepository.findCommentForNotification).mockResolvedValueOnce(comment as any);
+    vi.mocked(notificationRepository.findCommentForNotification).mockResolvedValueOnce(comment as unknown);
     vi.mocked(notificationRepository.findUserName).mockResolvedValueOnce({ name: "Author" });
     vi.mocked(notificationRepository.getUserPreferences).mockResolvedValue(null);
     vi.mocked(notificationRepository.findActiveSlackWebhooks).mockResolvedValueOnce([]);

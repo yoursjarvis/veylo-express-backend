@@ -16,7 +16,7 @@ vi.mock("../../src/utils/config", () => ({
 }));
 
 vi.mock("rate-limiter-flexible", async () => {
-  const actual = await vi.importActual<any>("rate-limiter-flexible");
+  const actual = await vi.importActual<unknown>("rate-limiter-flexible");
   return {
     ...actual,
     RateLimiterRedis: actual.RateLimiterMemory,
@@ -43,8 +43,8 @@ describe("rate-limit middleware", () => {
       key: () => "user-ip",
     });
 
-    const req: any = {};
-    const res: any = {
+    const req: unknown = {};
+    const res: unknown = {
       status: vi.fn().mockReturnThis(),
       json: vi.fn().mockReturnThis(),
     };
@@ -69,8 +69,8 @@ describe("rate-limit middleware", () => {
       key: () => "user-1",
     });
 
-    const req: any = {};
-    const res: any = {
+    const req: unknown = {};
+    const res: unknown = {
       status: vi.fn().mockReturnThis(),
       json: vi.fn().mockReturnThis(),
       setHeader: vi.fn(),
@@ -109,8 +109,8 @@ describe("rate-limit middleware", () => {
       key: () => "user-2",
     });
 
-    const req: any = {};
-    const res: any = {
+    const req: unknown = {};
+    const res: unknown = {
       status: vi.fn().mockReturnThis(),
       json: vi.fn().mockReturnThis(),
       setHeader: vi.fn(),
