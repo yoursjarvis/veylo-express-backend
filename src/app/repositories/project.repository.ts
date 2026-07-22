@@ -77,11 +77,94 @@ export const projectRepository = {
     });
   },
 
-  getProjects(workspaceId: string, canSeeAll: boolean, userId: string) {
+  getProjects(
+    workspaceId: string,
+    canSeeAll: boolean,
+    userId: string,
+    filters: {
+      page?: number;
+      limit?: number;
+      search?: string;
+      includeDeleted?: boolean;
+      onlyDeleted?: boolean;
+      status?: string;
+      memberIds?: string;
+      startDate?: string;
+      endDate?: string;
+      sortBy?: string;
+      sortOrder?: "asc" | "desc";
+    } = {}
+  ) {
+    const {
+      page,
+      limit,
+      search,
+      includeDeleted,
+      onlyDeleted,
+      status,
+      memberIds,
+      startDate,
+      endDate,
+      sortBy,
+      sortOrder,
+    } = filters;
+
+    const skip = page && limit ? (page - 1) * limit : undefined;
+    const take = limit ? limit : undefined;
+
+    // Trashed status filtering
+    const deletedAtClause = onlyDeleted
+      ? { not: null }
+      : includeDeleted
+      ? undefined
+      : null;
+
+    // Status filter
+    const statusClause = status
+      ? { in: status.split(",") }
+      : undefined;
+
+    // Search clause
+    const searchClause = search
+      ? {
+          OR: [
+            { title: { contains: search, mode: "insensitive" as const } },
+            { projectKey: { contains: search, mode: "insensitive" as const } },
+          ],
+        }
+      : undefined;
+
+    // Member filter clause
+    const memberClause = memberIds
+      ? {
+          members: {
+            some: {
+              userId: { in: memberIds.split(",") },
+            },
+          },
+        }
+      : undefined;
+
+    // Date range filter clause
+    const dateClause = (startDate || endDate)
+      ? {
+          gte: startDate ? new Date(startDate) : undefined,
+          lte: endDate ? (() => {
+            const endOfEndDate = new Date(endDate);
+            endOfEndDate.setHours(23, 59, 59, 999);
+            return endOfEndDate;
+          })() : undefined,
+        }
+      : undefined;
+
     return prisma.project.findMany({
       where: {
         workspaceId,
-        deletedAt: null,
+        deletedAt: deletedAtClause,
+        status: statusClause,
+        createdAt: dateClause,
+        ...searchClause,
+        ...memberClause,
         ...(canSeeAll
           ? {}
           : {
@@ -94,16 +177,115 @@ export const projectRepository = {
         _count: {
           select: { members: true },
         },
+        members: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                image: true,
+              },
+            },
+          },
+        },
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: sortBy && ["title", "createdAt", "startDate", "endDate"].includes(sortBy)
+        ? { [sortBy]: sortOrder === "asc" ? "asc" : "desc" }
+        : { createdAt: "desc" },
+      skip,
+      take,
     });
   },
 
-  getOrgProjects(organizationId: string, canSeeAll: boolean, userId: string) {
+  getOrgProjects(
+    organizationId: string,
+    canSeeAll: boolean,
+    userId: string,
+    filters: {
+      page?: number;
+      limit?: number;
+      search?: string;
+      includeDeleted?: boolean;
+      onlyDeleted?: boolean;
+      status?: string;
+      memberIds?: string;
+      startDate?: string;
+      endDate?: string;
+      sortBy?: string;
+      sortOrder?: "asc" | "desc";
+    } = {}
+  ) {
+    const {
+      page,
+      limit,
+      search,
+      includeDeleted,
+      onlyDeleted,
+      status,
+      memberIds,
+      startDate,
+      endDate,
+      sortBy,
+      sortOrder,
+    } = filters;
+
+    const skip = page && limit ? (page - 1) * limit : undefined;
+    const take = limit ? limit : undefined;
+
+    // Trashed status filtering
+    const deletedAtClause = onlyDeleted
+      ? { not: null }
+      : includeDeleted
+      ? undefined
+      : null;
+
+    // Status filter
+    const statusClause = status
+      ? { in: status.split(",") }
+      : undefined;
+
+    // Search clause
+    const searchClause = search
+      ? {
+          OR: [
+            { title: { contains: search, mode: "insensitive" as const } },
+            { projectKey: { contains: search, mode: "insensitive" as const } },
+          ],
+        }
+      : undefined;
+
+    // Member filter clause
+    const memberClause = memberIds
+      ? {
+          members: {
+            some: {
+              userId: { in: memberIds.split(",") },
+            },
+          },
+        }
+      : undefined;
+
+    // Date range filter clause
+    const dateClause = (startDate || endDate)
+      ? {
+          gte: startDate ? new Date(startDate) : undefined,
+          lte: endDate ? (() => {
+            const endOfEndDate = new Date(endDate);
+            endOfEndDate.setHours(23, 59, 59, 999);
+            return endOfEndDate;
+          })() : undefined,
+        }
+      : undefined;
+
     return prisma.project.findMany({
       where: {
         organizationId,
-        deletedAt: null,
+        deletedAt: deletedAtClause,
+        status: statusClause,
+        createdAt: dateClause,
+        ...searchClause,
+        ...memberClause,
         ...(canSeeAll
           ? {}
           : {
@@ -116,8 +298,24 @@ export const projectRepository = {
         _count: {
           select: { members: true },
         },
+        members: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                image: true,
+              },
+            },
+          },
+        },
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: sortBy && ["title", "createdAt", "startDate", "endDate"].includes(sortBy)
+        ? { [sortBy]: sortOrder === "asc" ? "asc" : "desc" }
+        : { createdAt: "desc" },
+      skip,
+      take,
     });
   },
 

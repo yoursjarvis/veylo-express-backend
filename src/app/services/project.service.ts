@@ -143,7 +143,10 @@ export const projectService = {
         category: s.category,
         order: s.order,
         color: (s as { color?: string }).color || defaults.color,
-        progressWeight: (s as { progressWeight?: number }).progressWeight !== undefined ? (s as { progressWeight?: number }).progressWeight : defaults.progressWeight,
+        progressWeight:
+          (s as { progressWeight?: number }).progressWeight !== undefined
+            ? (s as { progressWeight?: number }).progressWeight
+            : defaults.progressWeight,
       };
     });
 
@@ -163,7 +166,8 @@ export const projectService = {
     );
 
     // Automatically create a root Docs folder when project is created
-    const creatorId = userId || project.ownerId || (await prisma.user.findFirst())?.id;
+    const creatorId =
+      userId || project.ownerId || (await prisma.user.findFirst())?.id;
     if (creatorId) {
       await prisma.projectDoc.create({
         data: {
@@ -188,26 +192,29 @@ export const projectService = {
                   {
                     type: "heading",
                     attrs: { level: 1 },
-                    content: [{ type: "text", text: "Welcome to Veylo Docs! 👋" }]
+                    content: [
+                      { type: "text", text: "Welcome to Veylo Docs! 👋" },
+                    ],
                   },
                   {
                     type: "paragraph",
                     content: [
                       {
                         type: "text",
-                        text: "This is your project's collaborative document workspace. Here, you can create, edit, organize, and discuss documents in real time with your team."
-                      }
-                    ]
-                  }
-                ]
+                        text: "This is your project's collaborative document workspace. Here, you can create, edit, organize, and discuss documents in real time with your team.",
+                      },
+                    ],
+                  },
+                ],
               } as Record<string, unknown>,
-              plainText: "Welcome to Veylo Docs! This is your project's collaborative document workspace.",
+              plainText:
+                "Welcome to Veylo Docs! This is your project's collaborative document workspace.",
               order: 0,
               createdBy: creatorId,
               updatedBy: creatorId,
-            }
-          }
-        }
+            },
+          },
+        },
       });
     }
 
@@ -226,17 +233,60 @@ export const projectService = {
     return template;
   },
 
-  getProjects(workspaceId: string, canSeeAll: boolean, userId: string) {
-    return projectRepository.getProjects(workspaceId, canSeeAll, userId);
+  getProjects(
+    workspaceId: string,
+    canSeeAll: boolean,
+    userId: string,
+    filters?: {
+      page?: number;
+      limit?: number;
+      search?: string;
+      includeDeleted?: boolean;
+      onlyDeleted?: boolean;
+      status?: string;
+      memberIds?: string;
+      startDate?: string;
+      endDate?: string;
+      sortBy?: string;
+      sortOrder?: "asc" | "desc";
+    },
+  ) {
+    return projectRepository.getProjects(
+      workspaceId,
+      canSeeAll,
+      userId,
+      filters,
+    );
   },
 
-  async getOrgProjects(organizationId: string, userId: string) {
+  async getOrgProjects(
+    organizationId: string,
+    userId: string,
+    filters?: {
+      page?: number;
+      limit?: number;
+      search?: string;
+      includeDeleted?: boolean;
+      onlyDeleted?: boolean;
+      status?: string;
+      memberIds?: string;
+      startDate?: string;
+      endDate?: string;
+      sortBy?: string;
+      sortOrder?: "asc" | "desc";
+    },
+  ) {
     const { rbacService } = await import("@/app/services/rbac.service");
     // Check if user has permission to read all projects in the org
     const canSeeAll = await rbacService.authorize(userId, "project:read", {
       organizationId,
     });
-    return projectRepository.getOrgProjects(organizationId, canSeeAll, userId);
+    return projectRepository.getOrgProjects(
+      organizationId,
+      canSeeAll,
+      userId,
+      filters,
+    );
   },
 
   async getProject(projectId: string) {

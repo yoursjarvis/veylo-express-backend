@@ -38,7 +38,7 @@ export const workspaceController = {
       throw new UnauthorizedException();
     }
 
-    const organizationId = req.params.organizationId;
+    const organizationId = req.params.organizationId as string;
     const workspaces = await workspaceService.getWorkspaces(
       organizationId,
       session.user.id,

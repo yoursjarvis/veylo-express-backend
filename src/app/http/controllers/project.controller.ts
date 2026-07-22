@@ -17,7 +17,7 @@ import {
 import { auditLogService } from "@/app/services/audit-log.service";
 import { projectService } from "@/app/services/project.service";
 import prisma from "@/lib/prisma";
-import { BadRequestException } from "@/utils/app-error";
+import { BadRequestException, ForbiddenException } from "@/utils/app-error";
 import { ok } from "@/utils/http-response";
 
 export const projectController = {
@@ -86,10 +86,39 @@ export const projectController = {
       userId = ctx.userId;
     }
 
+    const {
+      page,
+      limit,
+      search,
+      includeDeleted,
+      onlyDeleted,
+      status,
+      memberIds,
+      startDate,
+      endDate,
+      sortBy,
+      sortOrder,
+    } = req.query;
+
+    const filters = {
+      page: page ? parseInt(page as string, 10) : undefined,
+      limit: limit ? parseInt(limit as string, 10) : undefined,
+      search: search as string || undefined,
+      includeDeleted: includeDeleted === "true",
+      onlyDeleted: onlyDeleted === "true",
+      status: status as string || undefined,
+      memberIds: memberIds as string || undefined,
+      startDate: startDate as string || undefined,
+      endDate: endDate as string || undefined,
+      sortBy: sortBy as string || undefined,
+      sortOrder: sortOrder as "asc" | "desc" || undefined,
+    };
+
     const projects = await projectService.getProjects(
       workspaceId,
       canSeeAll,
       userId,
+      filters,
     );
 
     return ok(res, "Projects fetched successfully", projects);
@@ -99,6 +128,34 @@ export const projectController = {
     const organizationId = req.params.organizationId as string;
     const ctx = await resolveSession(req);
 
+    const {
+      page,
+      limit,
+      search,
+      includeDeleted,
+      onlyDeleted,
+      status,
+      memberIds,
+      startDate,
+      endDate,
+      sortBy,
+      sortOrder,
+    } = req.query;
+
+    const filters = {
+      page: page ? parseInt(page as string, 10) : undefined,
+      limit: limit ? parseInt(limit as string, 10) : undefined,
+      search: search as string || undefined,
+      includeDeleted: includeDeleted === "true",
+      onlyDeleted: onlyDeleted === "true",
+      status: status as string || undefined,
+      memberIds: memberIds as string || undefined,
+      startDate: startDate as string || undefined,
+      endDate: endDate as string || undefined,
+      sortBy: sortBy as string || undefined,
+      sortOrder: sortOrder as "asc" | "desc" || undefined,
+    };
+
     // For organization-level project listing, we can either check if they are org admins
     // or just return projects they have access to.
     // Here we'll just check if they are members of the org.
@@ -106,6 +163,7 @@ export const projectController = {
     const projects = await projectService.getOrgProjects(
       organizationId,
       ctx.userId,
+      filters,
     );
 
     return ok(res, "Projects fetched successfully", projects);
@@ -122,7 +180,26 @@ export const projectController = {
 
   updateProject: asyncHandler(async (req: Request, res: Response) => {
     const projectId = req.params.id as string;
-    await verifyProjectAdmin(req, projectId);
+    const ctx = await verifyProjectAdmin(req, projectId);
+
+    // If setting startDate (starting project), check if they have project:create permission as well
+    if (req.body && req.body.startDate) {
+      const { rbacService } = await import("@/app/services/rbac.service");
+      const hasCreatePermission = await rbacService.authorize(
+        ctx.userId,
+        "project:create",
+        {
+          organizationId: ctx.activeOrgId,
+          workspaceId: ctx.project.workspaceId,
+          projectId,
+        }
+      );
+      if (!hasCreatePermission) {
+        throw new ForbiddenException(
+          "Forbidden: You lack the required permission to start projects (project:create)"
+        );
+      }
+    }
 
     const validatedData = projectUpdateSchema.parse(req.body);
 
