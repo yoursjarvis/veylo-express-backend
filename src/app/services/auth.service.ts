@@ -358,6 +358,8 @@ export const authService = {
       name?: string;
       image?: string;
       notificationPreferences?: string;
+      timezone?: string;
+      dateTimeFormat?: string;
     },
   ) {
     const headers = betterAuthHeaders(req);

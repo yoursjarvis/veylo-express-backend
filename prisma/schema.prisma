@@ -38,6 +38,8 @@ model User {
 
   twoFactorEnabled        Boolean? @map("two_factor_enabled")
   notificationPreferences String?  @default("[]") @map("notification_preferences")
+  timezone                String?  @map("timezone")
+  dateTimeFormat          String?  @map("date_time_format")
 
   sessions              Session[]
   accounts              Account[]

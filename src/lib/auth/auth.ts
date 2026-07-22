@@ -103,6 +103,8 @@ export const auth = betterAuth({
       },
       lockedUntil: { type: "date", required: false, input: false },
       deletedAt: { type: "date", required: false, input: false },
+      timezone: { type: "string", required: false },
+      dateTimeFormat: { type: "string", required: false },
     },
   },
   databaseHooks: {
