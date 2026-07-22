@@ -319,6 +319,202 @@ export const projectController = {
     return ok(res, "Project permanently deleted");
   }),
 
+  bulkProjectsAction: asyncHandler(async (req: Request, res: Response) => {
+    const { projectIds, action, payload } = req.body as {
+      projectIds: string[];
+      action: "update-status" | "start" | "assign-members" | "delete" | "restore" | "force-delete";
+      payload?: {
+        status?: string;
+        userIds?: string[];
+      };
+    };
+
+    if (!Array.isArray(projectIds) || projectIds.length === 0) {
+      throw new BadRequestException("Project IDs are required");
+    }
+
+    // Determine required permission based on action
+    let requiredPermission = "project:update";
+    if (action === "delete") {
+      requiredPermission = "project:delete";
+    } else if (action === "restore") {
+      requiredPermission = "project:restore";
+    } else if (action === "force-delete") {
+      requiredPermission = "project:force-delete";
+    } else if (action === "assign-members") {
+      requiredPermission = "project-member:invite-member";
+    }
+
+    const { activeOrgId, userId } = await resolveSession(req);
+    const { rbacService } = await import("@/app/services/rbac.service");
+
+    // Pre-fetch all projects (including trashed ones)
+    const projects = await prisma.project.findManyWithTrashed({
+      where: { id: { in: projectIds } },
+    });
+
+    if (projects.length !== projectIds.length) {
+      throw new BadRequestException("Some projects were not found");
+    }
+
+    // Verify permission and constraints for each project
+    for (const project of projects) {
+      const isAllowed = await rbacService.authorize(userId, requiredPermission, {
+        organizationId: activeOrgId,
+        workspaceId: project.workspaceId,
+        projectId: project.id,
+      });
+
+      if (!isAllowed) {
+        throw new ForbiddenException(
+          `Forbidden: You lack the required permission (${requiredPermission}) on project ${project.title}`
+        );
+      }
+
+      // Action-specific validation/constraints
+      if (action === "force-delete" && !project.deletedAt) {
+        throw new BadRequestException(
+          `Project "${project.title}" is not in the trash. Force delete is only allowed for trashed projects.`
+        );
+      }
+    }
+
+    // Retrieve user session info for audit logging
+    const { auth } = await import("@/lib/auth/auth");
+    const { betterAuthHeaders } = await import("@/lib/auth/node-headers");
+    const session = await auth.api.getSession({
+      headers: betterAuthHeaders(req),
+    });
+
+    // Perform bulk actions and write audit logs
+    const results = [];
+    for (const project of projects) {
+      if (action === "update-status") {
+        const statusVal = payload?.status || "on_track";
+        const updateData: Record<string, any> = { status: statusVal };
+        if (statusVal === "completed") {
+          updateData.endDate = new Date().toISOString();
+        } else if (project.status === "completed") {
+          updateData.endDate = null;
+        }
+        const updated = await projectService.updateProject(project.id, updateData);
+        results.push(updated);
+
+        if (session?.user) {
+          await auditLogService.log({
+            workspaceId: project.workspaceId,
+            organizationId: project.organizationId,
+            userId: session.user.id,
+            action: "UPDATE_PROJECT_STATUS",
+            entityType: "PROJECT",
+            entityId: project.id,
+            entityName: project.title,
+            description: `User "${session.user.name}" updated project "${project.title}" status to "${statusVal}" via bulk action.`,
+            req,
+          });
+        }
+      } else if (action === "start") {
+        const updateData = {
+          startDate: new Date().toISOString(),
+          status: "on_track",
+        };
+        const updated = await projectService.updateProject(project.id, updateData);
+        results.push(updated);
+
+        if (session?.user) {
+          await auditLogService.log({
+            workspaceId: project.workspaceId,
+            organizationId: project.organizationId,
+            userId: session.user.id,
+            action: "START_PROJECT",
+            entityType: "PROJECT",
+            entityId: project.id,
+            entityName: project.title,
+            description: `User "${session.user.name}" started project "${project.title}" via bulk action.`,
+            req,
+          });
+        }
+      } else if (action === "assign-members") {
+        const userIds = payload?.userIds || [];
+        const members = await projectService.addProjectMembers(
+          project.id,
+          project.workspaceId,
+          userIds,
+          userId
+        );
+        results.push(members);
+
+        if (session?.user) {
+          await auditLogService.log({
+            workspaceId: project.workspaceId,
+            organizationId: project.organizationId,
+            userId: session.user.id,
+            action: "ADD_PROJECT_MEMBERS",
+            entityType: "PROJECT",
+            entityId: project.id,
+            entityName: project.title,
+            description: `User "${session.user.name}" added ${userIds.length} members to project "${project.title}" via bulk action.`,
+            metadata: { addedUserIds: userIds },
+            req,
+          });
+        }
+      } else if (action === "delete") {
+        const deleted = await projectService.deleteProject(project.id);
+        results.push(deleted);
+
+        if (session?.user) {
+          await auditLogService.log({
+            workspaceId: project.workspaceId,
+            organizationId: project.organizationId,
+            userId: session.user.id,
+            action: "DELETE_PROJECT",
+            entityType: "PROJECT",
+            entityId: project.id,
+            entityName: project.title,
+            description: `User "${session.user.name}" deleted project "${project.title}" via bulk action.`,
+            req,
+          });
+        }
+      } else if (action === "restore") {
+        const restored = await projectService.restoreProject(project.id);
+        results.push(restored);
+
+        if (session?.user) {
+          await auditLogService.log({
+            workspaceId: project.workspaceId,
+            organizationId: project.organizationId,
+            userId: session.user.id,
+            action: "RESTORE_PROJECT",
+            entityType: "PROJECT",
+            entityId: project.id,
+            entityName: project.title,
+            description: `User "${session.user.name}" restored project "${project.title}" via bulk action.`,
+            req,
+          });
+        }
+      } else if (action === "force-delete") {
+        const deleted = await projectService.forceDeleteProject(project.id);
+        results.push(deleted);
+
+        if (session?.user) {
+          await auditLogService.log({
+            workspaceId: project.workspaceId,
+            organizationId: project.organizationId,
+            userId: session.user.id,
+            action: "FORCE_DELETE_PROJECT",
+            entityType: "PROJECT",
+            entityId: project.id,
+            entityName: project.title,
+            description: `User "${session.user.name}" permanently deleted project "${project.title}" via bulk action.`,
+            req,
+          });
+        }
+      }
+    }
+
+    return ok(res, `Bulk action '${action}' completed successfully`, results);
+  }),
+
   // PROJECT MEMBERS
   getProjectMembers: asyncHandler(async (req: Request, res: Response) => {
     const projectId = req.params.id as string;

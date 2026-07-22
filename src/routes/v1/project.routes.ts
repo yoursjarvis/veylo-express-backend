@@ -48,6 +48,12 @@ projectRoutes.get(
   projectController.getProjectTemplateBySlug,
 );
 
+projectRoutes.post(
+  "/projects/bulk",
+  requireAuth,
+  projectController.bulkProjectsAction,
+);
+
 projectRoutes.get(
   "\/projects\/:id",
   requireAuth,
