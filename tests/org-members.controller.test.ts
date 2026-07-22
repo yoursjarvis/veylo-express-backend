@@ -391,7 +391,9 @@ describe("orgMembersController", () => {
       });
       mockCreateInvitation.mockResolvedValueOnce({ id: "inv-1" });
 
-      const req: unknown = { body: { email: "new@example.com", role: "member" } };
+      const req: unknown = {
+        body: { email: "new@example.com", role: "member" },
+      };
       const res = createRes();
 
       await (orgMembersController.inviteMember as unknown)(req, res);
@@ -542,10 +544,12 @@ describe("orgMembersController", () => {
       await (orgMembersController.setPassword as unknown)(req, res);
 
       expect(mockSetUserPassword).toHaveBeenCalled();
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-        success: true,
-        message: "Password updated successfully",
-      }));
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: true,
+          message: "Password updated successfully",
+        }),
+      );
     });
 
     it("gets user sessions successfully", async () => {
@@ -565,10 +569,12 @@ describe("orgMembersController", () => {
       await (orgMembersController.getSessions as unknown)(req, res);
 
       expect(prismaMock.session.findMany).toHaveBeenCalled();
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-        success: true,
-        data: [{ id: "s1" }],
-      }));
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: true,
+          data: [{ id: "s1" }],
+        }),
+      );
     });
 
     it("revokes user session successfully", async () => {
@@ -588,10 +594,12 @@ describe("orgMembersController", () => {
       await (orgMembersController.revokeSession as unknown)(req, res);
 
       expect(prismaMock.session.deleteMany).toHaveBeenCalled();
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-        success: true,
-        message: "Session revoked successfully",
-      }));
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: true,
+          message: "Session revoked successfully",
+        }),
+      );
     });
 
     it("updates profile successfully", async () => {
@@ -617,10 +625,12 @@ describe("orgMembersController", () => {
       await (orgMembersController.updateProfile as unknown)(req, res);
 
       expect(prismaMock.user.update).toHaveBeenCalled();
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-        success: true,
-        message: "Profile updated successfully",
-      }));
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: true,
+          message: "Profile updated successfully",
+        }),
+      );
     });
   });
 
@@ -640,8 +650,11 @@ describe("orgMembersController", () => {
     });
 
     it("updatePhoto updates photo successfully if file uploaded", async () => {
-      const { orgMembersService } = await import("../src/app/services/org-members.service");
-      vi.spyOn(orgMembersService, "updatePhoto").mockResolvedValueOnce("http://example.com/avatar.png");
+      const { orgMembersService } =
+        await import("../src/app/services/org-members.service");
+      vi.spyOn(orgMembersService, "updatePhoto").mockResolvedValueOnce(
+        "http://example.com/avatar.png",
+      );
 
       mockGetSession.mockResolvedValueOnce({
         user: { id: "u1" },
@@ -661,18 +674,26 @@ describe("orgMembersController", () => {
 
       await (orgMembersController.updatePhoto as unknown)(req, res);
 
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-        success: true,
-        message: "Photo updated successfully",
-        data: { url: "http://example.com/avatar.png" },
-      }));
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: true,
+          message: "Photo updated successfully",
+          data: { url: "http://example.com/avatar.png" },
+        }),
+      );
     });
 
     it("inviteMember triggers error handler for CONFLICT", async () => {
-      const { orgMembersService } = await import("../src/app/services/org-members.service");
-      vi.spyOn(orgMembersService, "verifyAdminAccess").mockResolvedValueOnce({} as unknown);
+      const { orgMembersService } =
+        await import("../src/app/services/org-members.service");
+      vi.spyOn(orgMembersService, "verifyAdminAccess").mockResolvedValueOnce(
+        {} as unknown,
+      );
       vi.spyOn(orgMembersService, "inviteMember").mockRejectedValueOnce(
-        Object.assign(new Error("Email already registered"), { status: "CONFLICT", code: "ALREADY_EXISTS" })
+        Object.assign(new Error("Email already registered"), {
+          status: "CONFLICT",
+          code: "ALREADY_EXISTS",
+        }),
       );
 
       mockGetSession.mockResolvedValueOnce({
@@ -688,15 +709,20 @@ describe("orgMembersController", () => {
       await (orgMembersController.inviteMember as unknown)(req, res);
 
       expect(res.status).toHaveBeenCalledWith(409);
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-        message: "Email already registered",
-        code: "ALREADY_EXISTS",
-      }));
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: "Email already registered",
+          code: "ALREADY_EXISTS",
+        }),
+      );
     });
 
     it("resendInvitation resends successfully", async () => {
-      const { orgMembersService } = await import("../src/app/services/org-members.service");
-      vi.spyOn(orgMembersService, "resendInvitation").mockResolvedValueOnce({ id: "inv-1" });
+      const { orgMembersService } =
+        await import("../src/app/services/org-members.service");
+      vi.spyOn(orgMembersService, "resendInvitation").mockResolvedValueOnce({
+        id: "inv-1",
+      });
 
       mockGetSession.mockResolvedValueOnce({
         user: { id: "u1" },
@@ -708,16 +734,19 @@ describe("orgMembersController", () => {
 
       await (orgMembersController.resendInvitation as unknown)(req, res);
 
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-        success: true,
-        message: "Invitation resent successfully",
-      }));
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: true,
+          message: "Invitation resent successfully",
+        }),
+      );
     });
 
     it("resendInvitation triggers catch block error handler for BAD_REQUEST", async () => {
-      const { orgMembersService } = await import("../src/app/services/org-members.service");
+      const { orgMembersService } =
+        await import("../src/app/services/org-members.service");
       vi.spyOn(orgMembersService, "resendInvitation").mockRejectedValueOnce(
-        Object.assign(new Error("Invalid link"), { status: "BAD_REQUEST" })
+        Object.assign(new Error("Invalid link"), { status: "BAD_REQUEST" }),
       );
 
       mockGetSession.mockResolvedValueOnce({
@@ -731,9 +760,11 @@ describe("orgMembersController", () => {
       await (orgMembersController.resendInvitation as unknown)(req, res);
 
       expect(res.status).toHaveBeenCalledWith(400);
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-        message: "Invalid link",
-      }));
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: "Invalid link",
+        }),
+      );
     });
   });
 });

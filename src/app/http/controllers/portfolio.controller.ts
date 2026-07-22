@@ -2,7 +2,10 @@ import type { Request, Response } from "express";
 
 import { asyncHandler } from "@/app/http/middlewares/async-handler.middleware";
 import { resolveSession } from "@/app/http/middlewares/project-access.middleware";
-import { portfolioCreateSchema, portfolioUpdateSchema } from "@/app/http/validators/portfolio.validator";
+import {
+  portfolioCreateSchema,
+  portfolioUpdateSchema,
+} from "@/app/http/validators/portfolio.validator";
 import { portfolioService } from "@/app/services/portfolio.service";
 import { rbacService } from "@/app/services/rbac.service";
 import prisma from "@/lib/prisma";
@@ -20,7 +23,9 @@ export const portfolioController = {
     });
 
     if (!isAllowed) {
-      throw new ForbiddenException("Forbidden: You do not have permission to view portfolios.");
+      throw new ForbiddenException(
+        "Forbidden: You do not have permission to view portfolios.",
+      );
     }
 
     const withTrashed = req.query.withTrashed === "true";
@@ -39,7 +44,9 @@ export const portfolioController = {
     const { activeOrgId, userId } = await resolveSession(req);
 
     const withTrashed = req.query.withTrashed === "true";
-    const portfolio = await portfolioService.getPortfolioById(id, { withTrashed });
+    const portfolio = await portfolioService.getPortfolioById(id, {
+      withTrashed,
+    });
 
     if (!portfolio) {
       throw new NotFoundException("Portfolio not found");
@@ -51,7 +58,9 @@ export const portfolioController = {
     });
 
     if (!isAllowed) {
-      throw new ForbiddenException("Forbidden: You do not have permission to view this portfolio.");
+      throw new ForbiddenException(
+        "Forbidden: You do not have permission to view this portfolio.",
+      );
     }
 
     return ok(res, "Portfolio fetched successfully", portfolio);
@@ -67,7 +76,9 @@ export const portfolioController = {
     });
 
     if (!isAllowed) {
-      throw new ForbiddenException("Forbidden: You do not have permission to create portfolios.");
+      throw new ForbiddenException(
+        "Forbidden: You do not have permission to create portfolios.",
+      );
     }
 
     const validatedData = portfolioCreateSchema.parse(req.body);
@@ -76,7 +87,7 @@ export const portfolioController = {
       workspaceId,
       activeOrgId,
       userId,
-      validatedData
+      validatedData,
     );
 
     return ok(res, "Portfolio created successfully", portfolio);
@@ -100,12 +111,17 @@ export const portfolioController = {
     });
 
     if (!isAllowed) {
-      throw new ForbiddenException("Forbidden: You do not have permission to update this portfolio.");
+      throw new ForbiddenException(
+        "Forbidden: You do not have permission to update this portfolio.",
+      );
     }
 
     const validatedData = portfolioUpdateSchema.parse(req.body);
 
-    const updatedPortfolio = await portfolioService.updatePortfolio(id, validatedData);
+    const updatedPortfolio = await portfolioService.updatePortfolio(
+      id,
+      validatedData,
+    );
 
     return ok(res, "Portfolio updated successfully", updatedPortfolio);
   }),
@@ -128,7 +144,9 @@ export const portfolioController = {
     });
 
     if (!isAllowed) {
-      throw new ForbiddenException("Forbidden: You do not have permission to delete this portfolio.");
+      throw new ForbiddenException(
+        "Forbidden: You do not have permission to delete this portfolio.",
+      );
     }
 
     await portfolioService.deletePortfolio(id);
@@ -154,7 +172,9 @@ export const portfolioController = {
     });
 
     if (!isAllowed) {
-      throw new ForbiddenException("Forbidden: You do not have permission to restore this portfolio.");
+      throw new ForbiddenException(
+        "Forbidden: You do not have permission to restore this portfolio.",
+      );
     }
 
     const restoredPortfolio = await portfolioService.restorePortfolio(id);
@@ -174,13 +194,19 @@ export const portfolioController = {
       throw new NotFoundException("Portfolio not found");
     }
 
-    const isAllowed = await rbacService.authorize(userId, "portfolio:force-delete", {
-      organizationId: activeOrgId,
-      workspaceId: portfolio.workspaceId,
-    });
+    const isAllowed = await rbacService.authorize(
+      userId,
+      "portfolio:force-delete",
+      {
+        organizationId: activeOrgId,
+        workspaceId: portfolio.workspaceId,
+      },
+    );
 
     if (!isAllowed) {
-      throw new ForbiddenException("Forbidden: You do not have permission to permanently delete this portfolio.");
+      throw new ForbiddenException(
+        "Forbidden: You do not have permission to permanently delete this portfolio.",
+      );
     }
 
     await portfolioService.forceDeletePortfolio(id);

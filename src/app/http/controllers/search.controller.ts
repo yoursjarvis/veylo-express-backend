@@ -21,10 +21,18 @@ export const searchController = {
     const activeOrgId = session.session.activeOrganizationId;
 
     if (!activeOrgId) {
-      return ok(res, "No active organization", { tasks: [], projects: [], workspaces: [] });
+      return ok(res, "No active organization", {
+        tasks: [],
+        projects: [],
+        workspaces: [],
+      });
     }
 
-    const results = await searchService.globalSearch(activeOrgId, session.user.id, query);
+    const results = await searchService.globalSearch(
+      activeOrgId,
+      session.user.id,
+      query,
+    );
     return ok(res, "Search results fetched", results);
   }),
 };

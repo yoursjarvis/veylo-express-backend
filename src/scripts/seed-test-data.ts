@@ -320,7 +320,12 @@ async function main() {
         workspaceId: workspace.id,
         organizationId: orgId,
         ownerId: users[faker.number.int({ min: 0, max: users.length - 1 })].id,
-        status: faker.helpers.arrayElement(["on_track", "at_risk", "off_track", "on_hold"]),
+        status: faker.helpers.arrayElement([
+          "on_track",
+          "at_risk",
+          "off_track",
+          "on_hold",
+        ]),
         priority: faker.helpers.arrayElement(["low", "medium", "high"]),
         startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
         endDate: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000),
@@ -361,22 +366,22 @@ async function main() {
       { name: "Done", category: "done", order: 4 },
     ];
 
-     const statuses = [];
-     for (const stat of statusesData) {
-       const defaults = getDefaultStatusColorAndWeight(stat.name, stat.category);
-       const createdStatus = await prisma.taskStatus.create({
-         data: {
-           projectId: proj.id,
-           organizationId: orgId,
-           name: stat.name,
-           category: stat.category,
-           order: stat.order,
-           color: defaults.color,
-           progressWeight: defaults.progressWeight,
-         },
-       });
-       statuses.push(createdStatus);
-     }
+    const statuses = [];
+    for (const stat of statusesData) {
+      const defaults = getDefaultStatusColorAndWeight(stat.name, stat.category);
+      const createdStatus = await prisma.taskStatus.create({
+        data: {
+          projectId: proj.id,
+          organizationId: orgId,
+          name: stat.name,
+          category: stat.category,
+          order: stat.order,
+          color: defaults.color,
+          progressWeight: defaults.progressWeight,
+        },
+      });
+      statuses.push(createdStatus);
+    }
     allProjectStatuses[proj.id] = statuses;
 
     // B. Epics

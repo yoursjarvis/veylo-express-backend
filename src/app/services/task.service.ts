@@ -207,7 +207,9 @@ export const taskService = {
               reason: `Task Completed (Created in Done state): ${task.taskKey} - ${task.title}`,
             },
           });
-          await taskRepository.updateTask(task.id, { awardedPoints: estimatedPoints });
+          await taskRepository.updateTask(task.id, {
+            awardedPoints: estimatedPoints,
+          });
           task.awardedPoints = estimatedPoints;
         }
       }
@@ -500,11 +502,7 @@ export const taskService = {
     };
   },
 
-  async updateTask(
-    taskId: string,
-    userId: string,
-    data: TaskUpdateRequest,
-  ) {
+  async updateTask(taskId: string, userId: string, data: TaskUpdateRequest) {
     const existingTask = await taskRepository.findTaskWithRelations(taskId);
     if (!existingTask) {
       throw new NotFoundException("Task not found");
@@ -744,8 +742,10 @@ export const taskService = {
     if (data.customFields !== undefined)
       updateData.customFields = data.customFields;
     if (data.position !== undefined) updateData.position = data.position;
-    if (data.estimatedPoints !== undefined) updateData.estimatedPoints = data.estimatedPoints;
-    if (data.awardedPoints !== undefined) updateData.awardedPoints = data.awardedPoints;
+    if (data.estimatedPoints !== undefined)
+      updateData.estimatedPoints = data.estimatedPoints;
+    if (data.awardedPoints !== undefined)
+      updateData.awardedPoints = data.awardedPoints;
     if (data.isPrivate !== undefined) {
       updateData.isPrivate = data.isPrivate;
       await logActivity(
@@ -786,10 +786,15 @@ export const taskService = {
         const wasReopened = oldCategory === "done" && newCategory !== "done";
 
         const oldAssigneeId = existingTask.assigneeId;
-        const newAssigneeId = data.assigneeId !== undefined ? data.assigneeId : oldAssigneeId;
-        const assigneeChanged = data.assigneeId !== undefined && data.assigneeId !== oldAssigneeId;
+        const newAssigneeId =
+          data.assigneeId !== undefined ? data.assigneeId : oldAssigneeId;
+        const assigneeChanged =
+          data.assigneeId !== undefined && data.assigneeId !== oldAssigneeId;
 
-        const currentEstPoints = data.estimatedPoints !== undefined ? data.estimatedPoints : existingTask.estimatedPoints;
+        const currentEstPoints =
+          data.estimatedPoints !== undefined
+            ? data.estimatedPoints
+            : existingTask.estimatedPoints;
 
         if (wasCompleted) {
           if (newAssigneeId) {
@@ -852,8 +857,13 @@ export const taskService = {
           } else {
             updateData.awardedPoints = 0;
           }
-        } else if (oldCategory === "done" && data.estimatedPoints !== undefined && data.estimatedPoints !== existingTask.estimatedPoints) {
-          const adjustment = data.estimatedPoints - existingTask.estimatedPoints;
+        } else if (
+          oldCategory === "done" &&
+          data.estimatedPoints !== undefined &&
+          data.estimatedPoints !== existingTask.estimatedPoints
+        ) {
+          const adjustment =
+            data.estimatedPoints - existingTask.estimatedPoints;
           if (adjustment !== 0 && newAssigneeId) {
             await prisma.kpiLedgerEntry.create({
               data: {

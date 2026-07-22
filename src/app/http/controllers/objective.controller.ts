@@ -1,7 +1,10 @@
 import type { Request, Response } from "express";
 
 import { asyncHandler } from "@/app/http/middlewares/async-handler.middleware";
-import { objectiveCreateSchema, objectiveUpdateSchema } from "@/app/http/validators/objective.validator";
+import {
+  objectiveCreateSchema,
+  objectiveUpdateSchema,
+} from "@/app/http/validators/objective.validator";
 import { objectiveService } from "@/app/services/objective.service";
 import { auth } from "@/lib/auth/auth";
 import { betterAuthHeaders } from "@/lib/auth/node-headers";
@@ -66,7 +69,10 @@ export const objectiveController = {
       }
     }
 
-    const objectives = await objectiveService.getObjectives(workspaceId, withTrashed);
+    const objectives = await objectiveService.getObjectives(
+      workspaceId,
+      withTrashed,
+    );
 
     return ok(res, "Objectives fetched successfully", objectives);
   }),

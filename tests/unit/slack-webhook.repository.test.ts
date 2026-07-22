@@ -11,7 +11,9 @@ describe("SlackWebhookRepository", () => {
   });
 
   it("should create webhook if project exists", async () => {
-    prismaMock.project.findUnique.mockResolvedValueOnce({ organizationId: "org-1" });
+    prismaMock.project.findUnique.mockResolvedValueOnce({
+      organizationId: "org-1",
+    });
     prismaMock.slackWebhook.create.mockResolvedValueOnce({ id: "hook-1" });
 
     const result = await slackWebhookRepository.create({
@@ -32,21 +34,25 @@ describe("SlackWebhookRepository", () => {
         projectId: "proj-non-existent",
         url: "https://slack.com/webhook",
         isActive: true,
-      })
+      }),
     ).rejects.toThrow("Project not found");
   });
 
   it("should find webhook by id", async () => {
     prismaMock.slackWebhook.findUnique.mockResolvedValueOnce({ id: "hook-1" });
     const result = await slackWebhookRepository.findById("hook-1");
-    expect(prismaMock.slackWebhook.findUnique).toHaveBeenCalledWith({ where: { id: "hook-1" } });
+    expect(prismaMock.slackWebhook.findUnique).toHaveBeenCalledWith({
+      where: { id: "hook-1" },
+    });
     expect(result?.id).toBe("hook-1");
   });
 
   it("should delete webhook", async () => {
     prismaMock.slackWebhook.delete.mockResolvedValueOnce({ id: "hook-1" });
     const result = await slackWebhookRepository.delete("hook-1");
-    expect(prismaMock.slackWebhook.delete).toHaveBeenCalledWith({ where: { id: "hook-1" } });
+    expect(prismaMock.slackWebhook.delete).toHaveBeenCalledWith({
+      where: { id: "hook-1" },
+    });
     expect(result.id).toBe("hook-1");
   });
 });

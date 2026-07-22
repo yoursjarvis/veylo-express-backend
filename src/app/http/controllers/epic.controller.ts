@@ -14,7 +14,11 @@ import { ok } from "@/utils/http-response";
 export const epicController = {
   createEpic: asyncHandler(async (req: Request, res: Response) => {
     const projectId = req.params.projectId as string;
-    const { project } = await verifyProjectAccess(req, projectId, "project-epic:create");
+    const { project } = await verifyProjectAccess(
+      req,
+      projectId,
+      "project-epic:create",
+    );
     const { organizationId } = project;
 
     const validatedData = epicCreateSchema.parse(req.body);
@@ -58,7 +62,11 @@ export const epicController = {
       throw new NotFoundException("Epic not found");
     }
 
-    await verifyProjectAccess(req, existingEpic.projectId, "project-epic:update");
+    await verifyProjectAccess(
+      req,
+      existingEpic.projectId,
+      "project-epic:update",
+    );
     const validatedData = epicUpdateSchema.parse(req.body);
 
     const updatedEpic = await epicService.updateEpic(epicId, validatedData);

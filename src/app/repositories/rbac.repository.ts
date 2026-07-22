@@ -641,7 +641,7 @@ export const rbacRepository = {
       },
       include: {
         role: true,
-      }
+      },
     });
 
     if (assignments.length === 0) return 0;
@@ -744,7 +744,11 @@ export const rbacRepository = {
       }
 
       if (data.scopeType === "ORGANIZATION") {
-        await syncMemberRolesToBetterAuth(data.userId, data.scopeId, tx as unknown as Parameters<typeof syncMemberRolesToBetterAuth>[2]);
+        await syncMemberRolesToBetterAuth(
+          data.userId,
+          data.scopeId,
+          tx as unknown as Parameters<typeof syncMemberRolesToBetterAuth>[2],
+        );
       }
 
       return tx.userRoleAssignment.findMany({
@@ -891,7 +895,9 @@ async function syncMemberRolesToBetterAuth(
   const db = tx || prisma;
 
   // Find all active ORGANIZATION scope role assignments for this user and org
-  const assignments = await (db.userRoleAssignment.findMany as unknown as Function)({
+  const assignments = await (
+    db.userRoleAssignment.findMany as unknown as Function
+  )({
     where: {
       userId,
       scopeType: "ORGANIZATION",

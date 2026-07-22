@@ -22,7 +22,11 @@ export const workLogController = {
       throw new NotFoundException("Task not found");
     }
 
-    const { userId } = await verifyProjectAccess(req, task.projectId, "timesheet:create");
+    const { userId } = await verifyProjectAccess(
+      req,
+      task.projectId,
+      "timesheet:create",
+    );
     const validatedData = workLogCreateSchema.parse(req.body);
 
     const workLog = await workLogService.createWorkLog(

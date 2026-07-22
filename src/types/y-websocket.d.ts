@@ -5,6 +5,6 @@ declare module "y-websocket/bin/utils" {
   export function setupWSConnection(
     conn: WebSocket,
     req: IncomingMessage,
-    options?: { docName?: string; gc?: boolean }
+    options?: { docName?: string; gc?: boolean },
   ): void;
 }

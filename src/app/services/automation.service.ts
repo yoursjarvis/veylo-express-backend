@@ -204,11 +204,14 @@ export const automationService = {
       } else if (rule.action === "set_priority") {
         const priorityVal = (rule.actionVal || "medium").toLowerCase();
         if (
-          ["lowest", "low", "medium", "high", "highest", "urgent"].includes(priorityVal) &&
+          ["lowest", "low", "medium", "high", "highest", "urgent"].includes(
+            priorityVal,
+          ) &&
           task.priority !== priorityVal
         ) {
           await taskService.updateTask(task.id, userId, {
-            priority: priorityVal as "lowest" | "low" | "medium" | "high" | "highest" | "urgent",
+            priority: priorityVal as
+              "lowest" | "low" | "medium" | "high" | "highest" | "urgent",
           });
         }
       } else if (rule.action === "add_comment") {

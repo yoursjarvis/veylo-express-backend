@@ -18,7 +18,11 @@ import { ok } from "@/utils/http-response";
 export const taskController = {
   createTask: asyncHandler(async (req: Request, res: Response) => {
     const projectId = req.params.projectId as string;
-    const { userId, project } = await verifyProjectAccess(req, projectId, "task:create");
+    const { userId, project } = await verifyProjectAccess(
+      req,
+      projectId,
+      "task:create",
+    );
     const { organizationId } = project;
 
     const validatedData = taskCreateSchema.parse(req.body);

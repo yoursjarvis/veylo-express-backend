@@ -152,7 +152,11 @@ export const workspaceRepository = {
 
     if (workspaces.length === 0) return;
 
-    const createData: { workspaceId: string; userId: string; organizationId: string }[] = [];
+    const createData: {
+      workspaceId: string;
+      userId: string;
+      organizationId: string;
+    }[] = [];
 
     for (const admin of orgAdmins) {
       for (const workspace of workspaces) {

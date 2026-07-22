@@ -143,17 +143,28 @@ export const rbacService = {
     return rbacRepository.deleteRole(roleId);
   },
 
-  async updateRoleHierarchy(roleIds: string[], organizationId: string, userId: string) {
-    const isOwner = await rbacRepository.isOrganizationOwner(userId, organizationId);
-    const userMaxLevel = isOwner ? Infinity : await rbacRepository.getUserMaxLevel(userId, organizationId);
+  async updateRoleHierarchy(
+    roleIds: string[],
+    organizationId: string,
+    userId: string,
+  ) {
+    const isOwner = await rbacRepository.isOrganizationOwner(
+      userId,
+      organizationId,
+    );
+    const userMaxLevel = isOwner
+      ? Infinity
+      : await rbacRepository.getUserMaxLevel(userId, organizationId);
 
     const roles = await prisma.role.findMany({
-      where: { id: { in: roleIds }, organizationId }
+      where: { id: { in: roleIds }, organizationId },
     });
 
     for (const role of roles) {
       if (role.level >= userMaxLevel) {
-        throw new BadRequestException("You cannot reorder roles that are equal to or higher than your highest role level.");
+        throw new BadRequestException(
+          "You cannot reorder roles that are equal to or higher than your highest role level.",
+        );
       }
     }
 
@@ -165,7 +176,7 @@ export const rbacService = {
     // Let's keep the throw for security.
 
     await rbacRepository.updateRoleHierarchy(roleIds, organizationId);
-    
+
     // Invalidate cache for all affected users... Actually, level changes don't affect cached permissions (which are just strings).
     // So no cache invalidation is needed for hierarchy.
   },

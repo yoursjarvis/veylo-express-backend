@@ -25,8 +25,13 @@ describe("EpicService", () => {
 
   describe("createEpic", () => {
     it("creates an epic with correct defaults", async () => {
-      epicRepositoryMock.create.mockResolvedValueOnce({ id: "e1", title: "New Epic" });
-      const result = await epicService.createEpic("proj-1", "org-1", { title: "New Epic" });
+      epicRepositoryMock.create.mockResolvedValueOnce({
+        id: "e1",
+        title: "New Epic",
+      });
+      const result = await epicService.createEpic("proj-1", "org-1", {
+        title: "New Epic",
+      });
 
       expect(epicRepositoryMock.create).toHaveBeenCalledWith({
         title: "New Epic",
@@ -51,7 +56,7 @@ describe("EpicService", () => {
         expect.objectContaining({
           startDate: new Date("2026-07-01"),
           endDate: new Date("2026-07-31"),
-        })
+        }),
       );
     });
   });
@@ -74,7 +79,10 @@ describe("EpicService", () => {
 
   describe("updateEpic", () => {
     it("updates epic with valid fields", async () => {
-      epicRepositoryMock.update.mockResolvedValueOnce({ id: "e1", title: "Updated" });
+      epicRepositoryMock.update.mockResolvedValueOnce({
+        id: "e1",
+        title: "Updated",
+      });
       const res = await epicService.updateEpic("e1", {
         title: "Updated",
         startDate: "2026-07-05",
@@ -123,9 +131,13 @@ describe("EpicService", () => {
 
     it("restores epic or throws NotFoundException", async () => {
       epicRepositoryMock.findByIdWithTrashed.mockResolvedValueOnce(null);
-      await expect(epicService.restoreEpic("e1")).rejects.toThrow("Epic not found");
+      await expect(epicService.restoreEpic("e1")).rejects.toThrow(
+        "Epic not found",
+      );
 
-      epicRepositoryMock.findByIdWithTrashed.mockResolvedValueOnce({ id: "e1" });
+      epicRepositoryMock.findByIdWithTrashed.mockResolvedValueOnce({
+        id: "e1",
+      });
       epicRepositoryMock.restore.mockResolvedValueOnce({ id: "e1" });
       await epicService.restoreEpic("e1");
       expect(epicRepositoryMock.restore).toHaveBeenCalledWith("e1");
@@ -133,9 +145,13 @@ describe("EpicService", () => {
 
     it("force deletes epic or throws NotFoundException", async () => {
       epicRepositoryMock.findByIdWithTrashed.mockResolvedValueOnce(null);
-      await expect(epicService.forceDeleteEpic("e1")).rejects.toThrow("Epic not found");
+      await expect(epicService.forceDeleteEpic("e1")).rejects.toThrow(
+        "Epic not found",
+      );
 
-      epicRepositoryMock.findByIdWithTrashed.mockResolvedValueOnce({ id: "e1" });
+      epicRepositoryMock.findByIdWithTrashed.mockResolvedValueOnce({
+        id: "e1",
+      });
       epicRepositoryMock.forceDelete.mockResolvedValueOnce({ id: "e1" });
       await epicService.forceDeleteEpic("e1");
       expect(epicRepositoryMock.forceDelete).toHaveBeenCalledWith("e1");

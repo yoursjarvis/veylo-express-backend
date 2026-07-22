@@ -8,21 +8,21 @@ const WELCOME_CONTENT = {
     {
       type: "heading",
       attrs: { level: 1 },
-      content: [{ type: "text", text: "Welcome to Veylo Docs! 👋" }]
+      content: [{ type: "text", text: "Welcome to Veylo Docs! 👋" }],
     },
     {
       type: "paragraph",
       content: [
         {
           type: "text",
-          text: "This is your project's collaborative document workspace. Here, you can create, edit, organize, and discuss documents in real time with your team."
-        }
-      ]
+          text: "This is your project's collaborative document workspace. Here, you can create, edit, organize, and discuss documents in real time with your team.",
+        },
+      ],
     },
     {
       type: "heading",
       attrs: { level: 2 },
-      content: [{ type: "text", text: "Features at a Glance" }]
+      content: [{ type: "text", text: "Features at a Glance" }],
     },
     {
       type: "bulletList",
@@ -34,11 +34,18 @@ const WELCOME_CONTENT = {
               type: "paragraph",
               content: [
                 { type: "text", text: "⚡ " },
-                { type: "text", attrs: { bold: true }, text: "Real-time Editing:" },
-                { type: "text", text: " See cursors, selections, and typing in real time." }
-              ]
-            }
-          ]
+                {
+                  type: "text",
+                  attrs: { bold: true },
+                  text: "Real-time Editing:",
+                },
+                {
+                  type: "text",
+                  text: " See cursors, selections, and typing in real time.",
+                },
+              ],
+            },
+          ],
         },
         {
           type: "listItem",
@@ -47,11 +54,18 @@ const WELCOME_CONTENT = {
               type: "paragraph",
               content: [
                 { type: "text", text: "📁 " },
-                { type: "text", attrs: { bold: true }, text: "Nested Documents:" },
-                { type: "text", text: " Organize documents in a tree-like hierarchy by dragging and dropping." }
-              ]
-            }
-          ]
+                {
+                  type: "text",
+                  attrs: { bold: true },
+                  text: "Nested Documents:",
+                },
+                {
+                  type: "text",
+                  text: " Organize documents in a tree-like hierarchy by dragging and dropping.",
+                },
+              ],
+            },
+          ],
         },
         {
           type: "listItem",
@@ -60,11 +74,18 @@ const WELCOME_CONTENT = {
               type: "paragraph",
               content: [
                 { type: "text", text: "💬 " },
-                { type: "text", attrs: { bold: true }, text: "Inline Comments:" },
-                { type: "text", text: " Highlight text to add comments, reply, and resolve discussions." }
-              ]
-            }
-          ]
+                {
+                  type: "text",
+                  attrs: { bold: true },
+                  text: "Inline Comments:",
+                },
+                {
+                  type: "text",
+                  text: " Highlight text to add comments, reply, and resolve discussions.",
+                },
+              ],
+            },
+          ],
         },
         {
           type: "listItem",
@@ -73,24 +94,31 @@ const WELCOME_CONTENT = {
               type: "paragraph",
               content: [
                 { type: "text", text: "🕒 " },
-                { type: "text", attrs: { bold: true }, text: "Version History:" },
-                { type: "text", text: " Automatically save history, compare versions, and restore previous states." }
-              ]
-            }
-          ]
-        }
-      ]
+                {
+                  type: "text",
+                  attrs: { bold: true },
+                  text: "Version History:",
+                },
+                {
+                  type: "text",
+                  text: " Automatically save history, compare versions, and restore previous states.",
+                },
+              ],
+            },
+          ],
+        },
+      ],
     },
     {
       type: "paragraph",
       content: [
         {
           type: "text",
-          text: "Feel free to delete or edit this page as you begin setting up your team's workspace!"
-        }
-      ]
-    }
-  ]
+          text: "Feel free to delete or edit this page as you begin setting up your team's workspace!",
+        },
+      ],
+    },
+  ],
 };
 
 async function main() {
@@ -146,7 +174,9 @@ async function main() {
   console.log(`Mapped permissions for ${orgs.length} organizations.`);
 
   // 2. Seed Welcome docs and Root Folders for all projects
-  console.log("Seeding root Docs folders and welcome documents for all projects...");
+  console.log(
+    "Seeding root Docs folders and welcome documents for all projects...",
+  );
   const projects = await prisma.project.findMany({
     include: {
       owner: true,
@@ -156,13 +186,16 @@ async function main() {
 
   const defaultUser = await prisma.user.findFirst();
   if (!defaultUser) {
-    console.warn("No user found in the database. Skipping welcome doc seeding. Please seed users first.");
+    console.warn(
+      "No user found in the database. Skipping welcome doc seeding. Please seed users first.",
+    );
     return;
   }
 
   let createdCount = 0;
   for (const project of projects) {
-    const creatorId = project.ownerId || project.members[0]?.userId || defaultUser.id;
+    const creatorId =
+      project.ownerId || project.members[0]?.userId || defaultUser.id;
 
     // Check if root doc already exists
     const existingRoot = await prisma.projectDoc.findFirst({
@@ -211,7 +244,8 @@ async function main() {
           slug: "welcome-to-docs",
           emoji: "👋",
           content: WELCOME_CONTENT as unknown as Record<string, unknown>,
-          plainText: "Welcome to Veylo Docs! This is your project's collaborative document workspace.",
+          plainText:
+            "Welcome to Veylo Docs! This is your project's collaborative document workspace.",
           order: 0,
           createdBy: creatorId,
           updatedBy: creatorId,
@@ -220,7 +254,9 @@ async function main() {
     }
   }
 
-  console.log(`Successfully initialized docs for ${projects.length} projects (created ${createdCount} root folders).`);
+  console.log(
+    `Successfully initialized docs for ${projects.length} projects (created ${createdCount} root folders).`,
+  );
   console.log("Docs database seed completed successfully.");
 }
 

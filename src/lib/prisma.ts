@@ -21,7 +21,9 @@ const basePrisma =
     adapter,
   });
 
-const prisma = basePrisma.$extends(softDeleteExtension).$extends(auditLogExtension);
+const prisma = basePrisma
+  .$extends(softDeleteExtension)
+  .$extends(auditLogExtension);
 
 if (config("app.env") !== "production") globalForPrisma.prisma = basePrisma;
 

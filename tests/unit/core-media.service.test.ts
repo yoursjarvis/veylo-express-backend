@@ -56,7 +56,12 @@ describe("Core MediaService", () => {
     prismaMock.media.delete.mockResolvedValue({ id: "existing-1" });
 
     // Mock target media creation
-    const createdMedia = { id: "new-media-1", disk: "local", modelType: "User", collectionName: "avatars" };
+    const createdMedia = {
+      id: "new-media-1",
+      disk: "local",
+      modelType: "User",
+      collectionName: "avatars",
+    };
     prismaMock.media.create.mockResolvedValueOnce(createdMedia);
 
     const file = {
@@ -66,14 +71,22 @@ describe("Core MediaService", () => {
       size: 100,
     };
 
-    const result = await mediaService.addMedia("User", "user-1", file, "avatars", true);
+    const result = await mediaService.addMedia(
+      "User",
+      "user-1",
+      file,
+      "avatars",
+      true,
+    );
 
     expect(prismaMock.media.findMany).toHaveBeenCalled();
     expect(fsMock.unlink).toHaveBeenCalled(); // from deleting existing-1 and its conversions
     expect(fsMock.mkdir).toHaveBeenCalled();
     expect(fsMock.writeFile).toHaveBeenCalled();
     expect(prismaMock.media.create).toHaveBeenCalled();
-    expect(mediaQueueAddMock).toHaveBeenCalledWith("process", { mediaId: "new-media-1" });
+    expect(mediaQueueAddMock).toHaveBeenCalledWith("process", {
+      mediaId: "new-media-1",
+    });
     expect(result.id).toBe("new-media-1");
   });
 
@@ -91,7 +104,7 @@ describe("Core MediaService", () => {
     };
 
     await expect(
-      mediaService.addMedia("User", "user-1", file, "avatars", false)
+      mediaService.addMedia("User", "user-1", file, "avatars", false),
     ).rejects.toThrow("Disk s3 not implemented yet");
   });
 
@@ -168,6 +181,8 @@ describe("Core MediaService", () => {
       fileName: "test.png",
     });
     configMock.mockReturnValue("https://cdn.example.com");
-    expect(await mediaService.getUrl("media-1")).toBe("https://cdn.example.com/User/avatars/test.png");
+    expect(await mediaService.getUrl("media-1")).toBe(
+      "https://cdn.example.com/User/avatars/test.png",
+    );
   });
 });

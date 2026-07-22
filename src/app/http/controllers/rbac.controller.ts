@@ -94,15 +94,16 @@ export const rbacController = {
     );
 
     if (!isAllowed) {
-      return res
-        .status(403)
-        .json({
-          message: "Forbidden: You do not have permission to view roles.",
-        });
+      return res.status(403).json({
+        message: "Forbidden: You do not have permission to view roles.",
+      });
     }
 
     const search = req.query.search as string | undefined;
-    const roles = await rbacService.getOrganizationRoles(orgId as string, search);
+    const roles = await rbacService.getOrganizationRoles(
+      orgId as string,
+      search,
+    );
     return res.status(200).json({ data: roles });
   }),
 
@@ -126,11 +127,9 @@ export const rbacController = {
     );
 
     if (!isAllowed) {
-      return res
-        .status(403)
-        .json({
-          message: "Forbidden: You do not have permission to create roles.",
-        });
+      return res.status(403).json({
+        message: "Forbidden: You do not have permission to create roles.",
+      });
     }
 
     const role = await rbacService.createRole(validatedData, session.user.id);
@@ -182,14 +181,15 @@ export const rbacController = {
 
     if (!isAllowed) {
       return res.status(403).json({
-        message: "Forbidden: You do not have permission to update role hierarchy.",
+        message:
+          "Forbidden: You do not have permission to update role hierarchy.",
       });
     }
 
     await rbacService.updateRoleHierarchy(
       validatedData.roleIds,
       validatedData.organizationId,
-      session.user.id
+      session.user.id,
     );
 
     // Organization-level action: find first workspace to satisfy required workspaceId in AuditLog
@@ -210,7 +210,9 @@ export const rbacController = {
       });
     }
 
-    return res.status(200).json({ message: "Role hierarchy updated successfully" });
+    return res
+      .status(200)
+      .json({ message: "Role hierarchy updated successfully" });
   }),
 
   updateRolePermissions: asyncHandler(async (req: Request, res: Response) => {
@@ -238,11 +240,9 @@ export const rbacController = {
     );
 
     if (!isAllowed) {
-      return res
-        .status(403)
-        .json({
-          message: "Forbidden: You do not have permission to update roles.",
-        });
+      return res.status(403).json({
+        message: "Forbidden: You do not have permission to update roles.",
+      });
     }
 
     const validatedData = updateRoleSchema.parse(req.body);
@@ -306,11 +306,9 @@ export const rbacController = {
     );
 
     if (!isAllowed) {
-      return res
-        .status(403)
-        .json({
-          message: "Forbidden: You do not have permission to delete roles.",
-        });
+      return res.status(403).json({
+        message: "Forbidden: You do not have permission to delete roles.",
+      });
     }
 
     await rbacService.deleteRole(roleId as string);
@@ -365,11 +363,9 @@ export const rbacController = {
       context,
     );
     if (!isAllowed) {
-      return res
-        .status(403)
-        .json({
-          message: "Forbidden: You do not have permission to assign roles.",
-        });
+      return res.status(403).json({
+        message: "Forbidden: You do not have permission to assign roles.",
+      });
     }
 
     const assignment = await rbacService.assignRole(validatedData);
@@ -436,12 +432,10 @@ export const rbacController = {
       context,
     );
     if (!isAllowed) {
-      return res
-        .status(403)
-        .json({
-          message:
-            "Forbidden: You do not have permission to remove role assignments.",
-        });
+      return res.status(403).json({
+        message:
+          "Forbidden: You do not have permission to remove role assignments.",
+      });
     }
 
     await rbacService.removeRole(validatedData);
@@ -507,12 +501,10 @@ export const rbacController = {
     );
 
     if (!isAllowed) {
-      return res
-        .status(403)
-        .json({
-          message:
-            "Forbidden: You do not have permission to view role assignments.",
-        });
+      return res.status(403).json({
+        message:
+          "Forbidden: You do not have permission to view role assignments.",
+      });
     }
 
     const assignments = await rbacService.getUserAssignments(

@@ -53,7 +53,9 @@ describe("HealthController", () => {
     await healthController.livez(req, res);
 
     expect(res.status).toHaveBeenCalledWith(200);
-    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ status: "ok" }));
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({ status: "ok" }),
+    );
   });
 
   it("readyz should return status ready if postgres and redis are healthy", async () => {
@@ -64,10 +66,12 @@ describe("HealthController", () => {
     await healthController.readyz(req, res);
 
     expect(res.status).toHaveBeenCalledWith(200);
-    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-      status: "ready",
-      checks: { postgres: "ok", redis: "ok" },
-    }));
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: "ready",
+        checks: { postgres: "ok", redis: "ok" },
+      }),
+    );
   });
 
   it("readyz should return status 503 if any check fails", async () => {
@@ -78,10 +82,12 @@ describe("HealthController", () => {
     await healthController.readyz(req, res);
 
     expect(res.status).toHaveBeenCalledWith(503);
-    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-      status: "not ready",
-      error: "DB Down",
-    }));
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: "not ready",
+        error: "DB Down",
+      }),
+    );
   });
 
   it("healthz should return status healthy if postgres and redis are healthy", async () => {
@@ -92,7 +98,9 @@ describe("HealthController", () => {
     await healthController.healthz(req, res);
 
     expect(res.status).toHaveBeenCalledWith(200);
-    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ status: "healthy" }));
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({ status: "healthy" }),
+    );
   });
 
   it("healthz should return status 500 if check fails", async () => {
@@ -103,9 +111,11 @@ describe("HealthController", () => {
     await healthController.healthz(req, res);
 
     expect(res.status).toHaveBeenCalledWith(500);
-    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-      status: "unhealthy",
-      error: "Redis Down",
-    }));
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: "unhealthy",
+        error: "Redis Down",
+      }),
+    );
   });
 });

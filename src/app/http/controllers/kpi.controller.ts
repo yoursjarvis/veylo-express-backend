@@ -7,15 +7,27 @@ import { UnauthorizedException, NotFoundException } from "@/utils/app-error";
 import { ok } from "@/utils/http-response";
 import { rbacService } from "@/app/services/rbac.service";
 
-async function checkKpiAccess(userId: string, workspaceId: string, isAdminRoute = false) {
-  const hasAdmin = await rbacService.authorize(userId, "kpi:view-admin", { workspaceId });
+async function checkKpiAccess(
+  userId: string,
+  workspaceId: string,
+  isAdminRoute = false,
+) {
+  const hasAdmin = await rbacService.authorize(userId, "kpi:view-admin", {
+    workspaceId,
+  });
   if (isAdminRoute && !hasAdmin) {
-    throw new UnauthorizedException("You do not have permission to view KPIs as an administrator.");
+    throw new UnauthorizedException(
+      "You do not have permission to view KPIs as an administrator.",
+    );
   }
   if (!isAdminRoute) {
-    const hasMember = await rbacService.authorize(userId, "kpi:view-member", { workspaceId });
+    const hasMember = await rbacService.authorize(userId, "kpi:view-member", {
+      workspaceId,
+    });
     if (!hasAdmin && !hasMember) {
-      throw new UnauthorizedException("You do not have permission to view KPIs.");
+      throw new UnauthorizedException(
+        "You do not have permission to view KPIs.",
+      );
     }
   }
 }
@@ -106,7 +118,9 @@ export const kpiController = {
       select: { id: true, name: true, email: true, image: true },
     });
 
-    const pointsMap = new Map(points.map((p) => [p.userId, p._sum.points ?? 0]));
+    const pointsMap = new Map(
+      points.map((p) => [p.userId, p._sum.points ?? 0]),
+    );
     const userMap = new Map(usersInResult.map((u) => [u.id, u]));
 
     const leaderboard = memberUserIds
@@ -281,14 +295,12 @@ export const kpiController = {
       select: { organizationId: true },
     });
     const isAdminOrOwner = workspace
-      ? await rbacService.authorize(
-          session.user.id,
-          "member:read",
-          {
+      ? await rbacService
+          .authorize(session.user.id, "member:read", {
             workspaceId,
             organizationId: workspace.organizationId,
-          }
-        ).catch(() => false)
+          })
+          .catch(() => false)
       : false;
 
     return ok(res, "User KPI stats fetched successfully", {

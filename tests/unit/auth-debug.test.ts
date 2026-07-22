@@ -14,7 +14,7 @@ vi.mock("better-auth", () => ({
 }));
 
 vi.mock("@/utils/config", () => ({
-  config: vi.fn(() => "mocked")
+  config: vi.fn(() => "mocked"),
 }));
 
 import "@/lib/auth/auth";

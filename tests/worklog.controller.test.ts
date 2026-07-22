@@ -4,17 +4,18 @@ vi.mock("../src/app/http/middlewares/async-handler.middleware", () => ({
   asyncHandler: (fn: unknown) => fn,
 }));
 
-const { mockVerifyProjectAccess, mockResolveSession, mockWorkLogService } = vi.hoisted(() => ({
-  mockVerifyProjectAccess: vi.fn().mockResolvedValue({ userId: "user-123" }),
-  mockResolveSession: vi.fn().mockResolvedValue({ userId: "user-123" }),
-  mockWorkLogService: {
-    createWorkLog: vi.fn(),
-    getTaskWorkLogs: vi.fn(),
-    getProjectWorkLogs: vi.fn(),
-    updateWorkLog: vi.fn(),
-    deleteWorkLog: vi.fn(),
-  },
-}));
+const { mockVerifyProjectAccess, mockResolveSession, mockWorkLogService } =
+  vi.hoisted(() => ({
+    mockVerifyProjectAccess: vi.fn().mockResolvedValue({ userId: "user-123" }),
+    mockResolveSession: vi.fn().mockResolvedValue({ userId: "user-123" }),
+    mockWorkLogService: {
+      createWorkLog: vi.fn(),
+      getTaskWorkLogs: vi.fn(),
+      getProjectWorkLogs: vi.fn(),
+      updateWorkLog: vi.fn(),
+      deleteWorkLog: vi.fn(),
+    },
+  }));
 
 vi.mock("../src/app/http/middlewares/project-access.middleware", () => ({
   verifyProjectAccess: mockVerifyProjectAccess,
@@ -47,12 +48,15 @@ describe("workLogController", () => {
       const res = createRes();
 
       await expect(
-        (workLogController.createWorkLog as unknown)(req, res)
+        (workLogController.createWorkLog as unknown)(req, res),
       ).rejects.toThrow("Task not found");
     });
 
     it("creates worklog successfully", async () => {
-      prismaMock.task.findUnique.mockResolvedValueOnce({ id: "t1", projectId: "p1" });
+      prismaMock.task.findUnique.mockResolvedValueOnce({
+        id: "t1",
+        projectId: "p1",
+      });
       mockWorkLogService.createWorkLog.mockResolvedValueOnce({ id: "wl-1" });
       const req: unknown = {
         params: { taskId: "t1" },
@@ -62,41 +66,70 @@ describe("workLogController", () => {
 
       await (workLogController.createWorkLog as unknown)(req, res);
 
-      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1", "timesheet:create");
-      expect(mockWorkLogService.createWorkLog).toHaveBeenCalledWith("t1", "user-123", {
-        hoursLogged: 5,
-      });
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-        success: true,
-        message: "Work log created successfully",
-      }));
+      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(
+        req,
+        "p1",
+        "timesheet:create",
+      );
+      expect(mockWorkLogService.createWorkLog).toHaveBeenCalledWith(
+        "t1",
+        "user-123",
+        {
+          hoursLogged: 5,
+        },
+      );
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: true,
+          message: "Work log created successfully",
+        }),
+      );
     });
   });
 
   describe("getTaskWorkLogs & getProjectWorkLogs", () => {
     it("gets task worklogs", async () => {
-      prismaMock.task.findUnique.mockResolvedValueOnce({ id: "t1", projectId: "p1" });
-      mockWorkLogService.getTaskWorkLogs.mockResolvedValueOnce([{ id: "wl-1" }]);
+      prismaMock.task.findUnique.mockResolvedValueOnce({
+        id: "t1",
+        projectId: "p1",
+      });
+      mockWorkLogService.getTaskWorkLogs.mockResolvedValueOnce([
+        { id: "wl-1" },
+      ]);
       const req: unknown = { params: { taskId: "t1" } };
       const res = createRes();
 
       await (workLogController.getTaskWorkLogs as unknown)(req, res);
 
-      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1", "timesheet:read");
+      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(
+        req,
+        "p1",
+        "timesheet:read",
+      );
       expect(mockWorkLogService.getTaskWorkLogs).toHaveBeenCalledWith("t1");
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ success: true }));
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({ success: true }),
+      );
     });
 
     it("gets project worklogs", async () => {
-      mockWorkLogService.getProjectWorkLogs.mockResolvedValueOnce([{ id: "wl-1" }]);
+      mockWorkLogService.getProjectWorkLogs.mockResolvedValueOnce([
+        { id: "wl-1" },
+      ]);
       const req: unknown = { params: { projectId: "p1" } };
       const res = createRes();
 
       await (workLogController.getProjectWorkLogs as unknown)(req, res);
 
-      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1", "timesheet:read");
+      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(
+        req,
+        "p1",
+        "timesheet:read",
+      );
       expect(mockWorkLogService.getProjectWorkLogs).toHaveBeenCalledWith("p1");
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ success: true }));
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({ success: true }),
+      );
     });
   });
 
@@ -109,10 +142,16 @@ describe("workLogController", () => {
       await (workLogController.updateWorkLog as unknown)(req, res);
 
       expect(mockResolveSession).toHaveBeenCalledWith(req);
-      expect(mockWorkLogService.updateWorkLog).toHaveBeenCalledWith("wl-1", "user-123", {
-        hoursLogged: 6,
-      });
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ success: true }));
+      expect(mockWorkLogService.updateWorkLog).toHaveBeenCalledWith(
+        "wl-1",
+        "user-123",
+        {
+          hoursLogged: 6,
+        },
+      );
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({ success: true }),
+      );
     });
 
     it("deletes worklog", async () => {
@@ -121,8 +160,13 @@ describe("workLogController", () => {
 
       await (workLogController.deleteWorkLog as unknown)(req, res);
 
-      expect(mockWorkLogService.deleteWorkLog).toHaveBeenCalledWith("wl-1", "user-123");
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ success: true }));
+      expect(mockWorkLogService.deleteWorkLog).toHaveBeenCalledWith(
+        "wl-1",
+        "user-123",
+      );
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({ success: true }),
+      );
     });
   });
 });

@@ -64,7 +64,7 @@ export async function resolveSession(
 export async function verifyWorkspaceAdmin(
   req: Request,
   workspaceId: string,
-  requiredPermission: string = "workspace:update"
+  requiredPermission: string = "workspace:update",
 ): Promise<WorkspaceAdminContext> {
   const { activeOrgId, userId } = await resolveSession(req);
   const { rbacService } = await import("@/app/services/rbac.service");
@@ -86,7 +86,7 @@ export async function verifyWorkspaceAdmin(
 export async function verifyProjectAccess(
   req: Request,
   projectId: string,
-  requiredPermission: string = "project:read"
+  requiredPermission: string = "project:read",
 ): Promise<ProjectAccessContext> {
   const { activeOrgId, userId } = await resolveSession(req);
 
@@ -117,9 +117,9 @@ export async function verifyProjectAccess(
 export async function verifyProjectAdmin(
   req: Request,
   projectId: string,
-  requiredPermission: string = "project:update"
+  requiredPermission: string = "project:update",
 ): Promise<ProjectAccessContext> {
-  const project = await prisma.project.findUnique({
+  const project = await prisma.project.findUniqueWithTrashed({
     where: { id: projectId },
   });
 

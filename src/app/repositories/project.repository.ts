@@ -31,7 +31,13 @@ export const projectRepository = {
       workspaceId: string;
       organizationId: string;
     },
-    resolvedStatuses: { name: string; category: string; order: number; color?: string; progressWeight?: number }[],
+    resolvedStatuses: {
+      name: string;
+      category: string;
+      order: number;
+      color?: string;
+      progressWeight?: number;
+    }[],
     resolvedCustomFields: { name: string; type: string }[],
   ) {
     return prisma.project.create({
@@ -93,7 +99,7 @@ export const projectRepository = {
       endDate?: string;
       sortBy?: string;
       sortOrder?: "asc" | "desc";
-    } = {}
+    } = {},
   ) {
     const {
       page,
@@ -116,13 +122,11 @@ export const projectRepository = {
     const deletedAtClause = onlyDeleted
       ? { not: null }
       : includeDeleted
-      ? undefined
-      : null;
+        ? undefined
+        : null;
 
     // Status filter
-    const statusClause = status
-      ? { in: status.split(",") }
-      : undefined;
+    const statusClause = status ? { in: status.split(",") } : undefined;
 
     // Search clause
     const searchClause = search
@@ -146,18 +150,21 @@ export const projectRepository = {
       : undefined;
 
     // Date range filter clause
-    const dateClause = (startDate || endDate)
-      ? {
-          gte: startDate ? new Date(startDate) : undefined,
-          lte: endDate ? (() => {
-            const endOfEndDate = new Date(endDate);
-            endOfEndDate.setHours(23, 59, 59, 999);
-            return endOfEndDate;
-          })() : undefined,
-        }
-      : undefined;
+    const dateClause =
+      startDate || endDate
+        ? {
+            gte: startDate ? new Date(startDate) : undefined,
+            lte: endDate
+              ? (() => {
+                  const endOfEndDate = new Date(endDate);
+                  endOfEndDate.setHours(23, 59, 59, 999);
+                  return endOfEndDate;
+                })()
+              : undefined,
+          }
+        : undefined;
 
-    return prisma.project.findMany({
+    return prisma.project.findManyWithTrashed({
       where: {
         workspaceId,
         deletedAt: deletedAtClause,
@@ -190,9 +197,11 @@ export const projectRepository = {
           },
         },
       },
-      orderBy: sortBy && ["title", "createdAt", "startDate", "endDate"].includes(sortBy)
-        ? { [sortBy]: sortOrder === "asc" ? "asc" : "desc" }
-        : { createdAt: "desc" },
+      orderBy:
+        sortBy &&
+        ["title", "createdAt", "startDate", "endDate"].includes(sortBy)
+          ? { [sortBy]: sortOrder === "asc" ? "asc" : "desc" }
+          : { createdAt: "desc" },
       skip,
       take,
     });
@@ -214,7 +223,7 @@ export const projectRepository = {
       endDate?: string;
       sortBy?: string;
       sortOrder?: "asc" | "desc";
-    } = {}
+    } = {},
   ) {
     const {
       page,
@@ -237,13 +246,11 @@ export const projectRepository = {
     const deletedAtClause = onlyDeleted
       ? { not: null }
       : includeDeleted
-      ? undefined
-      : null;
+        ? undefined
+        : null;
 
     // Status filter
-    const statusClause = status
-      ? { in: status.split(",") }
-      : undefined;
+    const statusClause = status ? { in: status.split(",") } : undefined;
 
     // Search clause
     const searchClause = search
@@ -267,18 +274,21 @@ export const projectRepository = {
       : undefined;
 
     // Date range filter clause
-    const dateClause = (startDate || endDate)
-      ? {
-          gte: startDate ? new Date(startDate) : undefined,
-          lte: endDate ? (() => {
-            const endOfEndDate = new Date(endDate);
-            endOfEndDate.setHours(23, 59, 59, 999);
-            return endOfEndDate;
-          })() : undefined,
-        }
-      : undefined;
+    const dateClause =
+      startDate || endDate
+        ? {
+            gte: startDate ? new Date(startDate) : undefined,
+            lte: endDate
+              ? (() => {
+                  const endOfEndDate = new Date(endDate);
+                  endOfEndDate.setHours(23, 59, 59, 999);
+                  return endOfEndDate;
+                })()
+              : undefined,
+          }
+        : undefined;
 
-    return prisma.project.findMany({
+    return prisma.project.findManyWithTrashed({
       where: {
         organizationId,
         deletedAt: deletedAtClause,
@@ -311,9 +321,11 @@ export const projectRepository = {
           },
         },
       },
-      orderBy: sortBy && ["title", "createdAt", "startDate", "endDate"].includes(sortBy)
-        ? { [sortBy]: sortOrder === "asc" ? "asc" : "desc" }
-        : { createdAt: "desc" },
+      orderBy:
+        sortBy &&
+        ["title", "createdAt", "startDate", "endDate"].includes(sortBy)
+          ? { [sortBy]: sortOrder === "asc" ? "asc" : "desc" }
+          : { createdAt: "desc" },
       skip,
       take,
     });

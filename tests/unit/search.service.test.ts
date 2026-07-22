@@ -19,10 +19,14 @@ describe("SearchService", () => {
     it("UT-SRH-02: performs global query search successfully", async () => {
       prismaMock.$queryRaw
         .mockResolvedValueOnce([{ id: "w1", name: "Workspace 1" }]) // workspaces
-        .mockResolvedValueOnce([{ id: "p1", title: "Project 1" }])   // projects
-        .mockResolvedValueOnce([{ id: "t1", title: "Task 1" }]);     // tasks
+        .mockResolvedValueOnce([{ id: "p1", title: "Project 1" }]) // projects
+        .mockResolvedValueOnce([{ id: "t1", title: "Task 1" }]); // tasks
 
-      const res = await searchService.globalSearch("org-1", "user-1", "testQuery");
+      const res = await searchService.globalSearch(
+        "org-1",
+        "user-1",
+        "testQuery",
+      );
 
       expect(prismaMock.$queryRaw).toHaveBeenCalledTimes(3);
       expect(res).toEqual({

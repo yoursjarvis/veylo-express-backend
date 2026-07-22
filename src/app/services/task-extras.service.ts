@@ -31,9 +31,15 @@ export const taskExtrasService = {
       );
     }
 
-    const defaults = getDefaultStatusColorAndWeight(validatedData.name, validatedData.category);
+    const defaults = getDefaultStatusColorAndWeight(
+      validatedData.name,
+      validatedData.category,
+    );
     const color = validatedData.color || defaults.color;
-    const progressWeight = validatedData.progressWeight !== undefined ? validatedData.progressWeight : defaults.progressWeight;
+    const progressWeight =
+      validatedData.progressWeight !== undefined
+        ? validatedData.progressWeight
+        : defaults.progressWeight;
 
     return taskExtrasRepository.createStatus({
       name: validatedData.name,

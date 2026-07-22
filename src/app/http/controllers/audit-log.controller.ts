@@ -1,7 +1,10 @@
 import type { Request, Response } from "express";
 
 import { asyncHandler } from "@/app/http/middlewares/async-handler.middleware";
-import { auditLogService, type AuditLogFilters } from "@/app/services/audit-log.service";
+import {
+  auditLogService,
+  type AuditLogFilters,
+} from "@/app/services/audit-log.service";
 import { rbacService } from "@/app/services/rbac.service";
 import { auth } from "@/lib/auth/auth";
 import { betterAuthHeaders } from "@/lib/auth/node-headers";
@@ -184,7 +187,10 @@ export const auditLogController = {
         : [String(req.query.entityTypes)];
     }
 
-    const logs = await auditLogService.getLogs({ organizationId: activeOrgId }, filters);
+    const logs = await auditLogService.getLogs(
+      { organizationId: activeOrgId },
+      filters,
+    );
 
     return ok(res, "Organization audit logs fetched successfully", logs);
   }),

@@ -36,7 +36,7 @@ describe("Objective API Endpoint Integration Tests (/api/v1/objectives)", () => 
       createUser({
         id: "user-123",
         email: "user@example.com",
-      })
+      }),
     );
   });
 
@@ -46,9 +46,13 @@ describe("Objective API Endpoint Integration Tests (/api/v1/objectives)", () => 
         id: "550e8400-e29b-41d4-a716-446655440003",
         organizationId: "org-123",
       });
-      prismaMock.objective.findMany.mockResolvedValueOnce([{ id: "550e8400-e29b-41d4-a716-446655440002", title: "Objective 1" }]);
+      prismaMock.objective.findMany.mockResolvedValueOnce([
+        { id: "550e8400-e29b-41d4-a716-446655440002", title: "Objective 1" },
+      ]);
 
-      const res = await request(app).get("/api/v1/workspaces/550e8400-e29b-41d4-a716-446655440003/objectives");
+      const res = await request(app).get(
+        "/api/v1/workspaces/550e8400-e29b-41d4-a716-446655440003/objectives",
+      );
 
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
@@ -68,14 +72,12 @@ describe("Objective API Endpoint Integration Tests (/api/v1/objectives)", () => 
         title: "New Objective",
       });
 
-      const res = await request(app)
-        .post("/api/v1/objectives")
-        .send({
-          title: "New Objective",
-          projectId: "550e8400-e29b-41d4-a716-446655440001",
-          krTitle: "KR Title",
-          krTarget: "KR Target",
-        });
+      const res = await request(app).post("/api/v1/objectives").send({
+        title: "New Objective",
+        projectId: "550e8400-e29b-41d4-a716-446655440001",
+        krTitle: "KR Title",
+        krTarget: "KR Target",
+      });
 
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
@@ -95,9 +97,13 @@ describe("Objective API Endpoint Integration Tests (/api/v1/objectives)", () => 
       };
       prismaMock.objective.findFirstWithTrashed.mockResolvedValue(mockObj);
       prismaMock.objective.findUniqueWithTrashed.mockResolvedValue(mockObj);
-      prismaMock.objective.delete.mockResolvedValueOnce({ id: "550e8400-e29b-41d4-a716-446655440002" });
+      prismaMock.objective.delete.mockResolvedValueOnce({
+        id: "550e8400-e29b-41d4-a716-446655440002",
+      });
 
-      const res = await request(app).delete("/api/v1/objectives/550e8400-e29b-41d4-a716-446655440002");
+      const res = await request(app).delete(
+        "/api/v1/objectives/550e8400-e29b-41d4-a716-446655440002",
+      );
 
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);

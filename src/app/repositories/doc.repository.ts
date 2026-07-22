@@ -35,9 +35,9 @@ export const docRepository = {
       },
       include: {
         creator: {
-          select: { id: true, name: true, image: true }
-        }
-      }
+          select: { id: true, name: true, image: true },
+        },
+      },
     });
   },
 
@@ -46,19 +46,19 @@ export const docRepository = {
       where: { id, deleted: false },
       include: {
         creator: {
-          select: { id: true, name: true, image: true }
+          select: { id: true, name: true, image: true },
         },
         updater: {
-          select: { id: true, name: true, image: true }
+          select: { id: true, name: true, image: true },
         },
         permissions: {
           include: {
             user: {
-              select: { id: true, name: true, image: true }
-            }
-          }
-        }
-      }
+              select: { id: true, name: true, image: true },
+            },
+          },
+        },
+      },
     });
   },
 
@@ -67,26 +67,29 @@ export const docRepository = {
       where: { id },
       include: {
         creator: {
-          select: { id: true, name: true, image: true }
-        }
-      }
+          select: { id: true, name: true, image: true },
+        },
+      },
     });
   },
 
-  async updateDoc(id: string, data: {
-    title?: string;
-    slug?: string;
-    parentId?: string | null;
-    emoji?: string | null;
-    icon?: string | null;
-    coverImage?: string | null;
-    content?: Record<string, unknown>;
-    plainText?: string | null;
-    order?: number;
-    archived?: boolean;
-    deleted?: boolean;
-    updatedBy: string;
-  }) {
+  async updateDoc(
+    id: string,
+    data: {
+      title?: string;
+      slug?: string;
+      parentId?: string | null;
+      emoji?: string | null;
+      icon?: string | null;
+      coverImage?: string | null;
+      content?: Record<string, unknown>;
+      plainText?: string | null;
+      order?: number;
+      archived?: boolean;
+      deleted?: boolean;
+      updatedBy: string;
+    },
+  ) {
     return prisma.projectDoc.update({
       where: { id },
       data: {
@@ -95,12 +98,12 @@ export const docRepository = {
       },
       include: {
         creator: {
-          select: { id: true, name: true, image: true }
+          select: { id: true, name: true, image: true },
         },
         updater: {
-          select: { id: true, name: true, image: true }
-        }
-      }
+          select: { id: true, name: true, image: true },
+        },
+      },
     });
   },
 
@@ -111,7 +114,7 @@ export const docRepository = {
         deleted: true,
         deletedAt: new Date(),
         updatedBy: userId,
-      }
+      },
     });
   },
 
@@ -122,7 +125,7 @@ export const docRepository = {
         deleted: false,
         deletedAt: null,
         updatedBy: userId,
-      }
+      },
     });
   },
 
@@ -136,20 +139,17 @@ export const docRepository = {
       },
       include: {
         creator: {
-          select: { id: true, name: true, image: true }
+          select: { id: true, name: true, image: true },
         },
         favorites: {
           where: { userId },
-          select: { isFavorite: true, isPinned: true }
+          select: { isFavorite: true, isPinned: true },
         },
         permissions: {
-          select: { userId: true, permission: true }
-        }
+          select: { userId: true, permission: true },
+        },
       },
-      orderBy: [
-        { order: "asc" },
-        { createdAt: "asc" }
-      ]
+      orderBy: [{ order: "asc" }, { createdAt: "asc" }],
     });
   },
 
@@ -164,22 +164,22 @@ export const docRepository = {
           {
             comments: {
               some: {
-                content: { contains: query, mode: "insensitive" }
-              }
-            }
-          }
-        ]
+                content: { contains: query, mode: "insensitive" },
+              },
+            },
+          },
+        ],
       },
       include: {
         creator: {
-          select: { id: true, name: true, image: true }
+          select: { id: true, name: true, image: true },
         },
         favorites: {
           where: { userId },
-          select: { isFavorite: true, isPinned: true }
-        }
+          select: { isFavorite: true, isPinned: true },
+        },
       },
-      take: 20
+      take: 20,
     });
   },
 
@@ -191,23 +191,28 @@ export const docRepository = {
       },
       include: {
         creator: {
-          select: { id: true, name: true, image: true }
+          select: { id: true, name: true, image: true },
         },
         favorites: {
           where: { userId },
-          select: { isFavorite: true, isPinned: true }
-        }
+          select: { isFavorite: true, isPinned: true },
+        },
       },
       orderBy: { updatedAt: "desc" },
-      take: limit
+      take: limit,
     });
   },
 
   // Favorites & Pinned
-  async upsertFavorite(docId: string, userId: string, organizationId: string, data: { isFavorite?: boolean; isPinned?: boolean }) {
+  async upsertFavorite(
+    docId: string,
+    userId: string,
+    organizationId: string,
+    data: { isFavorite?: boolean; isPinned?: boolean },
+  ) {
     return prisma.projectDocFavorite.upsert({
       where: {
-        docId_userId: { docId, userId }
+        docId_userId: { docId, userId },
       },
       update: data,
       create: {
@@ -216,7 +221,7 @@ export const docRepository = {
         organizationId,
         isFavorite: data.isFavorite ?? false,
         isPinned: data.isPinned ?? false,
-      }
+      },
     });
   },
 
@@ -228,27 +233,30 @@ export const docRepository = {
         favorites: {
           some: {
             userId,
-            OR: [
-              { isFavorite: true },
-              { isPinned: true }
-            ]
-          }
-        }
+            OR: [{ isFavorite: true }, { isPinned: true }],
+          },
+        },
       },
       include: {
         creator: {
-          select: { id: true, name: true, image: true }
+          select: { id: true, name: true, image: true },
         },
         favorites: {
           where: { userId },
-          select: { isFavorite: true, isPinned: true }
-        }
-      }
+          select: { isFavorite: true, isPinned: true },
+        },
+      },
     });
   },
 
   // Versions
-  async createVersion(data: { docId: string; organizationId: string; content: Record<string, unknown>; createdBy: string; version: number }) {
+  async createVersion(data: {
+    docId: string;
+    organizationId: string;
+    content: Record<string, unknown>;
+    createdBy: string;
+    version: number;
+  }) {
     return prisma.projectDocVersion.create({
       data: {
         docId: data.docId,
@@ -259,9 +267,9 @@ export const docRepository = {
       },
       include: {
         creator: {
-          select: { id: true, name: true, image: true }
-        }
-      }
+          select: { id: true, name: true, image: true },
+        },
+      },
     });
   },
 
@@ -270,17 +278,17 @@ export const docRepository = {
       where: { docId },
       include: {
         creator: {
-          select: { id: true, name: true, image: true }
-        }
+          select: { id: true, name: true, image: true },
+        },
       },
-      orderBy: { createdAt: "desc" }
+      orderBy: { createdAt: "desc" },
     });
   },
 
   async findLatestVersion(docId: string) {
     return prisma.projectDocVersion.findFirst({
       where: { docId },
-      orderBy: { version: "desc" }
+      orderBy: { version: "desc" },
     });
   },
 
@@ -289,14 +297,20 @@ export const docRepository = {
       where: { id },
       include: {
         creator: {
-          select: { id: true, name: true, image: true }
-        }
-      }
+          select: { id: true, name: true, image: true },
+        },
+      },
     });
   },
 
   // Comments
-  async createComment(data: { docId: string; userId: string; organizationId: string; parentId?: string | null; content: string }) {
+  async createComment(data: {
+    docId: string;
+    userId: string;
+    organizationId: string;
+    parentId?: string | null;
+    content: string;
+  }) {
     return prisma.projectDocComment.create({
       data: {
         docId: data.docId,
@@ -307,29 +321,32 @@ export const docRepository = {
       },
       include: {
         user: {
-          select: { id: true, name: true, image: true }
+          select: { id: true, name: true, image: true },
         },
         reactions: {
           include: {
-            user: { select: { id: true, name: true, image: true } }
-          }
+            user: { select: { id: true, name: true, image: true } },
+          },
         },
         replies: {
           include: {
             user: { select: { id: true, name: true, image: true } },
             reactions: {
               include: {
-                user: { select: { id: true, name: true, image: true } }
-              }
-            }
+                user: { select: { id: true, name: true, image: true } },
+              },
+            },
           },
-          orderBy: { createdAt: "asc" }
-        }
-      }
+          orderBy: { createdAt: "asc" },
+        },
+      },
     });
   },
 
-  async updateComment(id: string, data: { content?: string; resolved?: boolean }) {
+  async updateComment(
+    id: string,
+    data: { content?: string; resolved?: boolean },
+  ) {
     return prisma.projectDocComment.update({
       where: { id },
       data: {
@@ -338,25 +355,25 @@ export const docRepository = {
       },
       include: {
         user: {
-          select: { id: true, name: true, image: true }
+          select: { id: true, name: true, image: true },
         },
         reactions: {
           include: {
-            user: { select: { id: true, name: true, image: true } }
-          }
+            user: { select: { id: true, name: true, image: true } },
+          },
         },
         replies: {
           include: {
             user: { select: { id: true, name: true, image: true } },
             reactions: {
               include: {
-                user: { select: { id: true, name: true, image: true } }
-              }
-            }
+                user: { select: { id: true, name: true, image: true } },
+              },
+            },
           },
-          orderBy: { createdAt: "asc" }
-        }
-      }
+          orderBy: { createdAt: "asc" },
+        },
+      },
     });
   },
 
@@ -364,14 +381,14 @@ export const docRepository = {
     return prisma.projectDocComment.findUnique({
       where: { id },
       include: {
-        doc: true
-      }
+        doc: true,
+      },
     });
   },
 
   async deleteComment(id: string) {
     return prisma.projectDocComment.delete({
-      where: { id }
+      where: { id },
     });
   },
 
@@ -380,33 +397,39 @@ export const docRepository = {
       where: { docId, parentId: null },
       include: {
         user: {
-          select: { id: true, name: true, image: true }
+          select: { id: true, name: true, image: true },
         },
         reactions: {
           include: {
-            user: { select: { id: true, name: true, image: true } }
-          }
+            user: { select: { id: true, name: true, image: true } },
+          },
         },
         replies: {
           include: {
             user: {
-              select: { id: true, name: true, image: true }
+              select: { id: true, name: true, image: true },
             },
             reactions: {
               include: {
-                user: { select: { id: true, name: true, image: true } }
-              }
-            }
+                user: { select: { id: true, name: true, image: true } },
+              },
+            },
           },
-          orderBy: { createdAt: "asc" }
-        }
+          orderBy: { createdAt: "asc" },
+        },
       },
-      orderBy: { createdAt: "asc" }
+      orderBy: { createdAt: "asc" },
     });
   },
 
   // Activities
-  async createActivity(data: { docId: string; userId: string; organizationId: string; action: string; metadata?: Record<string, unknown> }) {
+  async createActivity(data: {
+    docId: string;
+    userId: string;
+    organizationId: string;
+    action: string;
+    metadata?: Record<string, unknown>;
+  }) {
     return prisma.projectDocActivity.create({
       data: {
         docId: data.docId,
@@ -417,9 +440,9 @@ export const docRepository = {
       },
       include: {
         user: {
-          select: { id: true, name: true, image: true }
-        }
-      }
+          select: { id: true, name: true, image: true },
+        },
+      },
     });
   },
 
@@ -428,27 +451,32 @@ export const docRepository = {
       where: { docId },
       include: {
         user: {
-          select: { id: true, name: true, image: true }
-        }
+          select: { id: true, name: true, image: true },
+        },
       },
-      orderBy: { createdAt: "desc" }
+      orderBy: { createdAt: "desc" },
     });
   },
 
   // Custom document-specific permissions
-  async updateDocPermission(docId: string, userId: string, organizationId: string, permission: string) {
+  async updateDocPermission(
+    docId: string,
+    userId: string,
+    organizationId: string,
+    permission: string,
+  ) {
     return prisma.projectDocPermission.upsert({
       where: {
-        docId_userId: { docId, userId }
+        docId_userId: { docId, userId },
       },
       update: { permission },
-      create: { docId, userId, organizationId, permission }
+      create: { docId, userId, organizationId, permission },
     });
   },
 
   async deleteDocPermission(docId: string, userId: string) {
     return prisma.projectDocPermission.deleteMany({
-      where: { docId, userId }
+      where: { docId, userId },
     });
   },
 
@@ -457,25 +485,30 @@ export const docRepository = {
       where: { docId },
       include: {
         user: {
-          select: { id: true, name: true, image: true }
-        }
-      }
+          select: { id: true, name: true, image: true },
+        },
+      },
     });
   },
 
-  async toggleReaction(data: { commentId: string; userId: string; organizationId: string; emoji: string }) {
+  async toggleReaction(data: {
+    commentId: string;
+    userId: string;
+    organizationId: string;
+    emoji: string;
+  }) {
     const existing = await prisma.projectDocCommentReaction.findUnique({
       where: {
         commentId_userId_emoji: {
           commentId: data.commentId,
           userId: data.userId,
-          emoji: data.emoji
-        }
-      }
+          emoji: data.emoji,
+        },
+      },
     });
     if (existing) {
       return prisma.projectDocCommentReaction.delete({
-        where: { id: existing.id }
+        where: { id: existing.id },
       });
     } else {
       return prisma.projectDocCommentReaction.create({
@@ -483,9 +516,9 @@ export const docRepository = {
           commentId: data.commentId,
           userId: data.userId,
           organizationId: data.organizationId,
-          emoji: data.emoji
-        }
+          emoji: data.emoji,
+        },
       });
     }
-  }
+  },
 };

@@ -1,16 +1,12 @@
 import { vi, describe, it, expect, beforeEach } from "vitest";
 
-const {
-  configMock,
-  mailQueueAddMock,
-  driverSendMock,
-  renderEmailMock,
-} = vi.hoisted(() => ({
-  configMock: vi.fn(),
-  mailQueueAddMock: vi.fn(),
-  driverSendMock: vi.fn().mockResolvedValue({ ok: true }),
-  renderEmailMock: vi.fn(),
-}));
+const { configMock, mailQueueAddMock, driverSendMock, renderEmailMock } =
+  vi.hoisted(() => ({
+    configMock: vi.fn(),
+    mailQueueAddMock: vi.fn(),
+    driverSendMock: vi.fn().mockResolvedValue({ ok: true }),
+    renderEmailMock: vi.fn(),
+  }));
 
 vi.mock("@/utils/config", () => ({
   config: configMock,
@@ -58,7 +54,11 @@ describe("MailService / MailBuilder", () => {
       });
       driverSendMock.mockResolvedValueOnce({ ok: true });
 
-      const msg = { to: [{ address: "a@a.com" }], from: { address: "b@b.com" }, subject: "hi" };
+      const msg = {
+        to: [{ address: "a@a.com" }],
+        from: { address: "b@b.com" },
+        subject: "hi",
+      };
       const res = await sendMailMessage(msg);
       expect(res.ok).toBe(true);
       expect(driverSendMock).toHaveBeenCalledWith(msg);
@@ -69,9 +69,16 @@ describe("MailService / MailBuilder", () => {
         if (key === "mail.default") return "smtp";
         return undefined;
       });
-      driverSendMock.mockResolvedValueOnce({ ok: false, error: new Error("SMTP Down") });
+      driverSendMock.mockResolvedValueOnce({
+        ok: false,
+        error: new Error("SMTP Down"),
+      });
 
-      const msg = { to: [{ address: "a@a.com" }], from: { address: "b@b.com" }, subject: "hi" };
+      const msg = {
+        to: [{ address: "a@a.com" }],
+        from: { address: "b@b.com" },
+        subject: "hi",
+      };
       const res = await sendMailMessage(msg);
       expect(res.ok).toBe(false);
     });
@@ -121,7 +128,7 @@ describe("MailService / MailBuilder", () => {
         expect.objectContaining({
           subject: "Subject Override",
           attachments: [{ filename: "test.txt", content: "data" }],
-        })
+        }),
       );
     });
 
@@ -146,7 +153,7 @@ describe("MailService / MailBuilder", () => {
       expect(mailQueueAddMock).toHaveBeenCalledWith(
         "send",
         expect.any(Object),
-        expect.objectContaining({ attempts: 5 })
+        expect.objectContaining({ attempts: 5 }),
       );
     });
 
@@ -167,8 +174,10 @@ describe("MailService / MailBuilder", () => {
       const builder = mailService
         .to("recipient@dest.com")
         .view("notification", { title: "T", message: "M" });
-      
-      const sendSpy = vi.spyOn(builder, "send").mockResolvedValueOnce({ ok: true });
+
+      const sendSpy = vi
+        .spyOn(builder, "send")
+        .mockResolvedValueOnce({ ok: true });
 
       const res = await builder.queue();
 

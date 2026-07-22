@@ -21,9 +21,13 @@ describe("SlackWebhookService", () => {
 
   describe("getWebhooks", () => {
     it("UT-SWH-01: retrieves webhooks by project ID", async () => {
-      slackWebhookRepositoryMock.findByProjectId.mockResolvedValueOnce([{ id: "wh1" }]);
+      slackWebhookRepositoryMock.findByProjectId.mockResolvedValueOnce([
+        { id: "wh1" },
+      ]);
       const res = await slackWebhookService.getWebhooks("p1");
-      expect(slackWebhookRepositoryMock.findByProjectId).toHaveBeenCalledWith("p1");
+      expect(slackWebhookRepositoryMock.findByProjectId).toHaveBeenCalledWith(
+        "p1",
+      );
       expect(res).toEqual([{ id: "wh1" }]);
     });
   });
@@ -48,7 +52,9 @@ describe("SlackWebhookService", () => {
   describe("deleteWebhook", () => {
     it("UT-SWH-03: throws NotFoundException if webhook does not exist", async () => {
       slackWebhookRepositoryMock.findById.mockResolvedValueOnce(null);
-      await expect(slackWebhookService.deleteWebhook("wh1")).rejects.toThrow("Slack webhook not found");
+      await expect(slackWebhookService.deleteWebhook("wh1")).rejects.toThrow(
+        "Slack webhook not found",
+      );
     });
 
     it("UT-SWH-04: deletes webhook if it exists", async () => {

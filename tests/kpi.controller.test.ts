@@ -41,43 +41,82 @@ describe("kpiController", () => {
   describe("getLeaderboard", () => {
     it("throws NotFoundException if workspace not found", async () => {
       prismaMock.workspace.findUnique.mockResolvedValueOnce(null);
-      const req: Record<string, unknown> = { params: { id: "ws-123" }, query: {} };
+      const req: Record<string, unknown> = {
+        params: { id: "ws-123" },
+        query: {},
+      };
       const res = createRes();
 
       await expect(
-        (kpiController.getLeaderboard as (req: unknown, res: unknown) => Promise<void>)(req, res)
+        (
+          kpiController.getLeaderboard as (
+            req: unknown,
+            res: unknown,
+          ) => Promise<void>
+        )(req, res),
       ).rejects.toThrow("Workspace not found");
     });
 
     it("throws UnauthorizedException if no session", async () => {
       mockGetSession.mockResolvedValueOnce(null);
-      const req: Record<string, unknown> = { params: { id: "ws-123" }, query: {} };
+      const req: Record<string, unknown> = {
+        params: { id: "ws-123" },
+        query: {},
+      };
       const res = createRes();
 
       await expect(
-        (kpiController.getLeaderboard as (req: unknown, res: unknown) => Promise<void>)(req, res)
+        (
+          kpiController.getLeaderboard as (
+            req: unknown,
+            res: unknown,
+          ) => Promise<void>
+        )(req, res),
       ).rejects.toThrow();
     });
 
     it("returns leaderboard successfully without filters", async () => {
-      prismaMock.workspace.findUnique.mockResolvedValueOnce({ id: "ws-123", kpiEnabled: true });
+      prismaMock.workspace.findUnique.mockResolvedValueOnce({
+        id: "ws-123",
+        kpiEnabled: true,
+      });
       prismaMock.workspaceMember.findMany.mockResolvedValueOnce([
         { userId: "user-123" },
         { userId: "user-456" },
       ]);
-      (prismaMock.kpiLedgerEntry.groupBy as ReturnType<typeof vi.fn>).mockResolvedValueOnce([
+      (
+        prismaMock.kpiLedgerEntry.groupBy as ReturnType<typeof vi.fn>
+      ).mockResolvedValueOnce([
         { userId: "user-123", _sum: { points: 100 } },
         { userId: "user-456", _sum: { points: 200 } },
       ]);
       prismaMock.user.findMany.mockResolvedValueOnce([
-        { id: "user-123", name: "John Doe", email: "john@example.com", image: null },
-        { id: "user-456", name: "Jane Doe", email: "jane@example.com", image: null },
+        {
+          id: "user-123",
+          name: "John Doe",
+          email: "john@example.com",
+          image: null,
+        },
+        {
+          id: "user-456",
+          name: "Jane Doe",
+          email: "jane@example.com",
+          image: null,
+        },
       ]);
 
-      const req: Record<string, unknown> = { params: { id: "ws-123" }, query: {} };
+      const req: Record<string, unknown> = {
+        params: { id: "ws-123" },
+        query: {},
+      };
       const res = createRes();
 
-      await (kpiController.getLeaderboard as (req: unknown, res: unknown) => Promise<void>)(req, res);
+      await (
+        kpiController.getLeaderboard as (
+          req: unknown,
+          res: unknown,
+        ) => Promise<void>
+      )(req, res);
 
       expect(res.json).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -89,20 +128,28 @@ describe("kpiController", () => {
               expect.objectContaining({ totalPoints: 100 }),
             ]),
           }),
-        })
+        }),
       );
     });
 
     it("filters leaderboard by projectIds when provided", async () => {
-      prismaMock.workspace.findUnique.mockResolvedValueOnce({ id: "ws-123", kpiEnabled: true });
+      prismaMock.workspace.findUnique.mockResolvedValueOnce({
+        id: "ws-123",
+        kpiEnabled: true,
+      });
       prismaMock.projectMember.findMany.mockResolvedValueOnce([
         { userId: "user-123" },
       ]);
-      (prismaMock.kpiLedgerEntry.groupBy as ReturnType<typeof vi.fn>).mockResolvedValueOnce([
-        { userId: "user-123", _sum: { points: 100 } },
-      ]);
+      (
+        prismaMock.kpiLedgerEntry.groupBy as ReturnType<typeof vi.fn>
+      ).mockResolvedValueOnce([{ userId: "user-123", _sum: { points: 100 } }]);
       prismaMock.user.findMany.mockResolvedValueOnce([
-        { id: "user-123", name: "John Doe", email: "john@example.com", image: null },
+        {
+          id: "user-123",
+          name: "John Doe",
+          email: "john@example.com",
+          image: null,
+        },
       ]);
 
       const req: Record<string, unknown> = {
@@ -111,12 +158,17 @@ describe("kpiController", () => {
       };
       const res = createRes();
 
-      await (kpiController.getLeaderboard as (req: unknown, res: unknown) => Promise<void>)(req, res);
+      await (
+        kpiController.getLeaderboard as (
+          req: unknown,
+          res: unknown,
+        ) => Promise<void>
+      )(req, res);
 
       expect(prismaMock.projectMember.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: { projectId: { in: ["proj-1"] } },
-        })
+        }),
       );
     });
   });
@@ -137,7 +189,12 @@ describe("kpiController", () => {
       };
       const res = createRes();
 
-      await (kpiController.getTransactions as (req: unknown, res: unknown) => Promise<void>)(req, res);
+      await (
+        kpiController.getTransactions as (
+          req: unknown,
+          res: unknown,
+        ) => Promise<void>
+      )(req, res);
 
       expect(res.json).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -151,7 +208,7 @@ describe("kpiController", () => {
               totalPages: 1,
             },
           }),
-        })
+        }),
       );
     });
 
@@ -165,12 +222,17 @@ describe("kpiController", () => {
       };
       const res = createRes();
 
-      await (kpiController.getTransactions as (req: unknown, res: unknown) => Promise<void>)(req, res);
+      await (
+        kpiController.getTransactions as (
+          req: unknown,
+          res: unknown,
+        ) => Promise<void>
+      )(req, res);
 
       expect(prismaMock.kpiLedgerEntry.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({ userId: "user-456" }),
-        })
+        }),
       );
     });
 
@@ -184,14 +246,19 @@ describe("kpiController", () => {
       };
       const res = createRes();
 
-      await (kpiController.getTransactions as (req: unknown, res: unknown) => Promise<void>)(req, res);
+      await (
+        kpiController.getTransactions as (
+          req: unknown,
+          res: unknown,
+        ) => Promise<void>
+      )(req, res);
 
       expect(prismaMock.kpiLedgerEntry.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
             task: { projectId: { in: ["proj-1"] } },
           }),
-        })
+        }),
       );
     });
 
@@ -201,11 +268,21 @@ describe("kpiController", () => {
 
       const req: Record<string, unknown> = {
         params: { id: "ws-123" },
-        query: { page: "1", limit: "10", startDate: "2024-01-01", endDate: "2024-12-31" },
+        query: {
+          page: "1",
+          limit: "10",
+          startDate: "2024-01-01",
+          endDate: "2024-12-31",
+        },
       };
       const res = createRes();
 
-      await (kpiController.getTransactions as (req: unknown, res: unknown) => Promise<void>)(req, res);
+      await (
+        kpiController.getTransactions as (
+          req: unknown,
+          res: unknown,
+        ) => Promise<void>
+      )(req, res);
 
       expect(prismaMock.kpiLedgerEntry.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -215,17 +292,25 @@ describe("kpiController", () => {
               lte: new Date("2024-12-31"),
             },
           }),
-        })
+        }),
       );
     });
 
     it("throws UnauthorizedException if no session", async () => {
       mockGetSession.mockResolvedValueOnce(null);
-      const req: Record<string, unknown> = { params: { id: "ws-123" }, query: {} };
+      const req: Record<string, unknown> = {
+        params: { id: "ws-123" },
+        query: {},
+      };
       const res = createRes();
 
       await expect(
-        (kpiController.getTransactions as (req: unknown, res: unknown) => Promise<void>)(req, res)
+        (
+          kpiController.getTransactions as (
+            req: unknown,
+            res: unknown,
+          ) => Promise<void>
+        )(req, res),
       ).rejects.toThrow();
     });
   });
@@ -235,11 +320,17 @@ describe("kpiController", () => {
   // ---------------------------------------------------------------------------
   describe("getUserStats", () => {
     it("returns stats for a user successfully", async () => {
-      prismaMock.workspaceMember.findFirst.mockResolvedValueOnce({ userId: "user-123" });
-      (prismaMock.kpiLedgerEntry.aggregate as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      prismaMock.workspaceMember.findFirst.mockResolvedValueOnce({
+        userId: "user-123",
+      });
+      (
+        prismaMock.kpiLedgerEntry.aggregate as ReturnType<typeof vi.fn>
+      ).mockResolvedValueOnce({
         _sum: { points: 150 },
       });
-      (prismaMock.kpiLedgerEntry.groupBy as ReturnType<typeof vi.fn>).mockResolvedValueOnce([
+      (
+        prismaMock.kpiLedgerEntry.groupBy as ReturnType<typeof vi.fn>
+      ).mockResolvedValueOnce([
         { userId: "user-123", _sum: { points: 150 } },
         { userId: "user-456", _sum: { points: 250 } },
       ]);
@@ -254,7 +345,12 @@ describe("kpiController", () => {
       };
       const res = createRes();
 
-      await (kpiController.getUserStats as (req: unknown, res: unknown) => Promise<void>)(req, res);
+      await (
+        kpiController.getUserStats as (
+          req: unknown,
+          res: unknown,
+        ) => Promise<void>
+      )(req, res);
 
       expect(res.json).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -265,7 +361,7 @@ describe("kpiController", () => {
             rank: 2,
             weeklyPoints: expect.any(Array),
           }),
-        })
+        }),
       );
     });
 
@@ -279,27 +375,46 @@ describe("kpiController", () => {
       const res = createRes();
 
       await expect(
-        (kpiController.getUserStats as (req: unknown, res: unknown) => Promise<void>)(req, res)
+        (
+          kpiController.getUserStats as (
+            req: unknown,
+            res: unknown,
+          ) => Promise<void>
+        )(req, res),
       ).rejects.toThrow("Workspace member not found");
     });
 
     it("falls back to session user id if userId query param is not provided", async () => {
-      prismaMock.workspaceMember.findFirst.mockResolvedValueOnce({ userId: "user-123" });
-      (prismaMock.kpiLedgerEntry.aggregate as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      prismaMock.workspaceMember.findFirst.mockResolvedValueOnce({
+        userId: "user-123",
+      });
+      (
+        prismaMock.kpiLedgerEntry.aggregate as ReturnType<typeof vi.fn>
+      ).mockResolvedValueOnce({
         _sum: { points: 0 },
       });
-      (prismaMock.kpiLedgerEntry.groupBy as ReturnType<typeof vi.fn>).mockResolvedValueOnce([]);
+      (
+        prismaMock.kpiLedgerEntry.groupBy as ReturnType<typeof vi.fn>
+      ).mockResolvedValueOnce([]);
       prismaMock.kpiLedgerEntry.findMany.mockResolvedValueOnce([]);
 
-      const req: Record<string, unknown> = { params: { id: "ws-123" }, query: {} };
+      const req: Record<string, unknown> = {
+        params: { id: "ws-123" },
+        query: {},
+      };
       const res = createRes();
 
-      await (kpiController.getUserStats as (req: unknown, res: unknown) => Promise<void>)(req, res);
+      await (
+        kpiController.getUserStats as (
+          req: unknown,
+          res: unknown,
+        ) => Promise<void>
+      )(req, res);
 
       expect(prismaMock.workspaceMember.findFirst).toHaveBeenCalledWith(
         expect.objectContaining({
           where: { workspaceId: "ws-123", userId: "user-123" },
-        })
+        }),
       );
     });
   });
@@ -314,10 +429,18 @@ describe("kpiController", () => {
         { project: { id: "proj-2", title: "Beta" } },
       ]);
 
-      const req: Record<string, unknown> = { params: { id: "ws-123" }, query: {} };
+      const req: Record<string, unknown> = {
+        params: { id: "ws-123" },
+        query: {},
+      };
       const res = createRes();
 
-      await (kpiController.getAccessibleProjects as (req: unknown, res: unknown) => Promise<void>)(req, res);
+      await (
+        kpiController.getAccessibleProjects as (
+          req: unknown,
+          res: unknown,
+        ) => Promise<void>
+      )(req, res);
 
       expect(res.json).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -326,17 +449,25 @@ describe("kpiController", () => {
             { id: "proj-1", title: "Alpha" },
             { id: "proj-2", title: "Beta" },
           ],
-        })
+        }),
       );
     });
 
     it("throws UnauthorizedException if no session", async () => {
       mockGetSession.mockResolvedValueOnce(null);
-      const req: Record<string, unknown> = { params: { id: "ws-123" }, query: {} };
+      const req: Record<string, unknown> = {
+        params: { id: "ws-123" },
+        query: {},
+      };
       const res = createRes();
 
       await expect(
-        (kpiController.getAccessibleProjects as (req: unknown, res: unknown) => Promise<void>)(req, res)
+        (
+          kpiController.getAccessibleProjects as (
+            req: unknown,
+            res: unknown,
+          ) => Promise<void>
+        )(req, res),
       ).rejects.toThrow();
     });
   });

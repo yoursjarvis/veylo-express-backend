@@ -74,7 +74,11 @@ describe("sprintController", () => {
 
       await (sprintController.createSprint as unknown)(req, res);
 
-      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1", "sprint:create");
+      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(
+        req,
+        "p1",
+        "sprint:create",
+      );
       expect(prismaMock.sprint.create).toHaveBeenCalledWith({
         data: {
           name: "Sprint 1",
@@ -104,7 +108,11 @@ describe("sprintController", () => {
 
       await (sprintController.getSprints as unknown)(req, res);
 
-      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1", "sprint:read");
+      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(
+        req,
+        "p1",
+        "sprint:read",
+      );
       expect(res.json).toHaveBeenCalledWith({
         success: true,
         message: "Sprints fetched successfully",
@@ -123,7 +131,11 @@ describe("sprintController", () => {
 
       await (sprintController.getSprint as unknown)(req, res);
 
-      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1", "sprint:read");
+      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(
+        req,
+        "p1",
+        "sprint:read",
+      );
       expect(res.json).toHaveBeenCalledWith({
         success: true,
         message: "Sprint details fetched successfully",
@@ -166,12 +178,19 @@ describe("sprintController", () => {
       const updated = { ...existing, name: "New Sprint" };
       prismaMock.sprint.update.mockResolvedValueOnce(updated);
 
-      const req: unknown = { params: { id: "s1" }, body: { name: "New Sprint" } };
+      const req: unknown = {
+        params: { id: "s1" },
+        body: { name: "New Sprint" },
+      };
       const res = createRes();
 
       await (sprintController.updateSprint as unknown)(req, res);
 
-      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1", "sprint:update");
+      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(
+        req,
+        "p1",
+        "sprint:update",
+      );
       expect(prismaMock.sprint.update).toHaveBeenCalledWith({
         where: { id: "s1" },
         data: { name: "New Sprint" },
@@ -238,7 +257,11 @@ describe("sprintController", () => {
 
       await (sprintController.updateSprint as unknown)(req, res);
 
-      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1", "sprint:update");
+      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(
+        req,
+        "p1",
+        "sprint:update",
+      );
       expect(prismaMock.task.updateMany).toHaveBeenCalledWith({
         where: { id: { in: ["t1", "t2"] } },
         data: { sprintId: "550e8400-e29b-41d4-a716-446655440002" },
@@ -257,7 +280,11 @@ describe("sprintController", () => {
 
       await (sprintController.deleteSprint as unknown)(req, res);
 
-      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1", "sprint:delete");
+      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(
+        req,
+        "p1",
+        "sprint:delete",
+      );
       expect(prismaMock.sprint.delete).toHaveBeenCalledWith({
         where: { id: "s1" },
       });

@@ -232,10 +232,16 @@ describe("AuditLogService", () => {
     });
 
     it("UT-AUD-07: builds where clause with object context", () => {
-      const res1 = auditLogService.buildWhereClause({ workspaceId: "ws-123" }, {});
+      const res1 = auditLogService.buildWhereClause(
+        { workspaceId: "ws-123" },
+        {},
+      );
       expect(res1).toEqual({ workspaceId: "ws-123" });
 
-      const res2 = auditLogService.buildWhereClause({ organizationId: "org-123" }, {});
+      const res2 = auditLogService.buildWhereClause(
+        { organizationId: "org-123" },
+        {},
+      );
       expect(res2).toEqual({ organizationId: "org-123" });
     });
 
@@ -266,14 +272,17 @@ describe("AuditLogService", () => {
       prismaMock.auditLog.count.mockResolvedValueOnce(10);
       prismaMock.auditLog.findMany.mockResolvedValueOnce([{ id: "log-1" }]);
 
-      const res = await auditLogService.getLogs("ws-123", { page: 2, limit: 5 });
+      const res = await auditLogService.getLogs("ws-123", {
+        page: 2,
+        limit: 5,
+      });
 
       expect(prismaMock.auditLog.count).toHaveBeenCalled();
       expect(prismaMock.auditLog.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           skip: 5,
           take: 5,
-        })
+        }),
       );
       expect(res.meta.totalPages).toBe(2);
       expect(res.data).toEqual([{ id: "log-1" }]);
@@ -284,12 +293,21 @@ describe("AuditLogService", () => {
     it("enqueues export job and returns success", async () => {
       mockQueueAdd.mockResolvedValueOnce({ id: "job-123" });
 
-      const result = await auditLogService.queueExport("ws-1", "org-1", "user-1", { page: 1 });
+      const result = await auditLogService.queueExport(
+        "ws-1",
+        "org-1",
+        "user-1",
+        { page: 1 },
+      );
 
       expect(mockQueueAdd).toHaveBeenCalledWith(
         "export-csv",
-        expect.objectContaining({ workspaceId: "ws-1", organizationId: "org-1", userId: "user-1" }),
-        expect.objectContaining({ attempts: 3 })
+        expect.objectContaining({
+          workspaceId: "ws-1",
+          organizationId: "org-1",
+          userId: "user-1",
+        }),
+        expect.objectContaining({ attempts: 3 }),
       );
       expect(result).toEqual({ success: true, jobId: "job-123" });
     });
@@ -297,7 +315,12 @@ describe("AuditLogService", () => {
     it("enqueues export job without workspaceId", async () => {
       mockQueueAdd.mockResolvedValueOnce({ id: "job-456" });
 
-      const result = await auditLogService.queueExport(undefined, "org-1", "user-1", {});
+      const result = await auditLogService.queueExport(
+        undefined,
+        "org-1",
+        "user-1",
+        {},
+      );
 
       expect(result).toEqual({ success: true, jobId: "job-456" });
     });
@@ -329,40 +352,58 @@ describe("AuditLogService", () => {
       storageMock.put.mockResolvedValueOnce(undefined);
       storageMock.url.mockReturnValueOnce("https://cdn.example.com/export.csv");
       prismaMock.user.findUnique.mockResolvedValueOnce({
-        email: "alice@example.com", name: "Alice",
+        email: "alice@example.com",
+        name: "Alice",
       } as unknown);
       mailServiceMock.queue.mockResolvedValueOnce(undefined);
-      notificationServiceMock.createInAppNotification.mockResolvedValueOnce(undefined);
+      notificationServiceMock.createInAppNotification.mockResolvedValueOnce(
+        undefined,
+      );
 
       await auditLogService.processExportJob(jobData);
 
       expect(storageMock.put).toHaveBeenCalled();
-      expect(mailServiceMock.to).toHaveBeenCalledWith("alice@example.com", "Alice");
-      expect(notificationServiceMock.createInAppNotification).toHaveBeenCalledWith(
-        expect.objectContaining({ recipientId: "user-1", type: "audit_log_export" })
+      expect(mailServiceMock.to).toHaveBeenCalledWith(
+        "alice@example.com",
+        "Alice",
+      );
+      expect(
+        notificationServiceMock.createInAppNotification,
+      ).toHaveBeenCalledWith(
+        expect.objectContaining({
+          recipientId: "user-1",
+          type: "audit_log_export",
+        }),
       );
     });
 
     it("handles logs with null values in CSV rows", async () => {
-      const logsWithNulls = [{
-        createdAt: new Date("2026-07-18"),
-        user: { name: "Bob", email: "bob@example.com" },
-        action: "TASK_DELETE",
-        entityType: "Task",
-        entityName: null, // null entityName
-        description: "Bob deleted a task",
-        ipAddress: null, // null ip
-        userAgent: null, // null userAgent
-      }];
+      const logsWithNulls = [
+        {
+          createdAt: new Date("2026-07-18"),
+          user: { name: "Bob", email: "bob@example.com" },
+          action: "TASK_DELETE",
+          entityType: "Task",
+          entityName: null, // null entityName
+          description: "Bob deleted a task",
+          ipAddress: null, // null ip
+          userAgent: null, // null userAgent
+        },
+      ];
 
-      prismaMock.auditLog.findMany.mockResolvedValueOnce(logsWithNulls as unknown);
+      prismaMock.auditLog.findMany.mockResolvedValueOnce(
+        logsWithNulls as unknown,
+      );
       storageMock.put.mockResolvedValueOnce(undefined);
       storageMock.url.mockReturnValueOnce("https://cdn.example.com/export.csv");
       prismaMock.user.findUnique.mockResolvedValueOnce({
-        email: "bob@example.com", name: "Bob",
+        email: "bob@example.com",
+        name: "Bob",
       } as unknown);
       mailServiceMock.queue.mockResolvedValueOnce(undefined);
-      notificationServiceMock.createInAppNotification.mockResolvedValueOnce(undefined);
+      notificationServiceMock.createInAppNotification.mockResolvedValueOnce(
+        undefined,
+      );
 
       await auditLogService.processExportJob(jobData);
 
@@ -376,7 +417,7 @@ describe("AuditLogService", () => {
       prismaMock.user.findUnique.mockResolvedValueOnce(null); // user not found
 
       await expect(auditLogService.processExportJob(jobData)).rejects.toThrow(
-        "Export recipient user with ID user-1 not found."
+        "Export recipient user with ID user-1 not found.",
       );
     });
 
@@ -384,14 +425,21 @@ describe("AuditLogService", () => {
       prismaMock.auditLog.findMany.mockResolvedValueOnce([]);
       storageMock.put.mockResolvedValueOnce(undefined);
       storageMock.url.mockReturnValueOnce("https://cdn.example.com/export.csv");
-      prismaMock.user.findUnique.mockResolvedValueOnce({ email: "alice@example.com", name: "Alice" } as unknown);
+      prismaMock.user.findUnique.mockResolvedValueOnce({
+        email: "alice@example.com",
+        name: "Alice",
+      } as unknown);
       mailServiceMock.queue.mockRejectedValueOnce(new Error("SMTP error"));
-      notificationServiceMock.createInAppNotification.mockResolvedValueOnce(undefined);
+      notificationServiceMock.createInAppNotification.mockResolvedValueOnce(
+        undefined,
+      );
 
       // Should not throw - mail error is caught
       await auditLogService.processExportJob(jobData);
 
-      expect(notificationServiceMock.createInAppNotification).toHaveBeenCalled();
+      expect(
+        notificationServiceMock.createInAppNotification,
+      ).toHaveBeenCalled();
     });
 
     it("uses org context label when no workspaceId", async () => {
@@ -400,9 +448,14 @@ describe("AuditLogService", () => {
       prismaMock.auditLog.findMany.mockResolvedValueOnce([]);
       storageMock.put.mockResolvedValueOnce(undefined);
       storageMock.url.mockReturnValueOnce("https://cdn.example.com/export.csv");
-      prismaMock.user.findUnique.mockResolvedValueOnce({ email: "alice@example.com", name: "Alice" } as unknown);
+      prismaMock.user.findUnique.mockResolvedValueOnce({
+        email: "alice@example.com",
+        name: "Alice",
+      } as unknown);
       mailServiceMock.queue.mockResolvedValueOnce(undefined);
-      notificationServiceMock.createInAppNotification.mockResolvedValueOnce(undefined);
+      notificationServiceMock.createInAppNotification.mockResolvedValueOnce(
+        undefined,
+      );
 
       await auditLogService.processExportJob(jobDataNoWs);
 

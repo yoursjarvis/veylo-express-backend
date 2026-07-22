@@ -40,29 +40,59 @@ describe("App MediaService", () => {
   });
 
   it("should upload avatar successfully", async () => {
-    vi.mocked(coreMediaService.addMedia).mockResolvedValueOnce({ id: "media-1" } as unknown);
-    vi.mocked(coreMediaService.getUrl).mockResolvedValueOnce("https://cdn.com/avatar.png");
-    vi.mocked(mediaRepository.updateUserAvatar).mockResolvedValueOnce({} as unknown);
+    vi.mocked(coreMediaService.addMedia).mockResolvedValueOnce({
+      id: "media-1",
+    } as unknown);
+    vi.mocked(coreMediaService.getUrl).mockResolvedValueOnce(
+      "https://cdn.com/avatar.png",
+    );
+    vi.mocked(mediaRepository.updateUserAvatar).mockResolvedValueOnce(
+      {} as unknown,
+    );
 
     const result = await mediaService.uploadAvatar("user-1", mockFile);
 
-    expect(coreMediaService.addMedia).toHaveBeenCalledWith("User", "user-1", mockFile, "avatars", true);
-    expect(mediaRepository.updateUserAvatar).toHaveBeenCalledWith("user-1", "https://cdn.com/avatar.png");
-    expect(result).toEqual({ media_id: "media-1", url: "https://cdn.com/avatar.png" });
+    expect(coreMediaService.addMedia).toHaveBeenCalledWith(
+      "User",
+      "user-1",
+      mockFile,
+      "avatars",
+      true,
+    );
+    expect(mediaRepository.updateUserAvatar).toHaveBeenCalledWith(
+      "user-1",
+      "https://cdn.com/avatar.png",
+    );
+    expect(result).toEqual({
+      media_id: "media-1",
+      url: "https://cdn.com/avatar.png",
+    });
   });
 
   it("should throw error if avatar URL generation fails", async () => {
-    vi.mocked(coreMediaService.addMedia).mockResolvedValueOnce({ id: "media-1" } as unknown);
+    vi.mocked(coreMediaService.addMedia).mockResolvedValueOnce({
+      id: "media-1",
+    } as unknown);
     vi.mocked(coreMediaService.getUrl).mockResolvedValueOnce(null);
 
-    await expect(mediaService.uploadAvatar("user-1", mockFile)).rejects.toThrow("Failed to generate avatar URL");
+    await expect(mediaService.uploadAvatar("user-1", mockFile)).rejects.toThrow(
+      "Failed to generate avatar URL",
+    );
   });
 
   it("should upload org logo if authorized", async () => {
-    vi.mocked(coreMediaService.addMedia).mockResolvedValueOnce({ id: "media-1" } as unknown);
-    vi.mocked(coreMediaService.getUrl).mockResolvedValueOnce("https://cdn.com/logo.png");
+    vi.mocked(coreMediaService.addMedia).mockResolvedValueOnce({
+      id: "media-1",
+    } as unknown);
+    vi.mocked(coreMediaService.getUrl).mockResolvedValueOnce(
+      "https://cdn.com/logo.png",
+    );
 
-    const result = await mediaService.uploadOrgLogo("user-1", "org-1", mockFile);
+    const result = await mediaService.uploadOrgLogo(
+      "user-1",
+      "org-1",
+      mockFile,
+    );
     expect(result.media_id).toBe("media-1");
   });
 
@@ -70,15 +100,26 @@ describe("App MediaService", () => {
     vi.mocked(rbacService.authorize).mockResolvedValueOnce(false);
 
     await expect(
-      mediaService.uploadOrgLogo("user-1", "org-1", mockFile)
-    ).rejects.toThrow("You do not have permission to upload logos for this organization");
+      mediaService.uploadOrgLogo("user-1", "org-1", mockFile),
+    ).rejects.toThrow(
+      "You do not have permission to upload logos for this organization",
+    );
   });
 
   it("should upload workspace icon if authorized", async () => {
-    vi.mocked(coreMediaService.addMedia).mockResolvedValueOnce({ id: "media-1" } as unknown);
-    vi.mocked(coreMediaService.getUrl).mockResolvedValueOnce("https://cdn.com/icon.png");
+    vi.mocked(coreMediaService.addMedia).mockResolvedValueOnce({
+      id: "media-1",
+    } as unknown);
+    vi.mocked(coreMediaService.getUrl).mockResolvedValueOnce(
+      "https://cdn.com/icon.png",
+    );
 
-    const result = await mediaService.uploadWorkspaceIcon("ws-1", "user-1", "org-1", mockFile);
+    const result = await mediaService.uploadWorkspaceIcon(
+      "ws-1",
+      "user-1",
+      "org-1",
+      mockFile,
+    );
     expect(result.media_id).toBe("media-1");
     expect(mediaRepository.updateWorkspaceIcon).toHaveBeenCalled();
   });
@@ -87,16 +128,30 @@ describe("App MediaService", () => {
     vi.mocked(rbacService.authorize).mockResolvedValueOnce(false);
 
     await expect(
-      mediaService.uploadWorkspaceIcon("ws-1", "user-1", "org-1", mockFile)
-    ).rejects.toThrow("You do not have permission to upload icons for this workspace");
+      mediaService.uploadWorkspaceIcon("ws-1", "user-1", "org-1", mockFile),
+    ).rejects.toThrow(
+      "You do not have permission to upload icons for this workspace",
+    );
   });
 
   it("should upload project icon if authorized", async () => {
-    vi.mocked(mediaRepository.findProjectById).mockResolvedValueOnce({ id: "proj-1", workspaceId: "ws-1" } as unknown);
-    vi.mocked(coreMediaService.addMedia).mockResolvedValueOnce({ id: "media-1" } as unknown);
-    vi.mocked(coreMediaService.getUrl).mockResolvedValueOnce("https://cdn.com/icon.png");
+    vi.mocked(mediaRepository.findProjectById).mockResolvedValueOnce({
+      id: "proj-1",
+      workspaceId: "ws-1",
+    } as unknown);
+    vi.mocked(coreMediaService.addMedia).mockResolvedValueOnce({
+      id: "media-1",
+    } as unknown);
+    vi.mocked(coreMediaService.getUrl).mockResolvedValueOnce(
+      "https://cdn.com/icon.png",
+    );
 
-    const result = await mediaService.uploadProjectIcon("proj-1", "user-1", "org-1", mockFile);
+    const result = await mediaService.uploadProjectIcon(
+      "proj-1",
+      "user-1",
+      "org-1",
+      mockFile,
+    );
     expect(result.media_id).toBe("media-1");
     expect(mediaRepository.updateProjectIcon).toHaveBeenCalled();
   });
@@ -105,22 +160,31 @@ describe("App MediaService", () => {
     vi.mocked(mediaRepository.findProjectById).mockResolvedValueOnce(null);
 
     await expect(
-      mediaService.uploadProjectIcon("proj-1", "user-1", "org-1", mockFile)
+      mediaService.uploadProjectIcon("proj-1", "user-1", "org-1", mockFile),
     ).rejects.toThrow("Project not found");
   });
 
   it("should throw ForbiddenException if project icon upload is unauthorized", async () => {
-    vi.mocked(mediaRepository.findProjectById).mockResolvedValueOnce({ id: "proj-1", workspaceId: "ws-1" } as unknown);
+    vi.mocked(mediaRepository.findProjectById).mockResolvedValueOnce({
+      id: "proj-1",
+      workspaceId: "ws-1",
+    } as unknown);
     vi.mocked(rbacService.authorize).mockResolvedValueOnce(false);
 
     await expect(
-      mediaService.uploadProjectIcon("proj-1", "user-1", "org-1", mockFile)
-    ).rejects.toThrow("You do not have permission to upload icons for this project");
+      mediaService.uploadProjectIcon("proj-1", "user-1", "org-1", mockFile),
+    ).rejects.toThrow(
+      "You do not have permission to upload icons for this project",
+    );
   });
 
   it("should upload file attachments", async () => {
-    vi.mocked(coreMediaService.addMedia).mockResolvedValueOnce({ id: "media-1" } as unknown);
-    vi.mocked(coreMediaService.getUrl).mockResolvedValueOnce("https://cdn.com/file.png");
+    vi.mocked(coreMediaService.addMedia).mockResolvedValueOnce({
+      id: "media-1",
+    } as unknown);
+    vi.mocked(coreMediaService.getUrl).mockResolvedValueOnce(
+      "https://cdn.com/file.png",
+    );
 
     const result = await mediaService.uploadFile("user-1", mockFile);
     expect(result.media_id).toBe("media-1");
@@ -134,9 +198,17 @@ describe("App MediaService", () => {
       collectionName: "docs",
     });
     prismaMock.media.findFirst.mockResolvedValueOnce({ version: 2 });
-    vi.mocked(coreMediaService.addMedia).mockResolvedValueOnce({ id: "version-2" } as unknown);
-    prismaMock.media.update.mockResolvedValueOnce({ id: "version-2", version: 3, name: "test-v3.png" });
-    vi.mocked(coreMediaService.getUrl).mockResolvedValueOnce("https://cdn.com/v3.png");
+    vi.mocked(coreMediaService.addMedia).mockResolvedValueOnce({
+      id: "version-2",
+    } as unknown);
+    prismaMock.media.update.mockResolvedValueOnce({
+      id: "version-2",
+      version: 3,
+      name: "test-v3.png",
+    });
+    vi.mocked(coreMediaService.getUrl).mockResolvedValueOnce(
+      "https://cdn.com/v3.png",
+    );
 
     const result = await mediaService.uploadVersion("parent-1", mockFile);
     expect(result.version).toBe(3);
@@ -147,7 +219,7 @@ describe("App MediaService", () => {
     prismaMock.media.findUnique.mockResolvedValueOnce(null);
 
     await expect(
-      mediaService.uploadVersion("parent-missing", mockFile)
+      mediaService.uploadVersion("parent-missing", mockFile),
     ).rejects.toThrow("Parent file not found");
   });
 
@@ -174,7 +246,7 @@ describe("App MediaService", () => {
         x: 10,
         y: 20,
         content: "Nice comment",
-      })
+      }),
     ).rejects.toThrow("Media not found");
 
     // Get Annotations
@@ -182,17 +254,27 @@ describe("App MediaService", () => {
     expect(await mediaService.getAnnotations("media-1")).toHaveLength(1);
 
     // Delete Annotation
-    prismaMock.annotation.findUnique.mockResolvedValueOnce({ id: "ann-1", userId: "user-1" });
+    prismaMock.annotation.findUnique.mockResolvedValueOnce({
+      id: "ann-1",
+      userId: "user-1",
+    });
     prismaMock.annotation.delete.mockResolvedValueOnce({ id: "ann-1" });
     await mediaService.deleteAnnotation("ann-1", "user-1");
     expect(prismaMock.annotation.delete).toHaveBeenCalled();
 
     // Delete Annotation - missing
     prismaMock.annotation.findUnique.mockResolvedValueOnce(null);
-    await expect(mediaService.deleteAnnotation("ann-missing", "user-1")).rejects.toThrow("Annotation not found");
+    await expect(
+      mediaService.deleteAnnotation("ann-missing", "user-1"),
+    ).rejects.toThrow("Annotation not found");
 
     // Delete Annotation - forbidden
-    prismaMock.annotation.findUnique.mockResolvedValueOnce({ id: "ann-1", userId: "user-other" });
-    await expect(mediaService.deleteAnnotation("ann-1", "user-1")).rejects.toThrow("You cannot delete other user's annotation");
+    prismaMock.annotation.findUnique.mockResolvedValueOnce({
+      id: "ann-1",
+      userId: "user-other",
+    });
+    await expect(
+      mediaService.deleteAnnotation("ann-1", "user-1"),
+    ).rejects.toThrow("You cannot delete other user's annotation");
   });
 });

@@ -11,11 +11,14 @@ export const orgRoutes = Router();
 
 const extractContext = (req: Request) => ({
   workspaceId: req.params.workspaceId || req.params.id,
-  projectId: req.params.projectId || (req.baseUrl.includes('projects') ? req.params.id : undefined),
-  taskId: req.params.taskId || (req.baseUrl.includes('tasks') ? req.params.id : undefined),
-  organizationId: req.params.organizationId
+  projectId:
+    req.params.projectId ||
+    (req.baseUrl.includes("projects") ? req.params.id : undefined),
+  taskId:
+    req.params.taskId ||
+    (req.baseUrl.includes("tasks") ? req.params.id : undefined),
+  organizationId: req.params.organizationId,
 });
-
 
 orgRoutes.post(
   "/setup",
@@ -24,71 +27,113 @@ orgRoutes.post(
   orgController.setupOrganization,
 );
 
-orgRoutes.post("\/members\/:id\/ban", requireAuth, requirePermission("member:ban", extractContext), requirePermission("member:ban", extractContext), orgMembersController.banMember);
+orgRoutes.post(
+  "\/members\/:id\/ban",
+  requireAuth,
+  requirePermission("member:ban", extractContext),
+  requirePermission("member:ban", extractContext),
+  orgMembersController.banMember,
+);
 
-orgRoutes.post("\/members\/:id\/unban",
-  requireAuth, requirePermission("member:unban", extractContext),
+orgRoutes.post(
+  "\/members\/:id\/unban",
+  requireAuth,
+  requirePermission("member:unban", extractContext),
   orgMembersController.unbanMember,
 );
 
-orgRoutes.post("\/members\/:id\/revoke-sessions",
-  requireAuth, requirePermission("member:update", extractContext),
+orgRoutes.post(
+  "\/members\/:id\/revoke-sessions",
+  requireAuth,
+  requirePermission("member:update", extractContext),
   orgMembersController.revokeSessions,
 );
 
-orgRoutes.post("\/members\/:id\/impersonate",
-  requireAuth, requirePermission("member:update", extractContext),
+orgRoutes.post(
+  "\/members\/:id\/impersonate",
+  requireAuth,
+  requirePermission("member:update", extractContext),
   orgMembersController.impersonateUser,
 );
 
-orgRoutes.get("\/members\/:id\/sessions",
-  requireAuth, requirePermission("member:read", extractContext),
+orgRoutes.get(
+  "\/members\/:id\/sessions",
+  requireAuth,
+  requirePermission("member:read", extractContext),
   orgMembersController.getSessions,
 );
 
-orgRoutes.delete("\/members\/:id\/sessions\/:sessionId",
-  requireAuth, requirePermission("member:update", extractContext),
+orgRoutes.delete(
+  "\/members\/:id\/sessions\/:sessionId",
+  requireAuth,
+  requirePermission("member:update", extractContext),
   orgMembersController.revokeSession,
 );
 
-orgRoutes.put("\/members\/:id\/password",
-  requireAuth, requirePermission("member:change-password", extractContext),
+orgRoutes.put(
+  "\/members\/:id\/password",
+  requireAuth,
+  requirePermission("member:change-password", extractContext),
   orgMembersController.setPassword,
 );
 
-orgRoutes.put("\/members\/:id\/photo",
-  requireAuth, requirePermission("member:update", extractContext),
+orgRoutes.put(
+  "\/members\/:id\/photo",
+  requireAuth,
+  requirePermission("member:update", extractContext),
   upload.single("photo"),
   orgMembersController.updatePhoto,
 );
 
-orgRoutes.put("\/members\/:id", requireAuth, requirePermission("member:update", extractContext), requirePermission("member:update", extractContext), orgMembersController.updateProfile);
+orgRoutes.put(
+  "\/members\/:id",
+  requireAuth,
+  requirePermission("member:update", extractContext),
+  requirePermission("member:update", extractContext),
+  orgMembersController.updateProfile,
+);
 
-orgRoutes.post("\/members\/invite-bulk",
-  requireAuth, requirePermission("member:invite", extractContext),
+orgRoutes.post(
+  "\/members\/invite-bulk",
+  requireAuth,
+  requirePermission("member:invite", extractContext),
   upload.single("file"),
   orgMembersController.bulkInvite,
 );
 
-orgRoutes.post("\/members\/invite",
-  requireAuth, requirePermission("member:invite", extractContext),
+orgRoutes.post(
+  "\/members\/invite",
+  requireAuth,
+  requirePermission("member:invite", extractContext),
   orgMembersController.inviteMember,
 );
 
-orgRoutes.get("\/members", requireAuth, requirePermission("member:read", extractContext), requirePermission("member:read", extractContext), orgMembersController.getMembers);
+orgRoutes.get(
+  "\/members",
+  requireAuth,
+  requirePermission("member:read", extractContext),
+  requirePermission("member:read", extractContext),
+  orgMembersController.getMembers,
+);
 
-orgRoutes.get("\/invitations",
-  requireAuth, requirePermission("invitation:read", extractContext),
+orgRoutes.get(
+  "\/invitations",
+  requireAuth,
+  requirePermission("invitation:read", extractContext),
   orgMembersController.getPendingInvitations,
 );
 
-orgRoutes.post("\/invitations\/:id\/revoke",
-  requireAuth, requirePermission("invitation:cancel", extractContext),
+orgRoutes.post(
+  "\/invitations\/:id\/revoke",
+  requireAuth,
+  requirePermission("invitation:cancel", extractContext),
   orgMembersController.revokeInvitation,
 );
 
-orgRoutes.post("\/invitations\/:id\/resend",
-  requireAuth, requirePermission("invitation:create", extractContext),
+orgRoutes.post(
+  "\/invitations\/:id\/resend",
+  requireAuth,
+  requirePermission("invitation:create", extractContext),
   orgMembersController.resendInvitation,
 );
 
@@ -97,12 +142,16 @@ orgRoutes.get(
   orgMembersController.getInvitationPublic,
 );
 
-orgRoutes.get("\/audit-logs",
-  requireAuth, requirePermission("audit-log:read", extractContext),
+orgRoutes.get(
+  "\/audit-logs",
+  requireAuth,
+  requirePermission("audit-log:read", extractContext),
   auditLogController.getOrgLogs,
 );
 
-orgRoutes.post("\/audit-logs\/export",
-  requireAuth, requirePermission("audit-log:export", extractContext),
+orgRoutes.post(
+  "\/audit-logs\/export",
+  requireAuth,
+  requirePermission("audit-log:export", extractContext),
   auditLogController.exportOrgLogs,
 );

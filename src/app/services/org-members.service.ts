@@ -598,7 +598,11 @@ export const orgMembersService = {
       headers,
     });
 
-    if (result && Array.isArray(invitation.projectIds) && invitation.projectIds.length > 0) {
+    if (
+      result &&
+      Array.isArray(invitation.projectIds) &&
+      invitation.projectIds.length > 0
+    ) {
       await prisma.invitation.update({
         where: { id: result.id },
         data: { projectIds: invitation.projectIds as string[] },

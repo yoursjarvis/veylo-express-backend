@@ -14,7 +14,11 @@ import { ok } from "@/utils/http-response";
 export const sprintController = {
   createSprint: asyncHandler(async (req: Request, res: Response) => {
     const projectId = req.params.projectId as string;
-    const { project } = await verifyProjectAccess(req, projectId, "sprint:create");
+    const { project } = await verifyProjectAccess(
+      req,
+      projectId,
+      "sprint:create",
+    );
     const { organizationId } = project;
 
     const validatedData = sprintCreateSchema.parse(req.body);
@@ -58,7 +62,11 @@ export const sprintController = {
       throw new NotFoundException("Sprint not found");
     }
 
-    const { userId } = await verifyProjectAccess(req, existingSprint.projectId, "sprint:update");
+    const { userId } = await verifyProjectAccess(
+      req,
+      existingSprint.projectId,
+      "sprint:update",
+    );
     const validatedData = sprintUpdateSchema.parse(req.body);
 
     const updatedSprint = await sprintService.updateSprint(

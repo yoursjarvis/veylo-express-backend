@@ -68,7 +68,11 @@ describe("milestoneController", () => {
 
       await (milestoneController.createMilestone as unknown)(req, res);
 
-      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1", "project-milestone:create");
+      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(
+        req,
+        "p1",
+        "project-milestone:create",
+      );
       expect(prismaMock.milestone.create).toHaveBeenCalledWith({
         data: {
           title: "Milestone 1",
@@ -97,7 +101,11 @@ describe("milestoneController", () => {
 
       await (milestoneController.getMilestones as unknown)(req, res);
 
-      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1", "project-milestone:read");
+      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(
+        req,
+        "p1",
+        "project-milestone:read",
+      );
       expect(res.json).toHaveBeenCalledWith({
         success: true,
         message: "Milestones fetched successfully",
@@ -121,7 +129,11 @@ describe("milestoneController", () => {
 
       await (milestoneController.updateMilestone as unknown)(req, res);
 
-      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1", "project-milestone:update");
+      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(
+        req,
+        "p1",
+        "project-milestone:update",
+      );
       expect(prismaMock.milestone.update).toHaveBeenCalledWith({
         where: { id: "m1" },
         data: { title: "Updated", isCompleted: true },
@@ -155,7 +167,11 @@ describe("milestoneController", () => {
 
       await (milestoneController.deleteMilestone as unknown)(req, res);
 
-      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1", "project-milestone:delete");
+      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(
+        req,
+        "p1",
+        "project-milestone:delete",
+      );
       expect(prismaMock.milestone.delete).toHaveBeenCalledWith({
         where: { id: "m1" },
       });
@@ -188,7 +204,11 @@ describe("milestoneController", () => {
 
       await (milestoneController.restoreMilestone as unknown)(req, res);
 
-      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1", "project-milestone:restore");
+      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(
+        req,
+        "p1",
+        "project-milestone:restore",
+      );
       expect(prismaMock.milestone.restore).toHaveBeenCalledWith({
         where: { id: "m1" },
       });
@@ -221,7 +241,11 @@ describe("milestoneController", () => {
 
       await (milestoneController.forceDeleteMilestone as unknown)(req, res);
 
-      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1", "project-milestone:force-delete");
+      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(
+        req,
+        "p1",
+        "project-milestone:force-delete",
+      );
       expect(prismaMock.milestone.forceDelete).toHaveBeenCalledWith({
         where: { id: "m1" },
       });

@@ -8,7 +8,8 @@ export interface RequestContextStore {
   userAgent?: string;
 }
 
-export const requestContextStorage = new AsyncLocalStorage<RequestContextStore>();
+export const requestContextStorage =
+  new AsyncLocalStorage<RequestContextStore>();
 
 export function getRequestContext(): RequestContextStore | undefined {
   return requestContextStorage.getStore();

@@ -14,7 +14,11 @@ import { ok } from "@/utils/http-response";
 export const milestoneController = {
   createMilestone: asyncHandler(async (req: Request, res: Response) => {
     const projectId = req.params.projectId as string;
-    const { project } = await verifyProjectAccess(req, projectId, "project-milestone:create");
+    const { project } = await verifyProjectAccess(
+      req,
+      projectId,
+      "project-milestone:create",
+    );
     const { organizationId } = project;
 
     const validatedData = milestoneCreateSchema.parse(req.body);
@@ -45,7 +49,11 @@ export const milestoneController = {
       throw new NotFoundException("Milestone not found");
     }
 
-    await verifyProjectAccess(req, milestone.projectId, "project-milestone:update");
+    await verifyProjectAccess(
+      req,
+      milestone.projectId,
+      "project-milestone:update",
+    );
 
     const validatedData = milestoneUpdateSchema.parse(req.body);
 
@@ -65,7 +73,11 @@ export const milestoneController = {
       throw new NotFoundException("Milestone not found");
     }
 
-    await verifyProjectAccess(req, milestone.projectId, "project-milestone:delete");
+    await verifyProjectAccess(
+      req,
+      milestone.projectId,
+      "project-milestone:delete",
+    );
 
     await milestoneService.deleteMilestone(milestoneId);
 
@@ -81,7 +93,11 @@ export const milestoneController = {
       throw new NotFoundException("Milestone not found");
     }
 
-    await verifyProjectAccess(req, milestone.projectId, "project-milestone:restore");
+    await verifyProjectAccess(
+      req,
+      milestone.projectId,
+      "project-milestone:restore",
+    );
 
     await milestoneService.restoreMilestone(milestoneId);
 
@@ -97,7 +113,11 @@ export const milestoneController = {
       throw new NotFoundException("Milestone not found");
     }
 
-    await verifyProjectAccess(req, milestone.projectId, "project-milestone:force-delete");
+    await verifyProjectAccess(
+      req,
+      milestone.projectId,
+      "project-milestone:force-delete",
+    );
 
     await milestoneService.forceDeleteMilestone(milestoneId);
 

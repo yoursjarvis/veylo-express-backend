@@ -29,7 +29,11 @@ export const favoriteSchema = z.object({
 
 export const commentSchema = z.object({
   content: z.string().min(1, "Comment content cannot be empty"),
-  parentId: z.string().uuid("Parent ID must be a valid UUID").nullable().optional(),
+  parentId: z
+    .string()
+    .uuid("Parent ID must be a valid UUID")
+    .nullable()
+    .optional(),
 });
 
 export const commentUpdateSchema = z.object({

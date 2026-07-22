@@ -29,21 +29,27 @@ describe("status-defaults helper utilities", () => {
   });
 
   it("UT-STD-03: returns purple and weight 50 for active/creation in_progress names", () => {
-    expect(getDefaultStatusColorAndWeight("Active Development", "in_progress")).toEqual({
+    expect(
+      getDefaultStatusColorAndWeight("Active Development", "in_progress"),
+    ).toEqual({
       color: "#8b5cf6",
       progressWeight: 50,
     });
   });
 
   it("UT-STD-04: returns amber and weight 80 for review/testing/qa in_progress names", () => {
-    expect(getDefaultStatusColorAndWeight("Awaiting Approval", "in_progress")).toEqual({
+    expect(
+      getDefaultStatusColorAndWeight("Awaiting Approval", "in_progress"),
+    ).toEqual({
       color: "#f59e0b",
       progressWeight: 80,
     });
-    expect(getDefaultStatusColorAndWeight("QA Testing", "in_progress")).toEqual({
-      color: "#f59e0b",
-      progressWeight: 80,
-    });
+    expect(getDefaultStatusColorAndWeight("QA Testing", "in_progress")).toEqual(
+      {
+        color: "#f59e0b",
+        progressWeight: 80,
+      },
+    );
   });
 
   it("UT-STD-05: returns blue and weight 0 for default/todo category", () => {

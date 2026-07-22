@@ -4,26 +4,28 @@ vi.mock("../src/app/http/middlewares/async-handler.middleware", () => ({
   asyncHandler: (fn: unknown) => fn,
 }));
 
-const { mockRbacService, mockAuditLogService, mockRbacRepository } = vi.hoisted(() => ({
-  mockRbacService: {
-    getPermissions: vi.fn(),
-    getPermissionsForContext: vi.fn(),
-    getOrganizationRoles: vi.fn(),
-    createRole: vi.fn(),
-    updateRole: vi.fn(),
-    deleteRole: vi.fn(),
-    authorize: vi.fn(),
-    assignRole: vi.fn(),
-    removeRole: vi.fn(),
-    getUserAssignments: vi.fn(),
-  },
-  mockAuditLogService: {
-    log: vi.fn(),
-  },
-  mockRbacRepository: {
-    getRoleById: vi.fn(),
-  },
-}));
+const { mockRbacService, mockAuditLogService, mockRbacRepository } = vi.hoisted(
+  () => ({
+    mockRbacService: {
+      getPermissions: vi.fn(),
+      getPermissionsForContext: vi.fn(),
+      getOrganizationRoles: vi.fn(),
+      createRole: vi.fn(),
+      updateRole: vi.fn(),
+      deleteRole: vi.fn(),
+      authorize: vi.fn(),
+      assignRole: vi.fn(),
+      removeRole: vi.fn(),
+      getUserAssignments: vi.fn(),
+    },
+    mockAuditLogService: {
+      log: vi.fn(),
+    },
+    mockRbacRepository: {
+      getRoleById: vi.fn(),
+    },
+  }),
+);
 
 vi.mock("../src/app/services/rbac.service", () => ({
   rbacService: mockRbacService,
@@ -68,14 +70,19 @@ describe("rbacController", () => {
 
   describe("getPermissions", () => {
     it("fetches list of permissions successfully", async () => {
-      mockRbacService.getPermissions.mockResolvedValueOnce(["role:read", "role:create"]);
+      mockRbacService.getPermissions.mockResolvedValueOnce([
+        "role:read",
+        "role:create",
+      ]);
       const req: unknown = {};
       const res = createRes();
 
       await (rbacController.getPermissions as unknown)(req, res);
 
       expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.json).toHaveBeenCalledWith({ data: ["role:read", "role:create"] });
+      expect(res.json).toHaveBeenCalledWith({
+        data: ["role:read", "role:create"],
+      });
     });
   });
 
@@ -87,9 +94,12 @@ describe("rbacController", () => {
 
       await (rbacController.getMyPermissions as unknown)(req, res);
 
-      expect(mockRbacService.getPermissionsForContext).toHaveBeenCalledWith("user-123", {
-        workspaceId: "ws-1",
-      });
+      expect(mockRbacService.getPermissionsForContext).toHaveBeenCalledWith(
+        "user-123",
+        {
+          workspaceId: "ws-1",
+        },
+      );
       expect(res.status).toHaveBeenCalledWith(200);
     });
   });
@@ -107,21 +117,28 @@ describe("rbacController", () => {
 
     it("returns roles if authorized", async () => {
       mockRbacService.authorize.mockResolvedValueOnce(true);
-      mockRbacService.getOrganizationRoles.mockResolvedValueOnce([{ id: "r1", name: "Admin" }]);
+      mockRbacService.getOrganizationRoles.mockResolvedValueOnce([
+        { id: "r1", name: "Admin" },
+      ]);
       const req: unknown = { params: { orgId: "org-1" }, query: {} };
       const res = createRes();
 
       await (rbacController.getOrganizationRoles as unknown)(req, res);
 
       expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.json).toHaveBeenCalledWith({ data: [{ id: "r1", name: "Admin" }] });
+      expect(res.json).toHaveBeenCalledWith({
+        data: [{ id: "r1", name: "Admin" }],
+      });
     });
   });
 
   describe("createRole", () => {
     it("creates role and records audit log", async () => {
       mockRbacService.authorize.mockResolvedValueOnce(true);
-      mockRbacService.createRole.mockResolvedValueOnce({ id: "r1", name: "Designer" });
+      mockRbacService.createRole.mockResolvedValueOnce({
+        id: "r1",
+        name: "Designer",
+      });
       prismaMock.workspace.findFirst.mockResolvedValueOnce({ id: "ws-first" });
 
       const req: unknown = {
@@ -136,17 +153,22 @@ describe("rbacController", () => {
 
       await (rbacController.createRole as unknown)(req, res);
 
-      expect(mockRbacService.createRole).toHaveBeenCalledWith({
-        name: "Designer",
-        organizationId: "550e8400-e29b-41d4-a716-446655440001",
-        permissionIds: ["550e8400-e29b-41d4-a716-446655440002"],
-        bypassPermissions: false,
-      }, "user-123");
-      expect(mockAuditLogService.log).toHaveBeenCalledWith(expect.objectContaining({
-        action: "CREATE_ROLE",
-        entityId: "r1",
-        workspaceId: "ws-first",
-      }));
+      expect(mockRbacService.createRole).toHaveBeenCalledWith(
+        {
+          name: "Designer",
+          organizationId: "550e8400-e29b-41d4-a716-446655440001",
+          permissionIds: ["550e8400-e29b-41d4-a716-446655440002"],
+          bypassPermissions: false,
+        },
+        "user-123",
+      );
+      expect(mockAuditLogService.log).toHaveBeenCalledWith(
+        expect.objectContaining({
+          action: "CREATE_ROLE",
+          entityId: "r1",
+          workspaceId: "ws-first",
+        }),
+      );
       expect(res.status).toHaveBeenCalledWith(201);
     });
   });
@@ -154,12 +176,17 @@ describe("rbacController", () => {
   describe("updateRoleHierarchy", () => {
     it("updates role hierarchy and records audit log", async () => {
       mockRbacService.authorize.mockResolvedValueOnce(true);
-      mockRbacService.updateRoleHierarchy = vi.fn().mockResolvedValueOnce(undefined);
+      mockRbacService.updateRoleHierarchy = vi
+        .fn()
+        .mockResolvedValueOnce(undefined);
       prismaMock.workspace.findFirst.mockResolvedValueOnce({ id: "ws-first" });
 
       const req: unknown = {
         body: {
-          roleIds: ["550e8400-e29b-41d4-a716-446655440001", "550e8400-e29b-41d4-a716-446655440002"],
+          roleIds: [
+            "550e8400-e29b-41d4-a716-446655440001",
+            "550e8400-e29b-41d4-a716-446655440002",
+          ],
           organizationId: "550e8400-e29b-41d4-a716-446655440000",
         },
       };
@@ -168,14 +195,19 @@ describe("rbacController", () => {
       await (rbacController.updateRoleHierarchy as unknown)(req, res);
 
       expect(mockRbacService.updateRoleHierarchy).toHaveBeenCalledWith(
-        ["550e8400-e29b-41d4-a716-446655440001", "550e8400-e29b-41d4-a716-446655440002"],
+        [
+          "550e8400-e29b-41d4-a716-446655440001",
+          "550e8400-e29b-41d4-a716-446655440002",
+        ],
         "550e8400-e29b-41d4-a716-446655440000",
-        "user-123"
+        "user-123",
       );
-      expect(mockAuditLogService.log).toHaveBeenCalledWith(expect.objectContaining({
-        action: "UPDATE_ROLE_HIERARCHY",
-        workspaceId: "ws-first",
-      }));
+      expect(mockAuditLogService.log).toHaveBeenCalledWith(
+        expect.objectContaining({
+          action: "UPDATE_ROLE_HIERARCHY",
+          workspaceId: "ws-first",
+        }),
+      );
       expect(res.status).toHaveBeenCalledWith(200);
     });
   });
@@ -187,7 +219,10 @@ describe("rbacController", () => {
         organizationId: "550e8400-e29b-41d4-a716-446655440001",
       });
       mockRbacService.authorize.mockResolvedValueOnce(true);
-      mockRbacService.updateRole.mockResolvedValueOnce({ id: "r1", name: "Designer" });
+      mockRbacService.updateRole.mockResolvedValueOnce({
+        id: "r1",
+        name: "Designer",
+      });
       prismaMock.workspace.findFirst.mockResolvedValueOnce({ id: "ws-first" });
 
       const req: unknown = {
@@ -206,7 +241,7 @@ describe("rbacController", () => {
         "NewName",
         ["550e8400-e29b-41d4-a716-446655440002"],
         undefined,
-        "user-123"
+        "user-123",
       );
       expect(res.status).toHaveBeenCalledWith(200);
     });
@@ -293,7 +328,9 @@ describe("rbacController", () => {
   describe("getUserAssignments", () => {
     it("gets assignments successfully", async () => {
       mockRbacService.authorize.mockResolvedValueOnce(true);
-      mockRbacService.getUserAssignments.mockResolvedValueOnce([{ id: "assign-1" }]);
+      mockRbacService.getUserAssignments.mockResolvedValueOnce([
+        { id: "assign-1" },
+      ]);
 
       const req: unknown = {
         query: {

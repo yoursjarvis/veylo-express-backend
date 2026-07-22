@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { statusSchema, statusUpdateSchema } from "../../src/app/http/validators/task-extras.validator";
+import {
+  statusSchema,
+  statusUpdateSchema,
+} from "../../src/app/http/validators/task-extras.validator";
 
 describe("task-extras validators", () => {
   describe("statusSchema", () => {

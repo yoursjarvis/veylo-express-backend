@@ -58,8 +58,10 @@ describe("auditLogController", () => {
       const res = createRes();
 
       await expect(
-        (auditLogController.getLogs as unknown)(req, res)
-      ).rejects.toThrow("Forbidden: You do not have permission to view audit logs.");
+        (auditLogController.getLogs as unknown)(req, res),
+      ).rejects.toThrow(
+        "Forbidden: You do not have permission to view audit logs.",
+      );
     });
 
     it("fetches logs successfully if allowed", async () => {
@@ -76,21 +78,29 @@ describe("auditLogController", () => {
 
       await (auditLogController.getLogs as unknown)(req, res);
 
-      expect(mockGetLogs).toHaveBeenCalledWith("ws-123", expect.objectContaining({
-        startDate: "2026-07-01",
-        memberIds: ["u1"],
-      }));
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-        success: true,
-        data: { data: [{ id: "l1" }] },
-      }));
+      expect(mockGetLogs).toHaveBeenCalledWith(
+        "ws-123",
+        expect.objectContaining({
+          startDate: "2026-07-01",
+          memberIds: ["u1"],
+        }),
+      );
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: true,
+          data: { data: [{ id: "l1" }] },
+        }),
+      );
     });
   });
 
   describe("exportLogs", () => {
     it("queues export job successfully", async () => {
       mockAuthorize.mockResolvedValueOnce(true);
-      mockQueueExport.mockResolvedValueOnce({ success: true, jobId: "job-123" });
+      mockQueueExport.mockResolvedValueOnce({
+        success: true,
+        jobId: "job-123",
+      });
       const req: unknown = {
         params: { id: "ws-123" },
         body: { startDate: "2026-07-01" },
@@ -103,12 +113,14 @@ describe("auditLogController", () => {
         "ws-123",
         "org-123",
         "user-123",
-        { startDate: "2026-07-01" }
+        { startDate: "2026-07-01" },
       );
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-        success: true,
-        data: { success: true, jobId: "job-123" },
-      }));
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: true,
+          data: { success: true, jobId: "job-123" },
+        }),
+      );
     });
   });
 
@@ -121,15 +133,23 @@ describe("auditLogController", () => {
 
       await (auditLogController.getOrgLogs as unknown)(req, res);
 
-      expect(mockGetLogs).toHaveBeenCalledWith({ organizationId: "org-123" }, expect.any(Object));
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-        success: true,
-      }));
+      expect(mockGetLogs).toHaveBeenCalledWith(
+        { organizationId: "org-123" },
+        expect.any(Object),
+      );
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: true,
+        }),
+      );
     });
 
     it("queues organization export job successfully", async () => {
       mockAuthorize.mockResolvedValueOnce(true);
-      mockQueueExport.mockResolvedValueOnce({ success: true, jobId: "job-456" });
+      mockQueueExport.mockResolvedValueOnce({
+        success: true,
+        jobId: "job-456",
+      });
       const req: unknown = { params: {}, body: {} };
       const res = createRes();
 
@@ -139,11 +159,13 @@ describe("auditLogController", () => {
         undefined,
         "org-123",
         "user-123",
-        {}
+        {},
       );
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-        success: true,
-      }));
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: true,
+        }),
+      );
     });
   });
 });

@@ -11,7 +11,11 @@ import { ok } from "@/utils/http-response";
 export const labelController = {
   createLabel: asyncHandler(async (req: Request, res: Response) => {
     const projectId = req.params.projectId as string;
-    const { project } = await verifyProjectAccess(req, projectId, "project-label:create");
+    const { project } = await verifyProjectAccess(
+      req,
+      projectId,
+      "project-label:create",
+    );
     const { organizationId } = project;
 
     const validatedData = labelCreateSchema.parse(req.body);
@@ -89,7 +93,11 @@ export const labelController = {
       throw new NotFoundException("Label not found");
     }
 
-    await verifyProjectAccess(req, label.projectId, "project-label:force-delete");
+    await verifyProjectAccess(
+      req,
+      label.projectId,
+      "project-label:force-delete",
+    );
 
     await labelService.forceDeleteLabel(labelId);
 

@@ -1,7 +1,10 @@
 import { Queue } from "bullmq";
 import { BullMQOtel } from "bullmq-otel";
 
-import type { AuditLogFilters, AuditLogWritePayload } from "@/app/services/audit-log.service";
+import type {
+  AuditLogFilters,
+  AuditLogWritePayload,
+} from "@/app/services/audit-log.service";
 import { config } from "@/utils/config";
 
 export type AuditLogQueuePayload = {

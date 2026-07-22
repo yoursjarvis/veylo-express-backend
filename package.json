@@ -9,7 +9,7 @@
     "infra:up": "docker compose up -d postgres redis mailpit",
     "infra:down": "docker compose down",
     "setup:local": "npm run infra:up && npx prisma generate && npx prisma migrate dev",
-    "format": "prettier . --write",
+    "format": "prettier . --write --ignore-unknown",
     "db:deploy": "npx prisma migrate deploy && npx prisma generate",
     "dev": "tsx watch src/index.ts",
     "lint": "eslint .",

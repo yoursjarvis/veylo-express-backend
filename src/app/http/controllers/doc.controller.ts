@@ -19,7 +19,11 @@ export const docController = {
     const userId = req.auth!.user.id as string;
     const validatedData = createDocSchema.parse(req.body);
 
-    const doc = await docService.createDoc(projectId, validatedData as unknown as Parameters<typeof docService.createDoc>[1], userId);
+    const doc = await docService.createDoc(
+      projectId,
+      validatedData as unknown as Parameters<typeof docService.createDoc>[1],
+      userId,
+    );
     return ok(res, "Document created successfully", doc, 201);
   }),
 
@@ -36,7 +40,11 @@ export const docController = {
     const userId = req.auth!.user.id as string;
     const validatedData = updateDocSchema.parse(req.body);
 
-    const doc = await docService.updateDoc(id, validatedData as unknown as Parameters<typeof docService.updateDoc>[1], userId);
+    const doc = await docService.updateDoc(
+      id,
+      validatedData as unknown as Parameters<typeof docService.updateDoc>[1],
+      userId,
+    );
     return ok(res, "Document updated successfully", doc);
   }),
 
@@ -88,7 +96,9 @@ export const docController = {
   getRecentDocs: asyncHandler(async (req: Request, res: Response) => {
     const projectId = req.params.projectId as string;
     const userId = req.auth!.user.id as string;
-    const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
+    const limit = req.query.limit
+      ? parseInt(req.query.limit as string)
+      : undefined;
 
     const docs = await docService.getRecentDocs(projectId, userId, limit);
     return ok(res, "Recent documents retrieved successfully", docs);
@@ -144,7 +154,12 @@ export const docController = {
     const userId = req.auth!.user.id as string;
     const validatedData = commentSchema.parse(req.body);
 
-    const comment = await docService.createComment(id, validatedData.content, userId, validatedData.parentId);
+    const comment = await docService.createComment(
+      id,
+      validatedData.content,
+      userId,
+      validatedData.parentId,
+    );
     return ok(res, "Comment created successfully", comment, 201);
   }),
 
@@ -153,7 +168,11 @@ export const docController = {
     const userId = req.auth!.user.id as string;
     const validatedData = commentUpdateSchema.parse(req.body);
 
-    const comment = await docService.updateComment(commentId, validatedData, userId);
+    const comment = await docService.updateComment(
+      commentId,
+      validatedData,
+      userId,
+    );
     return ok(res, "Comment updated successfully", comment);
   }),
 
@@ -168,11 +187,17 @@ export const docController = {
   toggleReaction: asyncHandler(async (req: Request, res: Response) => {
     const commentId = req.params.commentId as string;
     const userId = req.auth!.user.id as string;
-    const validatedData = z.object({
-      emoji: z.string().min(1)
-    }).parse(req.body);
+    const validatedData = z
+      .object({
+        emoji: z.string().min(1),
+      })
+      .parse(req.body);
 
-    const reaction = await docService.toggleReaction(commentId, validatedData.emoji, userId);
+    const reaction = await docService.toggleReaction(
+      commentId,
+      validatedData.emoji,
+      userId,
+    );
     return ok(res, "Comment reaction toggled successfully", reaction);
   }),
 
@@ -190,7 +215,12 @@ export const docController = {
     const userId = req.auth!.user.id as string;
     const validatedData = docPermissionSchema.parse(req.body);
 
-    const perm = await docService.updatePermission(id, validatedData.userId, validatedData.permission, userId);
+    const perm = await docService.updatePermission(
+      id,
+      validatedData.userId,
+      validatedData.permission,
+      userId,
+    );
     return ok(res, "Permission updated successfully", perm);
   }),
 
@@ -219,5 +249,5 @@ export const docController = {
 
     const activities = await docService.getActivities(id, userId);
     return ok(res, "Activities retrieved successfully", activities);
-  })
+  }),
 };

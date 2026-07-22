@@ -3,7 +3,10 @@ import { NotFoundException } from "@/utils/app-error";
 
 export const objectiveService = {
   async getObjectives(workspaceId: string, withTrashed = false) {
-    return objectiveRepository.findObjectivesByWorkspace(workspaceId, withTrashed);
+    return objectiveRepository.findObjectivesByWorkspace(
+      workspaceId,
+      withTrashed,
+    );
   },
 
   async createObjective(

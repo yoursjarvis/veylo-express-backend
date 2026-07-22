@@ -24,7 +24,10 @@ describe("MilestoneService", () => {
 
   describe("createMilestone", () => {
     it("creates a milestone with dueDate", async () => {
-      milestoneRepositoryMock.create.mockResolvedValueOnce({ id: "m1", title: "v1.0" });
+      milestoneRepositoryMock.create.mockResolvedValueOnce({
+        id: "m1",
+        title: "v1.0",
+      });
 
       const result = await milestoneService.createMilestone("proj-1", "org-1", {
         title: "v1.0",
@@ -46,20 +49,27 @@ describe("MilestoneService", () => {
     it("creates a milestone without dueDate (sets null)", async () => {
       milestoneRepositoryMock.create.mockResolvedValueOnce({ id: "m2" });
 
-      await milestoneService.createMilestone("proj-1", "org-1", { title: "v2.0" });
+      await milestoneService.createMilestone("proj-1", "org-1", {
+        title: "v2.0",
+      });
 
       expect(milestoneRepositoryMock.create).toHaveBeenCalledWith(
-        expect.objectContaining({ dueDate: null })
+        expect.objectContaining({ dueDate: null }),
       );
     });
   });
 
   describe("getMilestones", () => {
     it("returns milestones for a project", async () => {
-      milestoneRepositoryMock.findByProjectId.mockResolvedValueOnce([{ id: "m1" }, { id: "m2" }]);
+      milestoneRepositoryMock.findByProjectId.mockResolvedValueOnce([
+        { id: "m1" },
+        { id: "m2" },
+      ]);
 
       const result = await milestoneService.getMilestones("proj-1");
-      expect(milestoneRepositoryMock.findByProjectId).toHaveBeenCalledWith("proj-1");
+      expect(milestoneRepositoryMock.findByProjectId).toHaveBeenCalledWith(
+        "proj-1",
+      );
       expect(result).toHaveLength(2);
     });
   });
@@ -88,7 +98,9 @@ describe("MilestoneService", () => {
 
       await milestoneService.updateMilestone("m1", { dueDate: null });
 
-      expect(milestoneRepositoryMock.update).toHaveBeenCalledWith("m1", { dueDate: null });
+      expect(milestoneRepositoryMock.update).toHaveBeenCalledWith("m1", {
+        dueDate: null,
+      });
     });
 
     it("updates only the fields provided (no undefined fields in update data)", async () => {
@@ -97,7 +109,9 @@ describe("MilestoneService", () => {
       await milestoneService.updateMilestone("m1", { title: "v1.2" });
 
       // Only title should be in the update data object
-      expect(milestoneRepositoryMock.update).toHaveBeenCalledWith("m1", { title: "v1.2" });
+      expect(milestoneRepositoryMock.update).toHaveBeenCalledWith("m1", {
+        title: "v1.2",
+      });
     });
   });
 
@@ -114,12 +128,16 @@ describe("MilestoneService", () => {
     it("throws NotFoundException if milestone not found", async () => {
       milestoneRepositoryMock.findByIdWithTrashed.mockResolvedValueOnce(null);
 
-      await expect(milestoneService.restoreMilestone("m-missing")).rejects.toThrow("Milestone not found");
+      await expect(
+        milestoneService.restoreMilestone("m-missing"),
+      ).rejects.toThrow("Milestone not found");
       expect(milestoneRepositoryMock.restore).not.toHaveBeenCalled();
     });
 
     it("restores a soft-deleted milestone", async () => {
-      milestoneRepositoryMock.findByIdWithTrashed.mockResolvedValueOnce({ id: "m1" });
+      milestoneRepositoryMock.findByIdWithTrashed.mockResolvedValueOnce({
+        id: "m1",
+      });
       milestoneRepositoryMock.restore.mockResolvedValueOnce({ id: "m1" });
 
       const result = await milestoneService.restoreMilestone("m1");
@@ -132,12 +150,16 @@ describe("MilestoneService", () => {
     it("throws NotFoundException if milestone not found", async () => {
       milestoneRepositoryMock.findByIdWithTrashed.mockResolvedValueOnce(null);
 
-      await expect(milestoneService.forceDeleteMilestone("m-missing")).rejects.toThrow("Milestone not found");
+      await expect(
+        milestoneService.forceDeleteMilestone("m-missing"),
+      ).rejects.toThrow("Milestone not found");
       expect(milestoneRepositoryMock.forceDelete).not.toHaveBeenCalled();
     });
 
     it("permanently deletes a milestone", async () => {
-      milestoneRepositoryMock.findByIdWithTrashed.mockResolvedValueOnce({ id: "m1" });
+      milestoneRepositoryMock.findByIdWithTrashed.mockResolvedValueOnce({
+        id: "m1",
+      });
       milestoneRepositoryMock.forceDelete.mockResolvedValueOnce({ id: "m1" });
 
       const result = await milestoneService.forceDeleteMilestone("m1");

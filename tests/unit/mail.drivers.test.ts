@@ -72,8 +72,16 @@ describe("ResendDriver", () => {
       text: "TEXT",
       replyTo: { name: "Support", address: "support@example.com" },
       attachments: [
-        { filename: "test.txt", content: "hello world", contentType: "text/plain" },
-        { filename: "binary.bin", content: Buffer.from("bin"), contentType: "application/octet-stream" },
+        {
+          filename: "test.txt",
+          content: "hello world",
+          contentType: "text/plain",
+        },
+        {
+          filename: "binary.bin",
+          content: Buffer.from("bin"),
+          contentType: "application/octet-stream",
+        },
       ],
     });
 
@@ -122,7 +130,9 @@ describe("SmtpDriver", () => {
       subject: "SMTP Hello",
       html: "<p>HTML</p>",
       text: "TEXT",
-      attachments: [{ filename: "doc.txt", content: "data", contentType: "text/plain" }],
+      attachments: [
+        { filename: "doc.txt", content: "data", contentType: "text/plain" },
+      ],
     });
 
     expect(sendMailMock).toHaveBeenCalled();

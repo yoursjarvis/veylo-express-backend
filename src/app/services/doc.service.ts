@@ -1,7 +1,11 @@
 import { docRepository } from "@/app/repositories/doc.repository";
 import { rbacService } from "@/app/services/rbac.service";
 import prisma from "@/lib/prisma";
-import { BadRequestException, NotFoundException, ForbiddenException } from "@/utils/app-error";
+import {
+  BadRequestException,
+  NotFoundException,
+  ForbiddenException,
+} from "@/utils/app-error";
 
 function slugify(text: string): string {
   return text
@@ -13,9 +17,13 @@ function slugify(text: string): string {
 
 export const docService = {
   async checkPermission(userId: string, projectId: string, permission: string) {
-    const hasPermission = await rbacService.authorize(userId, permission, { projectId });
+    const hasPermission = await rbacService.authorize(userId, permission, {
+      projectId,
+    });
     if (!hasPermission) {
-      throw new ForbiddenException("Forbidden: You do not have permission to perform this action.");
+      throw new ForbiddenException(
+        "Forbidden: You do not have permission to perform this action.",
+      );
     }
   },
 
@@ -30,14 +38,14 @@ export const docService = {
       content?: Record<string, unknown>;
       plainText?: string | null;
     },
-    userId: string
+    userId: string,
   ) {
     await this.checkPermission(userId, projectId, "project-doc:create");
 
     // Fetch the project to get organizationId
     const project = await prisma.project.findUnique({
       where: { id: projectId },
-      select: { organizationId: true }
+      select: { organizationId: true },
     });
     if (!project) throw new NotFoundException("Project not found");
     const organizationId = project.organizationId;
@@ -48,7 +56,7 @@ export const docService = {
     let count = 1;
     while (true) {
       const existing = await prisma.projectDoc.findFirst({
-        where: { projectId, slug, deleted: false }
+        where: { projectId, slug, deleted: false },
       });
       if (!existing) break;
       slug = `${baseSlug}-${count++}`;
@@ -59,8 +67,8 @@ export const docService = {
       where: {
         projectId,
         parentId: data.parentId ?? null,
-        deleted: false
-      }
+        deleted: false,
+      },
     });
 
     const doc = await docRepository.createDoc({
@@ -76,7 +84,7 @@ export const docService = {
       plainText: data.plainText,
       order: siblingCount,
       createdBy: userId,
-      updatedBy: userId
+      updatedBy: userId,
     });
 
     // Create default version
@@ -85,7 +93,7 @@ export const docService = {
       organizationId,
       content: data.content || { type: "doc", content: [] },
       createdBy: userId,
-      version: 1
+      version: 1,
     });
 
     // Log Activity
@@ -94,7 +102,7 @@ export const docService = {
       organizationId,
       userId,
       action: "created",
-      metadata: { title: doc.title }
+      metadata: { title: doc.title },
     });
 
     return doc;
@@ -109,12 +117,18 @@ export const docService = {
     await this.checkPermission(userId, doc.projectId, "project-doc:view");
 
     // Check custom permissions if set
-    const userPerm = doc.permissions.find(p => p.userId === userId);
+    const userPerm = doc.permissions.find((p) => p.userId === userId);
     if (doc.permissions.length > 0 && !userPerm) {
       // Check if user is project admin or higher to bypass
-      const isProjectAdmin = await rbacService.authorize(userId, "project-doc:manage-permissions", { projectId: doc.projectId });
+      const isProjectAdmin = await rbacService.authorize(
+        userId,
+        "project-doc:manage-permissions",
+        { projectId: doc.projectId },
+      );
       if (!isProjectAdmin) {
-        throw new ForbiddenException("You do not have permission to access this document.");
+        throw new ForbiddenException(
+          "You do not have permission to access this document.",
+        );
       }
     }
 
@@ -134,7 +148,7 @@ export const docService = {
       order?: number;
       archived?: boolean;
     },
-    userId: string
+    userId: string,
   ) {
     const doc = await docRepository.findDocById(id);
     if (!doc) {
@@ -145,9 +159,11 @@ export const docService = {
 
     // Check custom edit permission
     if (doc.permissions.length > 0) {
-      const userPerm = doc.permissions.find(p => p.userId === userId);
+      const userPerm = doc.permissions.find((p) => p.userId === userId);
       if (userPerm && userPerm.permission === "view") {
-        throw new ForbiddenException("You only have read-only access to this document.");
+        throw new ForbiddenException(
+          "You only have read-only access to this document.",
+        );
       }
     }
 
@@ -159,7 +175,12 @@ export const docService = {
       let count = 1;
       while (true) {
         const existing = await prisma.projectDoc.findFirst({
-          where: { projectId: doc.projectId, slug, id: { not: id }, deleted: false }
+          where: {
+            projectId: doc.projectId,
+            slug,
+            id: { not: id },
+            deleted: false,
+          },
         });
         if (!existing) break;
         slug = `${baseSlug}-${count++}`;
@@ -167,15 +188,21 @@ export const docService = {
       updateData.slug = slug;
     }
 
-    const updatedDoc = await docRepository.updateDoc(id, updateData as Parameters<typeof docRepository.updateDoc>[1]); // fallback because type gets huge
+    const updatedDoc = await docRepository.updateDoc(
+      id,
+      updateData as Parameters<typeof docRepository.updateDoc>[1],
+    ); // fallback because type gets huge
 
     // Auto versioning: Save version if content changed and last version is > 5 minutes old
     if (data.content) {
       const latestVersion = await docRepository.findLatestVersion(id);
       const isTimeElapsed = latestVersion
-        ? (new Date().getTime() - new Date(latestVersion.createdAt).getTime()) > 5 * 60 * 1000
+        ? new Date().getTime() - new Date(latestVersion.createdAt).getTime() >
+          5 * 60 * 1000
         : true;
-      const isNewAuthor = latestVersion ? latestVersion.createdBy !== userId : true;
+      const isNewAuthor = latestVersion
+        ? latestVersion.createdBy !== userId
+        : true;
 
       if (isTimeElapsed || isNewAuthor) {
         const nextVersionNum = latestVersion ? latestVersion.version + 1 : 1;
@@ -184,7 +211,7 @@ export const docService = {
           organizationId: doc.organizationId,
           content: data.content,
           createdBy: userId,
-          version: nextVersionNum
+          version: nextVersionNum,
         });
       }
     }
@@ -194,8 +221,13 @@ export const docService = {
       docId: id,
       organizationId: doc.organizationId,
       userId,
-      action: data.archived !== undefined ? (data.archived ? "archived" : "unarchived") : "edited",
-      metadata: { title: updatedDoc.title }
+      action:
+        data.archived !== undefined
+          ? data.archived
+            ? "archived"
+            : "unarchived"
+          : "edited",
+      metadata: { title: updatedDoc.title },
     });
 
     return updatedDoc;
@@ -216,7 +248,7 @@ export const docService = {
       organizationId: doc.organizationId,
       userId,
       action: "deleted",
-      metadata: { title: doc.title }
+      metadata: { title: doc.title },
     });
   },
 
@@ -235,7 +267,7 @@ export const docService = {
       organizationId: doc.organizationId,
       userId,
       action: "restored",
-      metadata: { title: doc.title }
+      metadata: { title: doc.title },
     });
 
     return doc;
@@ -249,21 +281,26 @@ export const docService = {
 
     await this.checkPermission(userId, doc.projectId, "project-doc:create");
 
-    const duplicateDocRecursive = async (originalId: string, newParentId: string | null): Promise<string> => {
+    const duplicateDocRecursive = async (
+      originalId: string,
+      newParentId: string | null,
+    ): Promise<string> => {
       const original = await prisma.projectDoc.findUnique({
         where: { id: originalId },
-        include: { children: true }
+        include: { children: true },
       });
 
-      if (!original) throw new NotFoundException("Document to duplicate not found");
+      if (!original)
+        throw new NotFoundException("Document to duplicate not found");
 
-      const dupTitle = newParentId === null ? `${original.title} Copy` : original.title;
+      const dupTitle =
+        newParentId === null ? `${original.title} Copy` : original.title;
       let baseSlug = slugify(dupTitle) || "untitled";
       let slug = baseSlug;
       let count = 1;
       while (true) {
         const existing = await prisma.projectDoc.findFirst({
-          where: { projectId: original.projectId, slug, deleted: false }
+          where: { projectId: original.projectId, slug, deleted: false },
         });
         if (!existing) break;
         slug = `${baseSlug}-${count++}`;
@@ -283,8 +320,8 @@ export const docService = {
           plainText: original.plainText,
           order: original.order,
           createdBy: userId,
-          updatedBy: userId
-        }
+          updatedBy: userId,
+        },
       });
 
       // Duplicate children
@@ -306,7 +343,7 @@ export const docService = {
         organizationId: duplicated.organizationId,
         userId,
         action: "duplicated",
-        metadata: { title: duplicated.title, originalTitle: doc.title }
+        metadata: { title: duplicated.title, originalTitle: doc.title },
       });
     }
 
@@ -329,10 +366,19 @@ export const docService = {
   },
 
   // Favorites
-  async toggleFavorite(docId: string, userId: string, data: { isFavorite?: boolean; isPinned?: boolean }) {
+  async toggleFavorite(
+    docId: string,
+    userId: string,
+    data: { isFavorite?: boolean; isPinned?: boolean },
+  ) {
     const doc = await docRepository.findDocById(docId);
     if (!doc) throw new NotFoundException("Document not found");
-    return docRepository.upsertFavorite(docId, userId, doc.organizationId, data);
+    return docRepository.upsertFavorite(
+      docId,
+      userId,
+      doc.organizationId,
+      data,
+    );
   },
 
   async getFavorites(projectId: string, userId: string) {
@@ -344,14 +390,22 @@ export const docService = {
   async getVersions(docId: string, userId: string) {
     const doc = await docRepository.findDocById(docId);
     if (!doc) throw new NotFoundException("Document not found");
-    await this.checkPermission(userId, doc.projectId, "project-doc:version_history");
+    await this.checkPermission(
+      userId,
+      doc.projectId,
+      "project-doc:version_history",
+    );
     return docRepository.getVersions(docId);
   },
 
   async restoreVersion(docId: string, versionId: string, userId: string) {
     const doc = await docRepository.findDocById(docId);
     if (!doc) throw new NotFoundException("Document not found");
-    await this.checkPermission(userId, doc.projectId, "project-doc:version_history");
+    await this.checkPermission(
+      userId,
+      doc.projectId,
+      "project-doc:version_history",
+    );
 
     const version = await docRepository.findVersionById(versionId);
     if (!version || version.docId !== docId) {
@@ -360,7 +414,7 @@ export const docService = {
 
     const updated = await docRepository.updateDoc(docId, {
       content: version.content as Record<string, unknown>,
-      updatedBy: userId
+      updatedBy: userId,
     });
 
     // Create a new version representing this restoration
@@ -371,7 +425,7 @@ export const docService = {
       organizationId: doc.organizationId,
       content: version.content as Record<string, unknown>,
       createdBy: userId,
-      version: nextVer
+      version: nextVer,
     });
 
     await docRepository.createActivity({
@@ -379,7 +433,7 @@ export const docService = {
       organizationId: doc.organizationId,
       userId,
       action: "version_restored",
-      metadata: { version: version.version }
+      metadata: { version: version.version },
     });
 
     return updated;
@@ -393,7 +447,12 @@ export const docService = {
     return docRepository.getComments(docId);
   },
 
-  async createComment(docId: string, content: string, userId: string, parentId?: string | null) {
+  async createComment(
+    docId: string,
+    content: string,
+    userId: string,
+    parentId?: string | null,
+  ) {
     const doc = await docRepository.findDocById(docId);
     if (!doc) throw new NotFoundException("Document not found");
     await this.checkPermission(userId, doc.projectId, "project-doc:comment");
@@ -403,7 +462,7 @@ export const docService = {
       userId,
       organizationId: doc.organizationId,
       parentId,
-      content
+      content,
     });
 
     await docRepository.createActivity({
@@ -411,16 +470,24 @@ export const docService = {
       userId,
       organizationId: doc.organizationId,
       action: parentId ? "replied" : "commented",
-      metadata: { commentId: comment.id }
+      metadata: { commentId: comment.id },
     });
 
     return comment;
   },
 
-  async updateComment(commentId: string, data: { content?: string; resolved?: boolean }, userId: string) {
+  async updateComment(
+    commentId: string,
+    data: { content?: string; resolved?: boolean },
+    userId: string,
+  ) {
     const comment = await docRepository.getCommentById(commentId);
     if (!comment) throw new NotFoundException("Comment not found");
-    await this.checkPermission(userId, comment.doc.projectId, "project-doc:comment");
+    await this.checkPermission(
+      userId,
+      comment.doc.projectId,
+      "project-doc:comment",
+    );
 
     // Only owner of comment can edit content
     if (data.content && comment.userId !== userId) {
@@ -435,7 +502,7 @@ export const docService = {
         organizationId: comment.doc.organizationId,
         userId,
         action: data.resolved ? "comment_resolved" : "comment_reopened",
-        metadata: { commentId }
+        metadata: { commentId },
       });
     }
 
@@ -445,11 +512,19 @@ export const docService = {
   async deleteComment(commentId: string, userId: string) {
     const comment = await docRepository.getCommentById(commentId);
     if (!comment) throw new NotFoundException("Comment not found");
-    await this.checkPermission(userId, comment.doc.projectId, "project-doc:comment");
+    await this.checkPermission(
+      userId,
+      comment.doc.projectId,
+      "project-doc:comment",
+    );
 
     if (comment.userId !== userId) {
       // Check if project admin to allow deleting other users' comments
-      const isProjectAdmin = await rbacService.authorize(userId, "project-doc:delete", { projectId: comment.doc.projectId });
+      const isProjectAdmin = await rbacService.authorize(
+        userId,
+        "project-doc:delete",
+        { projectId: comment.doc.projectId },
+      );
       if (!isProjectAdmin) {
         throw new ForbiddenException("You can only delete your own comments.");
       }
@@ -466,19 +541,33 @@ export const docService = {
     return docRepository.getDocPermissions(docId);
   },
 
-  async updatePermission(docId: string, targetUserId: string, permission: string, userId: string) {
+  async updatePermission(
+    docId: string,
+    targetUserId: string,
+    permission: string,
+    userId: string,
+  ) {
     const doc = await docRepository.findDocById(docId);
     if (!doc) throw new NotFoundException("Document not found");
-    await this.checkPermission(userId, doc.projectId, "project-doc:manage-permissions");
+    await this.checkPermission(
+      userId,
+      doc.projectId,
+      "project-doc:manage-permissions",
+    );
 
-    const perm = await docRepository.updateDocPermission(docId, targetUserId, doc.organizationId, permission);
+    const perm = await docRepository.updateDocPermission(
+      docId,
+      targetUserId,
+      doc.organizationId,
+      permission,
+    );
 
     await docRepository.createActivity({
       docId,
       organizationId: doc.organizationId,
       userId,
       action: "permission_changed",
-      metadata: { targetUserId, permission }
+      metadata: { targetUserId, permission },
     });
 
     return perm;
@@ -487,7 +576,11 @@ export const docService = {
   async deletePermission(docId: string, targetUserId: string, userId: string) {
     const doc = await docRepository.findDocById(docId);
     if (!doc) throw new NotFoundException("Document not found");
-    await this.checkPermission(userId, doc.projectId, "project-doc:manage-permissions");
+    await this.checkPermission(
+      userId,
+      doc.projectId,
+      "project-doc:manage-permissions",
+    );
 
     await docRepository.deleteDocPermission(docId, targetUserId);
 
@@ -496,7 +589,7 @@ export const docService = {
       organizationId: doc.organizationId,
       userId,
       action: "permission_removed",
-      metadata: { targetUserId }
+      metadata: { targetUserId },
     });
   },
 
@@ -513,11 +606,11 @@ export const docService = {
         id: current.id,
         title: current.title,
         slug: current.slug,
-        emoji: current.emoji
+        emoji: current.emoji,
       });
       if (current.parentId) {
         current = await (prisma.projectDoc.findUnique as unknown as Function)({
-          where: { id: current.parentId }
+          where: { id: current.parentId },
         });
       } else {
         current = null as never;
@@ -529,13 +622,17 @@ export const docService = {
   async toggleReaction(commentId: string, emoji: string, userId: string) {
     const comment = await docRepository.getCommentById(commentId);
     if (!comment) throw new NotFoundException("Comment not found");
-    await this.checkPermission(userId, comment.doc.projectId, "project-doc:comment");
+    await this.checkPermission(
+      userId,
+      comment.doc.projectId,
+      "project-doc:comment",
+    );
 
     return docRepository.toggleReaction({
       commentId,
       userId,
       organizationId: comment.doc.organizationId,
-      emoji
+      emoji,
     });
   },
 
@@ -545,5 +642,5 @@ export const docService = {
     if (!doc) throw new NotFoundException("Document not found");
     await this.checkPermission(userId, doc.projectId, "project-doc:view");
     return docRepository.getActivities(docId);
-  }
+  },
 };

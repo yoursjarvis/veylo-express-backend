@@ -126,7 +126,9 @@ describe("Notification System", () => {
   });
 
   it("should throw error for unsupported driver names", () => {
-    expect(() => notificationService.driver("unsupported")).toThrow("Notification driver [unsupported] is not supported.");
+    expect(() => notificationService.driver("unsupported")).toThrow(
+      "Notification driver [unsupported] is not supported.",
+    );
   });
 
   it("should handle error gracefully if a driver execution fails", async () => {
@@ -147,6 +149,8 @@ describe("Notification System", () => {
     };
 
     // Should not throw, promise is caught in try-catch in send()
-    await expect(notificationService.send(notifiable, new BrokenNotification())).resolves.not.toThrow();
+    await expect(
+      notificationService.send(notifiable, new BrokenNotification()),
+    ).resolves.not.toThrow();
   });
 });

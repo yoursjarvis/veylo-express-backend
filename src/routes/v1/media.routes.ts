@@ -9,11 +9,14 @@ export const mediaRoutes = Router();
 
 const extractContext = (req: Request) => ({
   workspaceId: req.params.workspaceId || req.params.id,
-  projectId: req.params.projectId || (req.baseUrl.includes('projects') ? req.params.id : undefined),
-  taskId: req.params.taskId || (req.baseUrl.includes('tasks') ? req.params.id : undefined),
-  organizationId: req.params.organizationId
+  projectId:
+    req.params.projectId ||
+    (req.baseUrl.includes("projects") ? req.params.id : undefined),
+  taskId:
+    req.params.taskId ||
+    (req.baseUrl.includes("tasks") ? req.params.id : undefined),
+  organizationId: req.params.organizationId,
 });
-
 
 mediaRoutes.post(
   "/avatar",

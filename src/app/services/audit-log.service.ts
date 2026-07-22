@@ -48,12 +48,10 @@ export const auditLogService = {
   }): Promise<void> {
     try {
       const ipAddress = data.req
-        ? ((data.req.headers["x-forwarded-for"] as string) ||
-          data.req.ip ||
-          null)
+        ? (data.req.headers["x-forwarded-for"] as string) || data.req.ip || null
         : null;
       const userAgent = data.req
-        ? (data.req.headers["user-agent"] || null)
+        ? data.req.headers["user-agent"] || null
         : null;
 
       await auditLogWriteQueue.add(
@@ -262,7 +260,10 @@ export const auditLogService = {
     const { workspaceId, organizationId, userId, filters } = jobData;
 
     // Fetch all logs matching the query (no limit)
-    const where = this.buildWhereClause({ workspaceId, organizationId }, filters);
+    const where = this.buildWhereClause(
+      { workspaceId, organizationId },
+      filters,
+    );
     const logs = await prisma.auditLog.findMany({
       where,
       orderBy: {
@@ -305,28 +306,34 @@ export const auditLogService = {
       userAgent: string | null;
     }
 
-    const rows = (logs as unknown as ExportableAuditLog[]).map((log: ExportableAuditLog) => [
-      log.createdAt.toISOString(),
-      log.user.name,
-      log.user.email,
-      log.action,
-      log.entityType,
-      log.entityName || "",
-      log.description,
-      log.ipAddress || "",
-      log.userAgent || "",
-    ]);
+    const rows = (logs as unknown as ExportableAuditLog[]).map(
+      (log: ExportableAuditLog) => [
+        log.createdAt.toISOString(),
+        log.user.name,
+        log.user.email,
+        log.action,
+        log.entityType,
+        log.entityName || "",
+        log.description,
+        log.ipAddress || "",
+        log.userAgent || "",
+      ],
+    );
 
     const csvContent = [
       headers.map((h) => `"${h.replace(/"/g, '""')}"`).join(","),
       ...rows.map((row: string[]) =>
-        row.map((val: string) => `"${String(val).replace(/"/g, '""')}"`).join(","),
+        row
+          .map((val: string) => `"${String(val).replace(/"/g, '""')}"`)
+          .join(","),
       ),
     ].join("\n");
 
     // Save to storage
     const { storage } = await import("@/core/storage");
-    const contextLabel = workspaceId ? `workspace-${workspaceId}` : `org-${organizationId}`;
+    const contextLabel = workspaceId
+      ? `workspace-${workspaceId}`
+      : `org-${organizationId}`;
     const filename = `exports/audit-logs-${contextLabel}-${Date.now()}.csv`;
     await storage.put(filename, csvContent);
     const downloadUrl = storage.url(filename);

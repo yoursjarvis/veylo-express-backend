@@ -182,9 +182,9 @@ describe("taskController", () => {
       const req: unknown = { params: { id: "task-1" } };
       const res = createRes();
 
-      await expect((taskController.getTask as unknown)(req, res)).rejects.toThrow(
-        "Task not found",
-      );
+      await expect(
+        (taskController.getTask as unknown)(req, res),
+      ).rejects.toThrow("Task not found");
     });
   });
 
@@ -284,10 +284,12 @@ describe("taskController", () => {
       await (taskController.restoreTask as unknown)(req, res);
 
       expect(prismaMock.task.restore).toHaveBeenCalled();
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-        success: true,
-        message: "Task restored successfully",
-      }));
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: true,
+          message: "Task restored successfully",
+        }),
+      );
     });
 
     it("permanently deletes task successfully", async () => {
@@ -303,10 +305,12 @@ describe("taskController", () => {
       await (taskController.forceDeleteTask as unknown)(req, res);
 
       expect(prismaMock.task.forceDelete).toHaveBeenCalled();
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-        success: true,
-        message: "Task permanently deleted",
-      }));
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: true,
+          message: "Task permanently deleted",
+        }),
+      );
     });
   });
 });

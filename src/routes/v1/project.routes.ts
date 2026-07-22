@@ -9,11 +9,14 @@ export const projectRoutes = Router();
 
 const extractContext = (req: Request) => ({
   workspaceId: req.params.workspaceId || req.params.id,
-  projectId: req.params.projectId || (req.baseUrl.includes('projects') ? req.params.id : undefined),
-  taskId: req.params.taskId || (req.baseUrl.includes('tasks') ? req.params.id : undefined),
-  organizationId: req.params.organizationId
+  projectId:
+    req.params.projectId ||
+    (req.baseUrl.includes("projects") ? req.params.id : undefined),
+  taskId:
+    req.params.taskId ||
+    (req.baseUrl.includes("tasks") ? req.params.id : undefined),
+  organizationId: req.params.organizationId,
 });
-
 
 // Projects management
 projectRoutes.post(
@@ -45,21 +48,35 @@ projectRoutes.get(
   projectController.getProjectTemplateBySlug,
 );
 
-projectRoutes.get("\/projects\/:id", requireAuth, requirePermission("project:read", extractContext), requirePermission("project:read", extractContext), projectController.getProject);
-projectRoutes.patch("\/projects\/:id",
-  requireAuth, requirePermission("project:update", extractContext),
+projectRoutes.get(
+  "\/projects\/:id",
+  requireAuth,
+  requirePermission("project:read", extractContext),
+  requirePermission("project:read", extractContext),
+  projectController.getProject,
+);
+projectRoutes.patch(
+  "\/projects\/:id",
+  requireAuth,
+  requirePermission("project:update", extractContext),
   projectController.updateProject,
 );
-projectRoutes.delete("\/projects\/:id",
-  requireAuth, requirePermission("project:delete", extractContext),
+projectRoutes.delete(
+  "\/projects\/:id",
+  requireAuth,
+  requirePermission("project:delete", extractContext),
   projectController.deleteProject,
 );
-projectRoutes.post("\/projects\/:id\/restore",
-  requireAuth, requirePermission("project:restore", extractContext),
+projectRoutes.post(
+  "\/projects\/:id\/restore",
+  requireAuth,
+  requirePermission("project:restore", extractContext),
   projectController.restoreProject,
 );
-projectRoutes.delete("\/projects\/:id\/force",
-  requireAuth, requirePermission("project:force-delete", extractContext),
+projectRoutes.delete(
+  "\/projects\/:id\/force",
+  requireAuth,
+  requirePermission("project:force-delete", extractContext),
   projectController.forceDeleteProject,
 );
 
@@ -81,8 +98,10 @@ projectRoutes.delete(
 );
 
 // Project Vault
-projectRoutes.get("\/projects\/:id\/vault",
-  requireAuth, requirePermission("project-vault:read", extractContext),
+projectRoutes.get(
+  "\/projects\/:id\/vault",
+  requireAuth,
+  requirePermission("project-vault:read", extractContext),
   projectController.getProjectVault,
 );
 projectRoutes.post(

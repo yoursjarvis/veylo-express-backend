@@ -67,7 +67,11 @@ describe("labelController", () => {
 
       await (labelController.createLabel as unknown)(req, res);
 
-      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1", "project-label:create");
+      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(
+        req,
+        "p1",
+        "project-label:create",
+      );
       expect(prismaMock.label.create).toHaveBeenCalledWith({
         data: {
           name: "Bug",
@@ -108,7 +112,11 @@ describe("labelController", () => {
 
       await (labelController.getLabels as unknown)(req, res);
 
-      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1", "project-label:read");
+      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(
+        req,
+        "p1",
+        "project-label:read",
+      );
       expect(res.json).toHaveBeenCalledWith({
         success: true,
         message: "Labels fetched successfully",
@@ -133,7 +141,11 @@ describe("labelController", () => {
 
       await (labelController.updateLabel as unknown)(req, res);
 
-      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1", "project-label:update");
+      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(
+        req,
+        "p1",
+        "project-label:update",
+      );
       expect(prismaMock.label.update).toHaveBeenCalledWith({
         where: { id: "l1" },
         data: { name: "NewBug" },
@@ -180,7 +192,11 @@ describe("labelController", () => {
 
       await (labelController.deleteLabel as unknown)(req, res);
 
-      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1", "project-label:delete");
+      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(
+        req,
+        "p1",
+        "project-label:delete",
+      );
       expect(prismaMock.label.delete).toHaveBeenCalledWith({
         where: { id: "l1" },
       });
@@ -213,7 +229,11 @@ describe("labelController", () => {
 
       await (labelController.restoreLabel as unknown)(req, res);
 
-      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1", "project-label:restore");
+      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(
+        req,
+        "p1",
+        "project-label:restore",
+      );
       expect(prismaMock.label.restore).toHaveBeenCalledWith({
         where: { id: "l1" },
       });
@@ -246,7 +266,11 @@ describe("labelController", () => {
 
       await (labelController.forceDeleteLabel as unknown)(req, res);
 
-      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1", "project-label:force-delete");
+      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(
+        req,
+        "p1",
+        "project-label:force-delete",
+      );
       expect(prismaMock.label.forceDelete).toHaveBeenCalledWith({
         where: { id: "l1" },
       });

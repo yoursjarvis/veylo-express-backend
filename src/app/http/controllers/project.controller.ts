@@ -103,15 +103,15 @@ export const projectController = {
     const filters = {
       page: page ? parseInt(page as string, 10) : undefined,
       limit: limit ? parseInt(limit as string, 10) : undefined,
-      search: search as string || undefined,
+      search: (search as string) || undefined,
       includeDeleted: includeDeleted === "true",
       onlyDeleted: onlyDeleted === "true",
-      status: status as string || undefined,
-      memberIds: memberIds as string || undefined,
-      startDate: startDate as string || undefined,
-      endDate: endDate as string || undefined,
-      sortBy: sortBy as string || undefined,
-      sortOrder: sortOrder as "asc" | "desc" || undefined,
+      status: (status as string) || undefined,
+      memberIds: (memberIds as string) || undefined,
+      startDate: (startDate as string) || undefined,
+      endDate: (endDate as string) || undefined,
+      sortBy: (sortBy as string) || undefined,
+      sortOrder: (sortOrder as "asc" | "desc") || undefined,
     };
 
     const projects = await projectService.getProjects(
@@ -145,15 +145,15 @@ export const projectController = {
     const filters = {
       page: page ? parseInt(page as string, 10) : undefined,
       limit: limit ? parseInt(limit as string, 10) : undefined,
-      search: search as string || undefined,
+      search: (search as string) || undefined,
       includeDeleted: includeDeleted === "true",
       onlyDeleted: onlyDeleted === "true",
-      status: status as string || undefined,
-      memberIds: memberIds as string || undefined,
-      startDate: startDate as string || undefined,
-      endDate: endDate as string || undefined,
-      sortBy: sortBy as string || undefined,
-      sortOrder: sortOrder as "asc" | "desc" || undefined,
+      status: (status as string) || undefined,
+      memberIds: (memberIds as string) || undefined,
+      startDate: (startDate as string) || undefined,
+      endDate: (endDate as string) || undefined,
+      sortBy: (sortBy as string) || undefined,
+      sortOrder: (sortOrder as "asc" | "desc") || undefined,
     };
 
     // For organization-level project listing, we can either check if they are org admins
@@ -192,11 +192,11 @@ export const projectController = {
           organizationId: ctx.activeOrgId,
           workspaceId: ctx.project.workspaceId,
           projectId,
-        }
+        },
       );
       if (!hasCreatePermission) {
         throw new ForbiddenException(
-          "Forbidden: You lack the required permission to start projects (project:create)"
+          "Forbidden: You lack the required permission to start projects (project:create)",
         );
       }
     }
@@ -331,7 +331,11 @@ export const projectController = {
 
   addProjectMembers: asyncHandler(async (req: Request, res: Response) => {
     const projectId = req.params.id as string;
-    const { project, userId } = await verifyProjectAdmin(req, projectId, "project-member:invite-member");
+    const { project, userId } = await verifyProjectAdmin(
+      req,
+      projectId,
+      "project-member:invite-member",
+    );
     const { userIds } = req.body as { userIds: string[] };
 
     const members = await projectService.addProjectMembers(
@@ -368,7 +372,11 @@ export const projectController = {
   removeProjectMember: asyncHandler(async (req: Request, res: Response) => {
     const projectId = req.params.id as string;
     const userId = req.params.userId as string;
-    const { project } = await verifyProjectAdmin(req, projectId, "project-member:remove-member");
+    const { project } = await verifyProjectAdmin(
+      req,
+      projectId,
+      "project-member:remove-member",
+    );
 
     await projectService.removeProjectMember(projectId, userId);
 
@@ -606,7 +614,11 @@ export const projectController = {
   forceDeleteAutomationRule: asyncHandler(
     async (req: Request, res: Response) => {
       const projectId = req.params.id as string;
-      await verifyProjectAdmin(req, projectId, "project-automation:force-delete");
+      await verifyProjectAdmin(
+        req,
+        projectId,
+        "project-automation:force-delete",
+      );
       const ruleId = req.params.ruleId as string;
 
       await projectService.forceDeleteAutomationRule(ruleId);

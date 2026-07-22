@@ -69,7 +69,9 @@ export class WebSocketManager {
           });
 
           if (!result || !result.user) {
-            logger.warn(`[WEBSOCKET][auth] Unauthorized connection attempt to doc: ${docId}`);
+            logger.warn(
+              `[WEBSOCKET][auth] Unauthorized connection attempt to doc: ${docId}`,
+            );
             socket.write("HTTP/1.1 401 Unauthorized\r\n\r\n");
             socket.destroy();
             return;
@@ -79,7 +81,7 @@ export class WebSocketManager {
 
           const doc = await prisma.projectDoc.findFirst({
             where: { id: docId, deleted: false },
-            include: { permissions: true }
+            include: { permissions: true },
           });
 
           if (!doc) {
@@ -90,19 +92,31 @@ export class WebSocketManager {
           }
 
           const { rbacService } = await import("@/app/services/rbac.service");
-          const hasPermission = await rbacService.authorize(userId, "project-doc:view", { projectId: doc.projectId });
+          const hasPermission = await rbacService.authorize(
+            userId,
+            "project-doc:view",
+            { projectId: doc.projectId },
+          );
           if (!hasPermission) {
-            logger.warn(`[WEBSOCKET] User ${userId} has no view permission for doc ${docId}`);
+            logger.warn(
+              `[WEBSOCKET] User ${userId} has no view permission for doc ${docId}`,
+            );
             socket.write("HTTP/1.1 403 Forbidden\r\n\r\n");
             socket.destroy();
             return;
           }
 
-          const userPerm = doc.permissions.find(p => p.userId === userId);
+          const userPerm = doc.permissions.find((p) => p.userId === userId);
           if (doc.permissions.length > 0 && !userPerm) {
-            const isProjectAdmin = await rbacService.authorize(userId, "project-doc:manage-permissions", { projectId: doc.projectId });
+            const isProjectAdmin = await rbacService.authorize(
+              userId,
+              "project-doc:manage-permissions",
+              { projectId: doc.projectId },
+            );
             if (!isProjectAdmin) {
-              logger.warn(`[WEBSOCKET] User ${userId} blocked by custom doc permissions for doc ${docId}`);
+              logger.warn(
+                `[WEBSOCKET] User ${userId} blocked by custom doc permissions for doc ${docId}`,
+              );
               socket.write("HTTP/1.1 403 Forbidden\r\n\r\n");
               socket.destroy();
               return;

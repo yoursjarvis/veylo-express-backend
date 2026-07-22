@@ -5,7 +5,7 @@ import { Prisma } from "../../../generated/prisma/client.js";
 export const portfolioService = {
   async getPortfolios(
     workspaceId: string,
-    options: { withTrashed?: boolean; onlyTrashed?: boolean } = {}
+    options: { withTrashed?: boolean; onlyTrashed?: boolean } = {},
   ) {
     const where: Prisma.PortfolioWhereInput = { workspaceId };
 
@@ -58,17 +58,23 @@ export const portfolioService = {
       orderBy: { createdAt: "desc" as const },
     };
 
-    const portfolios = (options.withTrashed || options.onlyTrashed)
-      ? await prisma.portfolio.findManyWithTrashed(queryOptions)
-      : await prisma.portfolio.findMany(queryOptions);
+    const portfolios =
+      options.withTrashed || options.onlyTrashed
+        ? await prisma.portfolio.findManyWithTrashed(queryOptions)
+        : await prisma.portfolio.findMany(queryOptions);
 
     return portfolios.map((portfolio) => {
       const projects = portfolio.projects.map((pp) => {
         const proj = pp.project;
         const totalTasks = proj.tasks.length;
-        const completedTasks = proj.tasks.filter((t) => t.status.category === "done").length;
+        const completedTasks = proj.tasks.filter(
+          (t) => t.status.category === "done",
+        ).length;
         const delayedTasks = proj.tasks.filter(
-          (t) => t.dueDate && new Date(t.dueDate) < new Date() && t.status.category !== "done"
+          (t) =>
+            t.dueDate &&
+            new Date(t.dueDate) < new Date() &&
+            t.status.category !== "done",
         ).length;
 
         return {
@@ -82,7 +88,10 @@ export const portfolioService = {
           startDate: proj.startDate,
           endDate: proj.endDate,
           owner: proj.owner,
-          progress: totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0,
+          progress:
+            totalTasks > 0
+              ? Math.round((completedTasks / totalTasks) * 100)
+              : 0,
           completedTasks,
           totalTasks,
           delayedTasks,
@@ -155,9 +164,14 @@ export const portfolioService = {
     const projects = portfolio.projects.map((pp) => {
       const proj = pp.project;
       const totalTasks = proj.tasks.length;
-      const completedTasks = proj.tasks.filter((t) => t.status.category === "done").length;
+      const completedTasks = proj.tasks.filter(
+        (t) => t.status.category === "done",
+      ).length;
       const delayedTasks = proj.tasks.filter(
-        (t) => t.dueDate && new Date(t.dueDate) < new Date() && t.status.category !== "done"
+        (t) =>
+          t.dueDate &&
+          new Date(t.dueDate) < new Date() &&
+          t.status.category !== "done",
       ).length;
 
       return {
@@ -171,7 +185,8 @@ export const portfolioService = {
         startDate: proj.startDate,
         endDate: proj.endDate,
         owner: proj.owner,
-        progress: totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0,
+        progress:
+          totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0,
         completedTasks,
         totalTasks,
         delayedTasks,
@@ -197,7 +212,7 @@ export const portfolioService = {
     workspaceId: string,
     organizationId: string,
     ownerId: string,
-    data: { name: string; description?: string | null; projectIds: string[] }
+    data: { name: string; description?: string | null; projectIds: string[] },
   ) {
     return prisma.$transaction(async (tx) => {
       const portfolio = await tx.portfolio.create({
@@ -226,12 +241,13 @@ export const portfolioService = {
 
   async updatePortfolio(
     id: string,
-    data: { name?: string; description?: string | null; projectIds?: string[] }
+    data: { name?: string; description?: string | null; projectIds?: string[] },
   ) {
     return prisma.$transaction(async (tx) => {
       const updateData: Prisma.PortfolioUpdateInput = {};
       if (data.name !== undefined) updateData.name = data.name;
-      if (data.description !== undefined) updateData.description = data.description;
+      if (data.description !== undefined)
+        updateData.description = data.description;
 
       const portfolio = await tx.portfolio.update({
         where: { id },

@@ -66,7 +66,11 @@ describe("epicController", () => {
 
       await (epicController.createEpic as unknown)(req, res);
 
-      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1", "project-epic:create");
+      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(
+        req,
+        "p1",
+        "project-epic:create",
+      );
       expect(prismaMock.epic.create).toHaveBeenCalledWith({
         data: {
           title: "Epic 1",
@@ -97,7 +101,11 @@ describe("epicController", () => {
 
       await (epicController.getEpics as unknown)(req, res);
 
-      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1", "project-epic:read");
+      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(
+        req,
+        "p1",
+        "project-epic:read",
+      );
       expect(res.json).toHaveBeenCalledWith({
         success: true,
         message: "Epics fetched successfully",
@@ -116,7 +124,11 @@ describe("epicController", () => {
 
       await (epicController.getEpic as unknown)(req, res);
 
-      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1", "project-epic:read");
+      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(
+        req,
+        "p1",
+        "project-epic:read",
+      );
       expect(res.json).toHaveBeenCalledWith({
         success: true,
         message: "Epic details fetched successfully",
@@ -130,9 +142,9 @@ describe("epicController", () => {
       const req: unknown = { params: { id: "e1" } };
       const res = createRes();
 
-      await expect((epicController.getEpic as unknown)(req, res)).rejects.toThrow(
-        "Epic not found",
-      );
+      await expect(
+        (epicController.getEpic as unknown)(req, res),
+      ).rejects.toThrow("Epic not found");
     });
   });
 
@@ -151,7 +163,11 @@ describe("epicController", () => {
 
       await (epicController.updateEpic as unknown)(req, res);
 
-      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1", "project-epic:update");
+      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(
+        req,
+        "p1",
+        "project-epic:update",
+      );
       expect(prismaMock.epic.update).toHaveBeenCalledWith({
         where: { id: "e1" },
         data: { title: "Updated", status: "in_progress" },
@@ -185,7 +201,11 @@ describe("epicController", () => {
 
       await (epicController.deleteEpic as unknown)(req, res);
 
-      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "p1", "project-epic:delete");
+      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(
+        req,
+        "p1",
+        "project-epic:delete",
+      );
       expect(prismaMock.epic.delete).toHaveBeenCalledWith({
         where: { id: "e1" },
       });

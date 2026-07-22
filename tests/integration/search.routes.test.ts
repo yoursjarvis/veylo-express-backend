@@ -36,7 +36,7 @@ describe("Search API Endpoint Integration Tests (/api/v1/search)", () => {
       createUser({
         id: "user-123",
         email: "user@example.com",
-      })
+      }),
     );
   });
 

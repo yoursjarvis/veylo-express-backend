@@ -34,7 +34,9 @@ export const taskUpdateSchema = z.object({
   epicId: z.uuid().optional().nullable(),
   milestoneId: z.uuid().optional().nullable(),
   type: z.enum(["task", "bug", "feature", "subtask"]).optional(),
-  priority: z.enum(["lowest", "low", "medium", "high", "highest", "urgent"]).optional(),
+  priority: z
+    .enum(["lowest", "low", "medium", "high", "highest", "urgent"])
+    .optional(),
   estimate: z.number().optional().nullable(),
   estimatedPoints: z.number().int().nonnegative().optional(),
   awardedPoints: z.number().int().nonnegative().optional(),

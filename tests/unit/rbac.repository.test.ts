@@ -9,7 +9,11 @@ describe("RbacRepository", () => {
         upsert: vi.fn().mockResolvedValue({ id: "role-1" }),
       },
       permission: {
-        findMany: vi.fn().mockResolvedValue([{ id: "perm-1", resource: "workspace", action: "read" }]),
+        findMany: vi
+          .fn()
+          .mockResolvedValue([
+            { id: "perm-1", resource: "workspace", action: "read" },
+          ]),
       },
       rolePermission: {
         upsert: vi.fn().mockResolvedValue({}),
@@ -70,14 +74,20 @@ describe("RbacRepository", () => {
   });
 
   it("should assign roles to user (ORGANIZATION)", async () => {
-    prismaMock.userRoleAssignment.findMany.mockResolvedValueOnce([{ roleId: "role-existing" }]);
+    prismaMock.userRoleAssignment.findMany.mockResolvedValueOnce([
+      { roleId: "role-existing" },
+    ]);
     prismaMock.userRoleAssignment.deleteMany.mockResolvedValue({ count: 1 });
     prismaMock.userRoleAssignment.createMany.mockResolvedValue({ count: 1 });
     prismaMock.member.updateMany.mockResolvedValue({ count: 1 });
     // For syncMemberRolesToBetterAuth
-    prismaMock.userRoleAssignment.findMany.mockResolvedValueOnce([{ roleId: "role-1", role: { name: "admin" } }]);
+    prismaMock.userRoleAssignment.findMany.mockResolvedValueOnce([
+      { roleId: "role-1", role: { name: "admin" } },
+    ]);
     // For return value
-    prismaMock.userRoleAssignment.findMany.mockResolvedValueOnce([{ roleId: "role-1" }]);
+    prismaMock.userRoleAssignment.findMany.mockResolvedValueOnce([
+      { roleId: "role-1" },
+    ]);
 
     const result = await rbacRepository.assignRolesToUser({
       userId: "user-1",
@@ -92,9 +102,13 @@ describe("RbacRepository", () => {
 
   it("should assign roles to user (PROJECT)", async () => {
     prismaMock.userRoleAssignment.findMany.mockResolvedValueOnce([]);
-    prismaMock.project.findUnique.mockResolvedValueOnce({ organizationId: "org-1" });
+    prismaMock.project.findUnique.mockResolvedValueOnce({
+      organizationId: "org-1",
+    });
     prismaMock.userRoleAssignment.createMany.mockResolvedValue({ count: 1 });
-    prismaMock.userRoleAssignment.findMany.mockResolvedValueOnce([{ roleId: "role-1" }]);
+    prismaMock.userRoleAssignment.findMany.mockResolvedValueOnce([
+      { roleId: "role-1" },
+    ]);
 
     const result = await rbacRepository.assignRolesToUser({
       userId: "user-1",
@@ -117,13 +131,17 @@ describe("RbacRepository", () => {
         roleIds: ["role-1"],
         scopeType: "PROJECT",
         scopeId: "proj-non-existent",
-      })
+      }),
     ).rejects.toThrow("Project not found");
   });
 
   it("should remove roles from user (ORGANIZATION)", async () => {
-    prismaMock.userRoleAssignment.deleteMany.mockResolvedValueOnce({ count: 1 });
-    prismaMock.userRoleAssignment.findMany.mockResolvedValueOnce([{ role: { name: "member" } }]);
+    prismaMock.userRoleAssignment.deleteMany.mockResolvedValueOnce({
+      count: 1,
+    });
+    prismaMock.userRoleAssignment.findMany.mockResolvedValueOnce([
+      { role: { name: "member" } },
+    ]);
     prismaMock.member.updateMany.mockResolvedValueOnce({ count: 1 });
 
     const result = await rbacRepository.removeRolesFromUser({
@@ -138,7 +156,9 @@ describe("RbacRepository", () => {
   });
 
   it("should remove roles from user (PROJECT)", async () => {
-    prismaMock.userRoleAssignment.deleteMany.mockResolvedValueOnce({ count: 1 });
+    prismaMock.userRoleAssignment.deleteMany.mockResolvedValueOnce({
+      count: 1,
+    });
 
     const result = await rbacRepository.removeRolesFromUser({
       userId: "user-1",
@@ -151,8 +171,14 @@ describe("RbacRepository", () => {
   });
 
   it("should get user assignments", async () => {
-    prismaMock.userRoleAssignment.findMany.mockResolvedValueOnce([{ id: "assign-1" }]);
-    const result = await rbacRepository.getUserAssignments("user-1", "ORGANIZATION", "org-1");
+    prismaMock.userRoleAssignment.findMany.mockResolvedValueOnce([
+      { id: "assign-1" },
+    ]);
+    const result = await rbacRepository.getUserAssignments(
+      "user-1",
+      "ORGANIZATION",
+      "org-1",
+    );
     expect(result).toHaveLength(1);
   });
 
@@ -174,22 +200,34 @@ describe("RbacRepository", () => {
     ];
     prismaMock.userRoleAssignment.findMany.mockResolvedValueOnce(assignments);
 
-    const result = await rbacRepository.getUserPermissionsInScope("user-1", "ORGANIZATION", "org-1");
+    const result = await rbacRepository.getUserPermissionsInScope(
+      "user-1",
+      "ORGANIZATION",
+      "org-1",
+    );
     expect(result).toContain("workspace:read");
   });
 
   it("should check if user has bypass role", async () => {
-    prismaMock.userRoleAssignment.findMany.mockResolvedValueOnce([{ id: "assign-1" }]);
-    
+    prismaMock.userRoleAssignment.findMany.mockResolvedValueOnce([
+      { id: "assign-1" },
+    ]);
+
     // Case empty scopes
     expect(await rbacRepository.hasBypassRole("user-1", [])).toBe(false);
 
     // Case scopes given
-    expect(await rbacRepository.hasBypassRole("user-1", [{ type: "ORGANIZATION", id: "org-1" }])).toBe(true);
+    expect(
+      await rbacRepository.hasBypassRole("user-1", [
+        { type: "ORGANIZATION", id: "org-1" },
+      ]),
+    ).toBe(true);
   });
 
   it("should check if user is organization owner", async () => {
-    prismaMock.userRoleAssignment.findFirst.mockResolvedValueOnce({ id: "assign-1" });
+    prismaMock.userRoleAssignment.findFirst.mockResolvedValueOnce({
+      id: "assign-1",
+    });
     const result = await rbacRepository.isOrganizationOwner("user-1", "org-1");
     expect(result).toBe(true);
   });

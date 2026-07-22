@@ -77,7 +77,11 @@ describe("dependencyController", () => {
       expect(prismaMock.task.findUnique).toHaveBeenCalledWith({
         where: { id: "t1" },
       });
-      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "proj-1", "task:read");
+      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(
+        req,
+        "proj-1",
+        "task:read",
+      );
       expect(res.json).toHaveBeenCalledWith({
         success: true,
         message: "Task dependencies fetched successfully",
@@ -157,7 +161,11 @@ describe("dependencyController", () => {
 
       await (dependencyController.createDependency as unknown)(req, res);
 
-      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "proj-1", "task:update");
+      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(
+        req,
+        "proj-1",
+        "task:update",
+      );
       expect(prismaMock.taskDependency.create).toHaveBeenCalledWith({
         data: {
           blockingTaskId: "t1",
@@ -243,7 +251,11 @@ describe("dependencyController", () => {
 
       await (dependencyController.deleteDependency as unknown)(req, res);
 
-      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(req, "proj-1", "task:update");
+      expect(mockVerifyProjectAccess).toHaveBeenCalledWith(
+        req,
+        "proj-1",
+        "task:update",
+      );
       expect(prismaMock.taskDependency.delete).toHaveBeenCalledWith({
         where: { id: "d1" },
       });

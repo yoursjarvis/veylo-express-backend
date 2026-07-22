@@ -1,6 +1,9 @@
 import { NextFunction, Request, Response } from "express";
 
-import { requestContextStorage, RequestContextStore } from "@/lib/request-context";
+import {
+  requestContextStorage,
+  RequestContextStore,
+} from "@/lib/request-context";
 
 export const requestContextStoreMiddleware = (
   req: Request,
@@ -16,7 +19,8 @@ export const requestContextStoreMiddleware = (
     },
     get activeOrganizationId() {
       return (
-        (req.auth?.session as Record<string, unknown>)?.activeOrganizationId as string ||
+        ((req.auth?.session as Record<string, unknown>)
+          ?.activeOrganizationId as string) ||
         (req.body?.organizationId as string) ||
         (req.query?.organizationId as string) ||
         (req.params?.organizationId as string)

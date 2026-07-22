@@ -19,19 +19,19 @@ const standardMock = () => ({
   updateMany: vi.fn().mockResolvedValue({ count: 1 }),
   deleteMany: vi.fn().mockResolvedValue({ count: 1 }),
   count: vi.fn().mockResolvedValue(0),
-  upsert: vi
-    .fn()
-    .mockImplementation((args) =>
-      Promise.resolve({
-        id: "mock-id",
-        ...(args?.create || args?.update || {}),
-      }),
-    ),
+  upsert: vi.fn().mockImplementation((args) =>
+    Promise.resolve({
+      id: "mock-id",
+      ...(args?.create || args?.update || {}),
+    }),
+  ),
   findUniqueWithTrashed: vi.fn().mockResolvedValue(null),
   findFirstWithTrashed: vi.fn().mockResolvedValue(null),
   findManyWithTrashed: vi.fn().mockResolvedValue([]),
   restore: vi.fn().mockImplementation(() => Promise.resolve({ id: "mock-id" })),
-  forceDelete: vi.fn().mockImplementation(() => Promise.resolve({ id: "mock-id" })),
+  forceDelete: vi
+    .fn()
+    .mockImplementation(() => Promise.resolve({ id: "mock-id" })),
 });
 
 export const prismaMock = {

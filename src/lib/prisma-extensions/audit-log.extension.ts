@@ -42,7 +42,8 @@ export const auditLogExtension = Prisma.defineExtension((client) => {
             model === "AuditLog" ||
             !modelMapping[model] ||
             !mutationOperations.includes(operation) ||
-            (model === "Session" && (operation.startsWith("update") || operation === "upsert"))
+            (model === "Session" &&
+              (operation.startsWith("update") || operation === "upsert"))
           ) {
             return query(args);
           }
@@ -58,7 +59,13 @@ export const auditLogExtension = Prisma.defineExtension((client) => {
               if (!userId) return; // Skip if no user is performing the action (e.g. system seeds)
 
               // Resolve workspaceId & organizationId
-              const resolvedContext = await resolveContext(prismaClient, model, result, args, context.activeOrganizationId);
+              const resolvedContext = await resolveContext(
+                prismaClient,
+                model,
+                result,
+                args,
+                context.activeOrganizationId,
+              );
               if (!resolvedContext) return;
 
               const { workspaceId, organizationId } = resolvedContext;
@@ -68,13 +75,20 @@ export const auditLogExtension = Prisma.defineExtension((client) => {
                 where: { id: userId },
                 select: { name: true },
               });
-              const userName = userRecord?.name || context.userEmail || "System";
+              const userName =
+                userRecord?.name || context.userEmail || "System";
 
               const resObj = result as Record<string, unknown> | null;
               const argsObj = args as Record<string, unknown> | null;
 
               // Get action name and description
-              const actionDetails = getActionDetails(model, operation, resObj, argsObj, userName);
+              const actionDetails = getActionDetails(
+                model,
+                operation,
+                resObj,
+                argsObj,
+                userName,
+              );
 
               await prismaClient.auditLog.create({
                 data: {
@@ -83,8 +97,16 @@ export const auditLogExtension = Prisma.defineExtension((client) => {
                   userId,
                   action: actionDetails.action,
                   entityType: actionDetails.entityType,
-                  entityId: (resObj?.id as string) || ((argsObj?.where as Record<string, unknown> | undefined)?.id as string) || null,
-                  entityName: (resObj?.name as string) || (resObj?.title as string) || (resObj?.taskKey as string) || null,
+                  entityId:
+                    (resObj?.id as string) ||
+                    ((argsObj?.where as Record<string, unknown> | undefined)
+                      ?.id as string) ||
+                    null,
+                  entityName:
+                    (resObj?.name as string) ||
+                    (resObj?.title as string) ||
+                    (resObj?.taskKey as string) ||
+                    null,
                   description: actionDetails.description,
                   metadata: {
                     operation,
@@ -95,7 +117,10 @@ export const auditLogExtension = Prisma.defineExtension((client) => {
                 },
               });
             } catch (error) {
-              console.error("[AUTO AUDIT LOG ERROR] Failed to write audit log in background:", error);
+              console.error(
+                "[AUTO AUDIT LOG ERROR] Failed to write audit log in background:",
+                error,
+              );
             }
           });
 
@@ -120,11 +145,19 @@ async function resolveContext(
   const argsObj = args as Record<string, unknown> | null;
   const argsData = argsObj?.data as Record<string, unknown> | undefined;
 
-  let organizationId = (resObj?.organizationId as string) || (argsData?.organizationId as string) || fallbackOrgId;
-  let workspaceId = (resObj?.workspaceId as string) || (argsData?.workspaceId as string);
+  let organizationId =
+    (resObj?.organizationId as string) ||
+    (argsData?.organizationId as string) ||
+    fallbackOrgId;
+  let workspaceId =
+    (resObj?.workspaceId as string) || (argsData?.workspaceId as string);
 
   // Traverse Project relation
-  const projectId = (resObj?.projectId as string) || (argsData?.projectId as string) || ((argsObj?.where as Record<string, unknown> | undefined)?.projectId as string);
+  const projectId =
+    (resObj?.projectId as string) ||
+    (argsData?.projectId as string) ||
+    ((argsObj?.where as Record<string, unknown> | undefined)
+      ?.projectId as string);
   if (projectId && (!workspaceId || !organizationId)) {
     const project = await prismaClient.project.findUnique({
       where: { id: projectId },
@@ -137,7 +170,10 @@ async function resolveContext(
   }
 
   // Traverse Task relation
-  const taskId = (resObj?.taskId as string) || (argsData?.taskId as string) || ((argsObj?.where as Record<string, unknown> | undefined)?.taskId as string);
+  const taskId =
+    (resObj?.taskId as string) ||
+    (argsData?.taskId as string) ||
+    ((argsObj?.where as Record<string, unknown> | undefined)?.taskId as string);
   if (taskId && (!workspaceId || !organizationId)) {
     const task = await prismaClient.task.findUnique({
       where: { id: taskId },
@@ -154,7 +190,11 @@ async function resolveContext(
   }
 
   // Traverse Vault relation
-  const vaultId = (resObj?.vaultId as string) || (argsData?.vaultId as string) || ((argsObj?.where as Record<string, unknown> | undefined)?.vaultId as string);
+  const vaultId =
+    (resObj?.vaultId as string) ||
+    (argsData?.vaultId as string) ||
+    ((argsObj?.where as Record<string, unknown> | undefined)
+      ?.vaultId as string);
   if (vaultId && (!workspaceId || !organizationId)) {
     const vault = await prismaClient.vault.findUnique({
       where: { id: vaultId },
@@ -173,7 +213,11 @@ async function resolveContext(
   }
 
   // Traverse VaultService relation
-  const serviceId = (resObj?.serviceId as string) || (argsData?.serviceId as string) || ((argsObj?.where as Record<string, unknown> | undefined)?.serviceId as string);
+  const serviceId =
+    (resObj?.serviceId as string) ||
+    (argsData?.serviceId as string) ||
+    ((argsObj?.where as Record<string, unknown> | undefined)
+      ?.serviceId as string);
   if (serviceId && (!workspaceId || !organizationId)) {
     const service = await prismaClient.vaultService.findUnique({
       where: { id: serviceId },
@@ -198,11 +242,16 @@ async function resolveContext(
   }
 
   if (model === "Workspace") {
-    workspaceId = (resObj?.id as string) || ((argsObj?.where as Record<string, unknown> | undefined)?.id as string);
+    workspaceId =
+      (resObj?.id as string) ||
+      ((argsObj?.where as Record<string, unknown> | undefined)?.id as string);
   }
 
   if (model === "Session") {
-    organizationId = (resObj?.activeOrganizationId as string) || (argsData?.activeOrganizationId as string) || fallbackOrgId;
+    organizationId =
+      (resObj?.activeOrganizationId as string) ||
+      (argsData?.activeOrganizationId as string) ||
+      fallbackOrgId;
     const sUserId = (resObj?.userId as string) || (argsData?.userId as string);
     if (!organizationId && sUserId) {
       const member = await prismaClient.member.findFirst({
@@ -251,7 +300,8 @@ function getActionDetails(
   } else if (operation.startsWith("delete")) {
     actionPrefix = "FORCE_DELETE";
   } else if (operation.startsWith("update")) {
-    const isSoftDelete = argsData?.deletedAt !== undefined && argsData?.deletedAt !== null;
+    const isSoftDelete =
+      argsData?.deletedAt !== undefined && argsData?.deletedAt !== null;
     const isRestore = argsData?.deletedAt === null;
     if (isSoftDelete) {
       actionPrefix = "DELETE";
@@ -263,7 +313,11 @@ function getActionDetails(
   }
 
   const action = `${actionPrefix}_${entityType}`;
-  const name = (resObj?.name as string) || (resObj?.title as string) || (resObj?.taskKey as string) || "";
+  const name =
+    (resObj?.name as string) ||
+    (resObj?.title as string) ||
+    (resObj?.taskKey as string) ||
+    "";
   let description = `User "${userName}" ${actionPrefix.toLowerCase().replace("_", " ")}d ${modelInfo.label}`;
   if (name) {
     description += ` "${name}"`;
@@ -286,7 +340,11 @@ function sanitizeArgs(args: unknown): unknown {
   const data = sanitized.data as Record<string, unknown> | undefined;
   if (data) {
     if (data.password) data.password = "[REDACTED]";
-    if (data.value && typeof data.value === "string" && data.value.length > 500) {
+    if (
+      data.value &&
+      typeof data.value === "string" &&
+      data.value.length > 500
+    ) {
       data.value = data.value.substring(0, 500) + "...";
     }
   }
